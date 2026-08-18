@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ficha de Salud - Plataforma de Mascotas</title>
+    <!-- Conectamos el archivo CSS externo -->
+    <link rel="stylesheet" href="fichaSalud.css" />
+  </head>
+  <body>
+    <!-- VISTA DEL DUEÑO -->
+    <div id="vista-dueno">
+      <h1>🐾 Ficha de Salud</h1>
+      <p>Completa esta ficha obligatoria antes de solicitar un servicio.</p>
+
+      <form id="health-form">
+        <fieldset>
+          <legend>Datos Obligatorios</legend>
+          <label for="raza">Raza:</label>
+          <input type="text" id="raza" name="raza" required />
+
+          <label for="edad">Edad (años):</label>
+          <input type="number" id="edad" name="edad" required min="0" />
+
+          <label for="condicion">Condición Médica:</label>
+          <textarea id="condicion" name="condicion" required></textarea>
+
+          <label for="alergias">Alergias:</label>
+          <textarea id="alergias" name="alergias" required></textarea>
+
+          <label for="vacunacion">Vacunación:</label>
+          <select id="vacunacion" name="vacunacion" required>
+            <option value="">Seleccione...</option>
+            <option value="Completo">Completo</option>
+            <option value="Incompleto">Incompleto</option>
+            <option value="No vacunado">No vacunado</option>
+          </select>
+
+          <label for="reactividad">Reactividad:</label>
+          <select id="reactividad" name="reactividad" required>
+            <option value="">Seleccione...</option>
+            <option value="Tranquilo">Tranquilo</option>
+            <option value="Reactivo a otros perros">
+              Reactivo a otros perros
+            </option>
+            <option value="Miedoso / Asustadizo">Miedoso / Asustadizo</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>⚠️ Etiquetas de Alerta (Opcional)</legend>
+          <p>
+            <input
+              type="checkbox"
+              id="alerta1"
+              name="alertas"
+              value="Lleva medicación"
+            /><label for="alerta1">Lleva medicación</label>
+          </p>
+          <p>
+            <input
+              type="checkbox"
+              id="alerta2"
+              name="alertas"
+              value="Muerde si se asusta"
+            /><label for="alerta2">Muerde si se asusta</label>
+          </p>
+          <p>
+            <input
+              type="checkbox"
+              id="alerta3"
+              name="alertas"
+              value="Alergia alimentaria"
+            /><label for="alerta3">Alergia alimentaria</label>
+          </p>
+        </fieldset>
+
+        <button type="submit">Solicitar Servicio</button>
+      </form>
+    </div>
+
+    <!-- VISTA DEL PRESTADOR -->
+    <div id="vista-prestador">
+      <header id="header-alertas">
+        <h2><mark>⚠️ ALERTAS ACTIVAS DURANTE EL SERVICIO:</mark></h2>
+        <ul id="lista-alertas">
+          <!-- El JavaScript inyectará los <li> aquí -->
+        </ul>
+      </header>
+
+      <h3>Detalles de la mascota a cargo:</h3>
+      <ul class="datos-mascota" id="resumen-datos">
+        <!-- El JavaScript llenará esto -->
+      </ul>
+
+      <form style="margin-top: 20px">
+        <button type="button" class="btn-volver" onclick="location.reload()">
+          Finalizar Servicio (Reiniciar App)
+        </button>
+      </form>
+    </div>
+
+    <!-- Conectamos el archivo JavaScript externo -->
+    <script src="fichaSalud.js"></script>
+  </body>
+</html>
