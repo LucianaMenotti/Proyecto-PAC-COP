@@ -3,33 +3,23 @@
   margin: 0;
   padding: 0;
 }
-
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #eaf5ea;
-  color: #000000;
+  color: #64016d;
   line-height: 1.4;
-  padding-top: 40px;
-  padding-bottom: 40px;
+  padding: 40px 10px;
   max-width: 500px;
   margin: 0 auto;
 }
-
-h1,
-h3 {
+h1 {
   color: #000000;
   margin-bottom: 15px;
   font-size: 1.4rem;
-  padding: 0 10px;
 }
 p {
-  padding: 0 10px;
   margin-bottom: 15px;
   font-size: 0.9rem;
-}
-
-form {
-  padding: 0 10px;
 }
 fieldset {
   background-color: #ffffff;
@@ -55,6 +45,7 @@ label {
   display: block;
   margin-bottom: 4px;
   font-size: 0.85rem;
+  color: #000;
 }
 input[type="text"],
 input[type="number"],
@@ -80,33 +71,15 @@ textarea {
   min-height: 60px;
   resize: vertical;
 }
-
 fieldset:nth-of-type(2) {
-  background-color: #eaf5ea;
+  background-color: #ffd6e5;
+  border-color: #dc3545;
 }
 fieldset:nth-of-type(2) legend {
-  background-color: #ffd6e5;
-  color: #000000;
+  background-color: #dc3545;
+  color: #ffffff;
+  border-color: #dc3545;
 }
-fieldset:nth-of-type(2) p {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 5px;
-  padding: 0;
-}
-fieldset:nth-of-type(2) input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #ffd6e5;
-}
-fieldset:nth-of-type(2) label {
-  cursor: pointer;
-  font-weight: normal;
-  margin-bottom: 0;
-}
-
 button[type="submit"] {
   background-color: #000000;
   color: #ffd6e5;
@@ -122,93 +95,4 @@ button[type="submit"] {
 button[type="submit"]:hover {
   background-color: #ffd6e5;
   color: #000000;
-}
-
-#vista-prestador {
-  display: none;
-  padding-top: 100px;
-}
-
-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: #000000;
-  color: #eaf5ea;
-  z-index: 1000;
-  border-bottom: 4px solid #ffd6e5;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 10px;
-}
-header h2 {
-  margin: 0 0 10px 0;
-  font-size: 1rem;
-  color: #eaf5ea;
-}
-header mark {
-  background-color: transparent;
-  color: #ffd6e5;
-  font-weight: bold;
-}
-header ul {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-}
-header ul li {
-  background-color: #eaf5ea;
-  color: #000000;
-  border: 1px solid #000000;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: bold;
-}
-
-.datos-mascota {
-  list-style: none;
-  background: #ffffff;
-  padding: 15px;
-  margin: 0 10px;
-  border: 2px solid #000000;
-  border-radius: 6px;
-}
-.datos-mascota li {
-  padding: 8px 0;
-  border-bottom: 1px dashed #cccccc;
-  font-size: 0.9rem;
-}
-.datos-mascota li:last-child {
-  border-bottom: none;
-}
-.datos-mascota li strong {
-  color: #000000;
-  display: inline-block;
-  width: 160px;
-}
-
-/* Botón para finalizar servicio (estilo contorno/outline) */
-.btn-volver {
-  background-color: transparent;
-  color: #000000;
-  border: 2px solid #000000; /* Borde negro grueso para mantener el estilo */
-  padding: 10px 20px; /* Le da el tamaño correcto */
-  font-size: 1rem;
-  font-weight: bold;
-  border-radius: 4px; /* Bordes ligeramente redondeados */
-  cursor: pointer; /* Cambia el cursor a la manito al pasar por encima */
-  width: 100%; /* Ocupa todo el ancho disponible */
-  margin-top: 20px;
-  font-family: inherit;
-  transition: all 0.3s ease; /* Animación suave */
-}
-
-.btn-volver:hover {
-  background-color: #000000; /* Se pinta de negro al pasar el mouse */
-  color: #ffd6e5; /* El texto pasa a rosita clarito */
 }
