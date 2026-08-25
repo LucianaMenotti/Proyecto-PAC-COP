@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perfil de Mascota - Alertas</title>
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <!-- CSS Personalizado -->
+    <link rel="stylesheet" href="alerta.css" />
+    <!-- CORREGIDO: alerta.css -->
+  </head>
+  <body class="bg-light">
+    <div class="container py-5">
+      <h2 class="text-center mb-4">Gestión de Perfil y Alertas</h2>
+
+      <div class="row g-4">
+        <!-- VISTA DEL DUEÑO: Formulario de Configuración -->
+        <div class="col-md-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-pencil-square"></i> Editar Perfil (Dueño)
+              </h5>
+            </div>
+            <div class="card-body">
+              <p class="text-muted small">
+                Selecciona las alertas que apliquen a tu mascota:
+              </p>
+
+              <form id="form-alertas">
+                <!-- Categoría: Agresividad/Conducta -->
+                <h6 class="mt-3 text-danger">
+                  <i class="bi bi-shield-exclamation"></i> Agresividad /
+                  Conducta
+                </h6>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input alerta-cb"
+                    type="checkbox"
+                    id="reaccion-perros"
+                    data-tipo="peligro"
+                    data-icono="bi-exclamation-triangle-fill"
+                    data-texto="Reacción negativa ante otros perros"
+                  />
+                  <label class="form-check-label" for="reaccion-perros"
+                    >Reacción ante otros perros</label
+                  >
+                </div>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input alerta-cb"
+                    type="checkbox"
+                    id="miedo-ruidos"
+                    data-tipo="advertencia"
+                    data-icono="bi-lightning-fill"
+                    data-texto="Miedo a ruidos fuertes"
+                  />
+                  <label class="form-check-label" for="miedo-ruidos"
+                    >Miedo a ruidos</label
+                  >
+                </div>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input alerta-cb"
+                    type="checkbox"
+                    id="agresivo-desconocidos"
+                    data-tipo="peligro-critico"
+                    data-icono="bi-shield-slash-fill"
+                    data-texto="Agresividad con desconocidos"
+                  />
+                  <label class="form-check-label" for="agresivo-desconocidos"
+                    >Agresividad con desconocidos</label
+                  >
+                </div>
+
+                <!-- Categoría: Alergias -->
+                <h6 class="mt-4 text-warning text-dark">
+                  <i class="bi bi-flower1"></i> Alergias
+                </h6>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input alerta-cb"
+                    type="checkbox"
+                    id="alergia-alimento"
+                    data-tipo="advertencia"
+                    data-icono="bi-ban"
+                    data-texto="Alergia Alimentaria"
+                  />
+                  <label class="form-check-label" for="alergia-alimento"
+                    >Sensibilidad alimentaria</label
+                  >
+                </div>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input alerta-cb"
+                    type="checkbox"
+                    id="alergia-ambiente"
+                    data-tipo="advertencia"
+                    data-icono="bi-bug-fill"
+                    data-texto="Alergia Ambiental"
+                  />
+                  <label class="form-check-label" for="alergia-ambiente"
+                    >Sensibilidad ambiental</label
+                  >
+                </div>
+
+                <!-- Categoría: Medicación -->
+                <h6 class="mt-4 text-info text-dark">
+                  <i class="bi bi-capsule"></i> Medicación
+                </h6>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input alerta-cb"
+                    type="checkbox"
+                    id="medicacion-horario"
+                    data-tipo="info-destacada"
+                    data-icono="bi-clock-fill"
+                    data-texto="Requiere medicación en horario específico"
+                  />
+                  <label class="form-check-label" for="medicacion-horario"
+                    >Necesidad de administración de remedios</label
+                  >
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA DEL PRESTADOR: Pantalla de Servicio -->
+        <div class="col-md-6">
+          <div class="card shadow border-0 h-100 vista-prestador">
+            <div
+              class="card-header bg-dark text-white d-flex justify-content-between align-items-center"
+            >
+              <h5 class="mb-0">
+                <i class="bi bi-phone"></i> App del Prestador
+              </h5>
+              <span class="badge bg-success">Servicio Activo</span>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <img
+                  src="https://placedog.net/100/100"
+                  alt="Foto de la mascota"
+                  class="rounded-circle me-3 border"
+                  width="80"
+                />
+                <div>
+                  <h3 class="mb-0">Rocky</h3>
+                  <p class="text-muted mb-0">Bulldog Francés • 4 años</p>
+                </div>
+              </div>
+
+              <hr />
+
+              <h5 class="mb-3">Panel de Alertas</h5>
+              <!-- Contenedor dinámico donde JS inyectará las alertas -->
+              <div id="contenedor-alertas" class="d-flex flex-column gap-2">
+                <!-- CORREGIDO: Se cerraron bien las comillas en la clase -->
+                <div class="text-muted fst-italic" id="mensaje-vacio">
+                  No hay alertas marcadas para esta mascota.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Archivo JS -->
+    <script src="alerta.js"></script>
+  </body>
+</html>
