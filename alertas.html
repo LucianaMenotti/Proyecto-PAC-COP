@@ -9,11 +9,12 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <!-- CSS PERSONALIZADO -->
+    <link rel="stylesheet" href="alertas.css" />
   </head>
   <body class="bg-light">
-    <!-- ENCABEZADO DE EMERGENCIA -->
     <header class="bg-danger text-white text-center py-3 shadow sticky-top">
-      <h2 class="mb-0 fw-bold">⚠️ PANEL DE CONTROL Y ALERTAS ⚠️</h2>
+      <h2 class="mb-0 fw-bold">⚠️ PANEL DE ALERTAS Y DECISIÓN</h2>
       <p class="mb-0">Uso exclusivo para el prestador del servicio</p>
     </header>
 
@@ -25,9 +26,11 @@
             <div class="card-header bg-danger text-white fw-bold">
               📢 Mensaje de Alerta del Dueño
             </div>
-            <div class="card-body bg-danger bg-opacity-10">
+            <div
+              class="card-body bg-danger bg-opacity-10 d-flex align-items-center"
+            >
               <p id="mostrar-alerta" class="fs-5 text-danger fw-bold mb-0">
-                No hay alertas registradas.
+                Cargando alertas...
               </p>
             </div>
           </div>
@@ -46,88 +49,88 @@
         </div>
       </div>
 
-      <!-- CUESTIONARIO DETALLADO PARA EL PRESTADOR -->
-      <div class="card border-warning shadow-sm mt-4">
-        <div class="card-header bg-warning text-dark fw-bold fs-5">
-          📝 Evaluación de Riesgo (A completar por el Prestador)
+      <!-- FORMULARIO DE DECISIÓN -->
+      <div class="card border-dark shadow-sm mt-4">
+        <div class="card-header bg-dark text-white fw-bold fs-5">
+          ⚖️ Decisión del Prestador
         </div>
         <div class="card-body">
           <form id="prestador-form">
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold"
-                  >Nivel de Riesgo del Servicio:</label
-                >
-                <select class="form-select border-dark" required>
-                  <option value="">Seleccione...</option>
-                  <option value="Bajo">Bajo (Mascota dócil)</option>
-                  <option value="Medio">Medio (Requiere precaución)</option>
-                  <option value="Alto">Alto (Posible reactividad)</option>
-                </select>
-              </div>
-              <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold"
-                  >¿Requiere bozal o arnés de seguridad?</label
-                >
-                <select class="form-select border-dark" required>
-                  <option value="">Seleccione...</option>
-                  <option value="Si">Sí</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-              <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold"
-                  >¿Se deberá administrar medicación?</label
-                >
-                <select
-                  class="form-select border-dark"
-                  id="requiere-med"
+            <div class="mb-4">
+              <label class="form-label fw-bold d-block fs-5"
+                >¿Aceptas tomar este servicio?</label
+              >
+
+              <div class="form-check form-check-inline mt-2">
+                <input
+                  class="form-check-input border-dark custom-radio"
+                  type="radio"
+                  name="decision"
+                  id="acepta-si"
+                  value="si"
                   required
+                />
+                <label class="form-check-label fs-5" for="acepta-si"
+                  >✔️ Sí, acepto el servicio</label
                 >
-                  <option value="">Seleccione...</option>
-                  <option value="Si">Sí</option>
-                  <option value="No">No</option>
-                </select>
+              </div>
+
+              <div class="form-check form-check-inline mt-2">
+                <input
+                  class="form-check-input border-dark custom-radio"
+                  type="radio"
+                  name="decision"
+                  id="acepta-no"
+                  value="no"
+                />
+                <label class="form-check-label fs-5" for="acepta-no"
+                  >❌ No, rechazo el servicio</label
+                >
               </div>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label fw-bold"
-                >Protocolo de Acción Preventiva:</label
+            <!-- CONTENEDOR OCULTO PARA EL MOTIVO -->
+            <div
+              id="motivo-rechazo-container"
+              class="mb-4"
+              style="display: none"
+            >
+              <label for="motivo-rechazo" class="form-label fw-bold text-danger"
+                >Motivo del rechazo (Opcional):</label
               >
               <textarea
-                class="form-control border-dark"
-                rows="3"
-                placeholder="Describe cómo vas a manejar la alerta informada por el dueño..."
-                required
+                class="form-control border-danger"
+                id="motivo-rechazo"
+                rows="2"
+                placeholder="Si lo deseas, explica brevemente por qué no puedes tomar este servicio..."
               ></textarea>
             </div>
 
             <div class="form-check mb-4">
               <input
-                class="form-check-input border-dark"
+                class="form-check-input border-dark custom-checkbox"
                 type="checkbox"
                 id="checkSeguridad"
                 required
               />
               <label class="form-check-label fw-bold" for="checkSeguridad">
-                He leído la ficha, comprendo las alertas y asumo la
-                responsabilidad del servicio.
+                Confirmo que he leído la ficha clínica y las alertas
+                correspondientes antes de tomar esta decisión.
               </label>
             </div>
 
             <button
               type="submit"
-              class="btn btn-dark w-100 py-2 fw-bold fs-5 shadow"
+              class="btn btn-dark w-100 py-3 fw-bold fs-5 shadow transition-btn"
+              id="btn-submit"
             >
-              Iniciar / Finalizar Servicio
+              Confirmar Decisión
             </button>
           </form>
         </div>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="alertas.js"></script>
   </body>
 </html>
