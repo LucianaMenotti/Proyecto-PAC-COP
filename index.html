@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WoofPal — Panel del prestador</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"/>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -198,20 +200,9 @@
       </div>
 
       <div class="route-grid">
-        <div class="route-map" aria-hidden="true">
-          <svg viewBox="0 0 400 320">
-            <path d="M0 60 H400 M0 160 H400 M0 260 H400" stroke="#DCE9E7" stroke-width="10"/>
-            <path d="M80 0 V320 M220 0 V320 M330 0 V320" stroke="#DCE9E7" stroke-width="10"/>
-            <path d="M60 250 Q120 190 150 155 T260 90 T350 70" fill="none" stroke="var(--coral)" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round"/>
-            <circle cx="60" cy="250" r="10" fill="var(--turquoise)"/>
-            <circle cx="150" cy="155" r="10" fill="var(--turquoise)"/>
-            <circle cx="260" cy="90" r="10" fill="var(--turquoise)"/>
-            <circle cx="350" cy="70" r="12" fill="var(--coral)"/>
-            <text x="60" y="235" class="route-map__label">1</text>
-            <text x="150" y="140" class="route-map__label">2</text>
-            <text x="260" y="75" class="route-map__label">3</text>
-          </svg>
-          <p class="route-map__caption">Vista simplificada del recorrido (referencial, no a escala)</p>
+        <div class="route-map">
+          <div id="routeMap" class="route-map__canvas" role="img" aria-label="Mapa con el recorrido de los 3 paseos de hoy en Formosa"></div>
+          <p class="route-map__caption">Mapa interactivo (Leaflet + OpenStreetMap) · coordenadas aproximadas de cada barrio</p>
         </div>
 
         <ol class="route-list">
@@ -246,6 +237,8 @@
 
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
