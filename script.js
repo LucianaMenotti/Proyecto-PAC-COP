@@ -55,6 +55,10 @@ tabs.forEach(tab => {
     const target = document.getElementById(tab.dataset.target);
     target.classList.add("is-active");
     target.hidden = false;
+
+    // El mapa de Leaflet necesita el contenedor visible para calcular su tamaño,
+    // así que lo iniciamos (o le recalculamos el tamaño) recién al abrir esta pestaña.
+    if (target.id === "panel-ruta") initRouteMap();
   });
 });
 
@@ -191,3 +195,75 @@ publishForm.addEventListener("submit", (e) => {
 
 toggleServiceFields();
 renderRange();
+
+// ---------- Panel 4: mapa real con Leaflet + ruta por calles ----------
+// Coordenadas aproximadas de Formosa capital (mock — en el proyecto real
+// vendrían de geocodificar la ubicación del prestador y la dirección de cada reserva).
+const BASE_LOCATION = { lat: -26.1830, lng: -58.1650, label: "Tu ubicación actual" };
+
+const ROUTE_STOPS = [
+  { order: 1, label: "Toby · Barrio San Miguel", lat: -26.1950, lng: -58.1850, alert: false },
+  { order: 2, label: "Kira · Barrio Namqom",      lat: -26.1600, lng: -58.2200, alert: false },
+  { order: 3, label: "Rocky · Centro",            lat: -26.1849, lng: -58.1731, alert: true  },
+];
+
+let routeMap = null;
+
+function initRouteMap(){
+  const container = document.getElementById("routeMap");
+  if (!container || typeof L === "undefined") return; // Leaflet no cargó (sin conexión)
+
+  if (routeMap){
+    routeMap.invalidateSize();
+    return;
+  }
+
+  routeMap = L.map(container, { scrollWheelZoom: false });
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(routeMap);
+
+  const waypoints = [
+    L.latLng(BASE_LOCATION.lat, BASE_LOCATION.lng),
+    ...ROUTE_STOPS.map(s => L.latLng(s.lat, s.lng)),
+  ];
+
+  // Leaflet Routing Machine calcula el camino real por calles (usa el
+  // servidor público de demo de OSRM). En producción conviene usar un
+  // servicio propio de ruteo, ya que el demo público tiene límites de uso.
+  L.Routing.control({
+    waypoints,
+    routeWhileDragging: false,
+    addWaypoints: false,
+    draggableWaypoints: false,
+    fitSelectedRoutes: true,
+    show: false, // oculta el panel de instrucciones paso a paso, nos quedamos con el dibujo del mapa
+    lineOptions: {
+      styles: [{ color: "#5EB5AE", weight: 5, opacity: 0.9 }], // var(--turquoise)
+    },
+    createMarker: function (i, waypoint) {
+      if (i === 0){
+        const icon = L.divIcon({
+          className: "",
+          html: `<div class="route-pin route-pin--base">●</div>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+        });
+        return L.marker(waypoint.latLng, { icon }).bindPopup(BASE_LOCATION.label);
+      }
+      const stop = ROUTE_STOPS[i - 1];
+      const icon = L.divIcon({
+        className: "",
+        html: `<div class="route-pin${stop.alert ? " route-pin--alert" : ""}">${stop.order}</div>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+      });
+      return L.marker(waypoint.latLng, { icon }).bindPopup(stop.label);
+    },
+  }).addTo(routeMap);
+
+  // El tab arranca oculto, así que recalculamos el tamaño apenas se ve
+  setTimeout(() => routeMap.invalidateSize(), 100);
+}
