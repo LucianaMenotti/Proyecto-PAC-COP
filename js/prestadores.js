@@ -4,7 +4,7 @@ const prestadores = [
         id: 1,
         nombre: "Nahuel González",
         zona: "Liborsi",
-        servicios: ["Paseo", "Cuidado"],
+        servicios: ["Paseo", "Guarderia"],
         calificacion: 4.8,
         reseñas: 4,
         verificado: true
@@ -14,7 +14,7 @@ const prestadores = [
         id: 2,
         nombre: "María López",
         zona: "Centro",
-        servicios: ["Paseo", "Baño"],
+        servicios: ["Paseo", "Traslado"],
         calificacion: 4.6,
         reseñas: 3,
         verificado: true
@@ -24,7 +24,7 @@ const prestadores = [
         id: 3,
         nombre: "Lucas Fernández",
         zona: "San Martín",
-        servicios: ["Cuidado"],
+        servicios: ["Guarderia"],
         calificacion: 4.9,
         reseñas: 5,
         verificado: true
