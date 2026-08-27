@@ -7,13 +7,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Mostrar alerta
     const alertaText = document.getElementById("mostrar-alerta");
+    const tarjetaAlerta = alertaText.closest(".card");
+
     if (mascota.alertaDueño && mascota.alertaDueño.trim() !== "") {
       alertaText.textContent = `"${mascota.alertaDueño}"`;
     } else {
       alertaText.textContent = "El dueño no reportó alertas adicionales.";
-      alertaText.classList.replace("text-danger", "text-success");
-      // Cambiar el color de fondo de la tarjeta si no hay alertas
-      alertaText.parentElement.classList.replace("bg-danger", "bg-success");
+      // Cambiar estilos visuales si no hay alertas
+      tarjetaAlerta.classList.remove("card-alert-danger");
+      tarjetaAlerta.querySelector(".card-header").style.backgroundColor =
+        "#0f766e";
+      alertaText.style.color = "#0f766e";
     }
 
     // Mostrar datos clínicos
@@ -31,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "fichasalud.html";
   }
 
-  // 2. Lógica para mostrar/ocultar el motivo de rechazo
+  // 2. Lógica para mostrar/ocultar el motivo de rechazo y alternar estilos del botón
   const radioAcepta = document.getElementById("acepta-si");
   const radioRechaza = document.getElementById("acepta-no");
   const contenedorMotivo = document.getElementById("motivo-rechazo-container");
@@ -40,7 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
   radioAcepta.addEventListener("change", function () {
     if (this.checked) {
       contenedorMotivo.style.display = "none";
-      btnSubmit.classList.replace("btn-danger", "btn-dark");
+      btnSubmit.classList.remove("btn-danger-custom");
+      btnSubmit.classList.add("btn-teal");
       btnSubmit.textContent = "Confirmar y Aceptar Servicio";
     }
   });
@@ -48,7 +53,8 @@ document.addEventListener("DOMContentLoaded", function () {
   radioRechaza.addEventListener("change", function () {
     if (this.checked) {
       contenedorMotivo.style.display = "block";
-      btnSubmit.classList.replace("btn-dark", "btn-danger");
+      btnSubmit.classList.remove("btn-teal");
+      btnSubmit.classList.add("btn-danger-custom");
       btnSubmit.textContent = "Confirmar y Rechazar Servicio";
     }
   });

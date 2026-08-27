@@ -1,9 +1,9 @@
-document
-  .getElementById("health-form")
-  .addEventListener("submit", function (evento) {
-    evento.preventDefault(); // Evitamos que la página se recargue
+document.addEventListener("DOMContentLoaded", () => {
+  const healthForm = document.getElementById("health-form");
 
-    // Capturamos los datos del dueño
+  healthForm.addEventListener("submit", function (evento) {
+    evento.preventDefault(); 
+
     const datosMascota = {
       raza: document.getElementById("raza").value,
       edad: document.getElementById("edad").value,
@@ -14,10 +14,9 @@ document
       alertaDueño: document.getElementById("alerta-general").value,
     };
 
-    // Guardamos en localStorage para que el prestador pueda leerlo en la otra página
     localStorage.setItem("datosMascota", JSON.stringify(datosMascota));
 
-    // Simulamos el envío y redirigimos a la vista del prestador
     alert("Ficha guardada con éxito. Redirigiendo a la vista del prestador...");
     window.location.href = "alertas.html";
   });
+});

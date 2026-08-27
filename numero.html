@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Prestador - Emergencia</title>
+    <link rel="stylesheet" href="css.ml/numero.css" />
+  </head>
+  <body>
+    <main class="dashboard">
+      <h1>Panel del Prestador</h1>
+      <p>
+        Servicios de cuidado en curso. La mascota se encuentra en buen estado.
+      </p>
+    </main>
+
+    <!-- Botón Flotante de Emergencia -->
+    <button
+      id="btn-emergency"
+      class="fab-emergency"
+      aria-label="Emergencia Veterinaria"
+    >
+      Emergencia
+    </button>
+
+    <!-- Modal de Emergencia -->
+    <div id="emergency-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Alerta de Emergencia</h2>
+          <button id="btn-close" class="close-btn" aria-label="Cerrar">
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="call-options">
+            <a href="tel:+5491100000000" class="btn btn-outline">
+              Llamar Veterinaria de Cabecera
+            </a>
+            <a href="tel:130" class="btn btn-outline">
+              Llamar Traslado / Guardia
+            </a>
+          </div>
+
+          <div class="location-section">
+            <h3>Tu Ubicación Actual:</h3>
+            <p id="location-display" class="location-box">
+              Obteniendo ubicación...
+            </p>
+          </div>
+
+          <div class="alert-section">
+            <button id="btn-notify" class="btn btn-solid">
+              Enviar Alerta Prioritaria al Dueño
+            </button>
+            <p id="notification-status" class="status-msg"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="numero.js"></script>
+  </body>
+</html>

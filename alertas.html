@@ -10,26 +10,26 @@
       rel="stylesheet"
     />
     <!-- CSS PERSONALIZADO -->
-    <link rel="stylesheet" href="alertas.css" />
+    <link rel="stylesheet" href="css.ml/alertas.css" />
   </head>
-  <body class="bg-light">
-    <header class="bg-danger text-white text-center py-3 shadow sticky-top">
-      <h2 class="mb-0 fw-bold">⚠️ PANEL DE ALERTAS Y DECISIÓN</h2>
-      <p class="mb-0">Uso exclusivo para el prestador del servicio</p>
+  <body>
+    <header class="header-app text-white text-center py-3 sticky-top">
+      <h2 class="mb-0 fw-bold">PANEL DE ALERTAS Y DECISIÓN</h2>
+      <p class="mb-0 opacity-75">
+        Uso exclusivo para el prestador del servicio
+      </p>
     </header>
 
     <div class="container my-4">
       <div class="row g-4">
         <!-- ALERTA DEL DUEÑO -->
         <div class="col-lg-6">
-          <div class="card border-danger shadow-sm h-100">
-            <div class="card-header bg-danger text-white fw-bold">
-              📢 Mensaje de Alerta del Dueño
+          <div class="card card-custom card-alert-danger h-100">
+            <div class="card-header border-0 fw-bold">
+              Mensaje de Alerta del Dueño
             </div>
-            <div
-              class="card-body bg-danger bg-opacity-10 d-flex align-items-center"
-            >
-              <p id="mostrar-alerta" class="fs-5 text-danger fw-bold mb-0">
+            <div class="card-body d-flex align-items-center">
+              <p id="mostrar-alerta" class="fs-5 fw-bold mb-0">
                 Cargando alertas...
               </p>
             </div>
@@ -38,8 +38,8 @@
 
         <!-- DATOS CLÍNICOS -->
         <div class="col-lg-6">
-          <div class="card border-dark shadow-sm h-100">
-            <div class="card-header bg-dark text-white fw-bold">
+          <div class="card card-custom h-100">
+            <div class="card-header header-teal text-white fw-bold">
               📋 Ficha Clínica de la Mascota
             </div>
             <ul class="list-group list-group-flush" id="mostrar-datos">
@@ -50,20 +50,20 @@
       </div>
 
       <!-- FORMULARIO DE DECISIÓN -->
-      <div class="card border-dark shadow-sm mt-4">
-        <div class="card-header bg-dark text-white fw-bold fs-5">
-          ⚖️ Decisión del Prestador
+      <div class="card card-custom mt-4">
+        <div class="card-header header-teal text-white fw-bold fs-5">
+          Decisión del Prestador
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
           <form id="prestador-form">
             <div class="mb-4">
-              <label class="form-label fw-bold d-block fs-5"
+              <label class="form-label fw-bold d-block fs-5 label-custom"
                 >¿Aceptas tomar este servicio?</label
               >
 
               <div class="form-check form-check-inline mt-2">
                 <input
-                  class="form-check-input border-dark custom-radio"
+                  class="form-check-input custom-radio"
                   type="radio"
                   name="decision"
                   id="acepta-si"
@@ -77,7 +77,7 @@
 
               <div class="form-check form-check-inline mt-2">
                 <input
-                  class="form-check-input border-dark custom-radio"
+                  class="form-check-input custom-radio"
                   type="radio"
                   name="decision"
                   id="acepta-no"
@@ -99,7 +99,7 @@
                 >Motivo del rechazo (Opcional):</label
               >
               <textarea
-                class="form-control border-danger"
+                class="form-control input-danger"
                 id="motivo-rechazo"
                 rows="2"
                 placeholder="Si lo deseas, explica brevemente por qué no puedes tomar este servicio..."
@@ -108,12 +108,15 @@
 
             <div class="form-check mb-4">
               <input
-                class="form-check-input border-dark custom-checkbox"
+                class="form-check-input custom-checkbox"
                 type="checkbox"
                 id="checkSeguridad"
                 required
               />
-              <label class="form-check-label fw-bold" for="checkSeguridad">
+              <label
+                class="form-check-label fw-bold label-custom"
+                for="checkSeguridad"
+              >
                 Confirmo que he leído la ficha clínica y las alertas
                 correspondientes antes de tomar esta decisión.
               </label>
@@ -121,7 +124,7 @@
 
             <button
               type="submit"
-              class="btn btn-dark w-100 py-3 fw-bold fs-5 shadow transition-btn"
+              class="btn btn-teal w-100 py-3 fw-bold fs-5 transition-btn"
               id="btn-submit"
             >
               Confirmar Decisión
