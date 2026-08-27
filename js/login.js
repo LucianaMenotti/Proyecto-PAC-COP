@@ -1,77 +1,62 @@
-const formulario =
-    document.getElementById("formLogin");
+const formulario = document.getElementById("formLogin");
+const mensaje = document.getElementById("mensaje");
 
-const mensaje =
-    document.getElementById("mensaje");
+formulario.addEventListener("submit", async function (event) {
 
+    event.preventDefault();
 
-formulario.addEventListener(
-    "submit",
-    function(event) {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-        event.preventDefault();
+    try {
 
+        const respuesta = await fetch("/api/users/login", {
+            method: "POST",
 
-        const email =
-            document.getElementById("email").value;
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-        const password =
-            document.getElementById("password").value;
+            body: JSON.stringify({
+                email,
+                password
+            })
+        });
 
+        const resultado = await respuesta.json();
 
-        const datos =
-            localStorage.getItem("prestador");
-
-
-        if (!datos) {
+        if (!respuesta.ok) {
 
             mensaje.innerHTML = `
-
-                <div class="alert alert-warning">
-
-                    No existe ninguna cuenta registrada.
-
+                <div class="alert alert-danger">
+                    ${resultado.mensaje}
                 </div>
-
             `;
 
             return;
-
         }
 
+        sessionStorage.setItem(
+            "usuario",
+            JSON.stringify(resultado.usuario)
+        );
 
-        const prestador =
-            JSON.parse(datos);
+        mensaje.innerHTML = `
+            <div class="alert alert-success">
+                ${resultado.mensaje}
+            </div>
+        `;
 
+        console.log("Usuario:", resultado.usuario);
 
-        if (
-            email === prestador.email &&
-            password === prestador.password
-        ) {
+    } catch (error) {
 
-            mensaje.innerHTML = `
+        console.error(error);
 
-                <div class="alert alert-success">
-
-                    Inicio de sesión correcto.
-
-                </div>
-
-            `;
-
-        } else {
-
-            mensaje.innerHTML = `
-
-                <div class="alert alert-danger">
-
-                    Correo o contraseña incorrectos.
-
-                </div>
-
-            `;
-
-        }
-
+        mensaje.innerHTML = `
+            <div class="alert alert-danger">
+                No se pudo conectar con el servidor.
+            </div>
+        `;
     }
-);
+});

@@ -1,11 +1,9 @@
 const formulario = document.getElementById("formPrestador");
 const mensaje = document.getElementById("mensaje");
 
-
-formulario.addEventListener("submit", function(event) {
+formulario.addEventListener("submit", async function (event) {
 
     event.preventDefault();
-
 
     const nombre = document.getElementById("nombre").value;
     const apellido = document.getElementById("apellido").value;
@@ -14,61 +12,75 @@ formulario.addEventListener("submit", function(event) {
     const telefono = document.getElementById("telefono").value;
     const zona = document.getElementById("zona").value;
 
-
     const servicios = [];
 
     document
-        .querySelectorAll(
-            'input[type="checkbox"]:checked'
-        )
-        .forEach(function(checkbox) {
-
+        .querySelectorAll('input[type="checkbox"]:checked')
+        .forEach(function (checkbox) {
             servicios.push(checkbox.value);
-
         });
 
-
     if (servicios.length === 0) {
-
         mensaje.innerHTML = `
             <div class="alert alert-warning">
                 Seleccioná al menos un servicio.
             </div>
         `;
-
         return;
     }
 
-
-    const prestador = {
-
-        nombre: nombre,
-        apellido: apellido,
-        email: email,
-        password: password,
-        telefono: telefono,
-        zona: zona,
-        servicios: servicios,
-        verificado: false,
-        calificacion: 0,
-        reseñas: 0
-
+    const datos = {
+        nombre,
+        apellido,
+        email,
+        password,
+        telefono,
+        zona,
+        rol: "prestador",
+        servicios
     };
 
+    try {
 
-    localStorage.setItem(
-        "prestador",
-        JSON.stringify(prestador)
-    );
+        const respuesta = await fetch("/api/users", {
+            method: "POST",
 
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-    mensaje.innerHTML = `
-        <div class="alert alert-success">
-            ¡Cuenta creada correctamente! Hora de laburar.
-        </div>
-    `;
+            body: JSON.stringify(datos)
+        });
 
+        const resultado = await respuesta.json();
 
-    formulario.reset();
+        if (!respuesta.ok) {
+            mensaje.innerHTML = `
+                <div class="alert alert-danger">
+                    ${resultado.mensaje}
+                </div>
+            `;
+            return;
+        }
 
+        mensaje.innerHTML = `
+            <div class="alert alert-success">
+                ¡Cuenta creada correctamente! Hora de laburar.
+            </div>
+        `;
+
+        formulario.reset();
+
+        console.log("Usuario creado:", resultado.usuario);
+
+    } catch (error) {
+
+        console.error("Error:", error);
+
+        mensaje.innerHTML = `
+            <div class="alert alert-danger">
+                No se pudo conectar con el servidor.
+            </div>
+        `;
+    }
 });

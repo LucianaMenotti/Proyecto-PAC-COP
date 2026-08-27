@@ -1,202 +1,138 @@
-const prestadores = [
+const contenedor = document.getElementById("resultados");
 
-    {
-        id: 1,
-        nombre: "Nahuel González",
-        zona: "Liborsi",
-        servicios: ["Paseo", "Guarderia"],
-        calificacion: 4.8,
-        reseñas: 4,
-        verificado: true
-    },
+const filtroServicio = document.getElementById("filtroServicio");
+const filtroZona = document.getElementById("filtroZona");
+const btnBuscar = document.getElementById("btnBuscar");
 
-    {
-        id: 2,
-        nombre: "María López",
-        zona: "Centro",
-        servicios: ["Paseo", "Traslado"],
-        calificacion: 4.6,
-        reseñas: 3,
-        verificado: true
-    },
+let prestadores = [];
 
-    {
-        id: 3,
-        nombre: "Lucas Fernández",
-        zona: "San Martín",
-        servicios: ["Guarderia"],
-        calificacion: 4.9,
-        reseñas: 5,
-        verificado: true
+async function cargarPrestadores() {
+
+    try {
+
+        const respuesta = await fetch("/api/users");
+        const usuarios = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron obtener los usuarios");
+        }
+
+        prestadores = usuarios.filter(
+            usuario => usuario.rol === "prestador"
+        );
+
+        mostrarPrestadores(prestadores);
+
+    } catch (error) {
+
+        console.error("Error:", error);
+
+        contenedor.innerHTML = `
+            <div class="alert alert-danger">
+                No se pudieron cargar los prestadores.
+            </div>
+        `;
     }
-
-];
-
-
-const resultados = document.getElementById("resultados");
-
-const filtroServicio =
-    document.getElementById("filtroServicio");
-
-const filtroZona =
-    document.getElementById("filtroZona");
-
-const btnBuscar =
-    document.getElementById("btnBuscar");
-
+}
 
 function mostrarPrestadores(lista) {
 
-    resultados.innerHTML = "";
-
+    contenedor.innerHTML = "";
 
     if (lista.length === 0) {
 
-        resultados.innerHTML = `
-            <div class="col-12">
-
-                <div class="alert alert-info text-center">
-
-                    No encontramos prestadores
-                    con esos criterios.
-
-                </div>
-
+        contenedor.innerHTML = `
+            <div class="alert alert-info">
+                No se encontraron prestadores.
             </div>
         `;
 
         return;
     }
 
+    lista.forEach(prestador => {
 
-    lista.forEach(function(prestador) {
+        const servicios = prestador.servicios || [];
 
-        const servicios =
-            prestador.servicios.join(" · ");
+        const tarjeta = document.createElement("div");
 
+        tarjeta.className = "col-md-6 col-lg-4";
 
-        resultados.innerHTML += `
+        tarjeta.innerHTML = `
+            <div class="card h-100 shadow-sm border-0">
 
-            <div class="col-md-6 col-lg-4">
+                <div class="card-body">
 
-                <div class="card h-100 border-0 shadow-sm">
+                    <h5 class="card-title fw-bold">
+                        ${prestador.nombre} ${prestador.apellido}
+                    </h5>
 
-                    <div class="card-body">
+                    <p class="card-text">
+                        <strong>Zona:</strong>
+                        ${prestador.zona}
+                    </p>
 
-                        <div class="text-center mb-3">
-
-                            <h4>
-                                ${prestador.nombre}
-                            </h4>
-
-                        </div>
-
-
-                        <p class="mb-2">
-
-                            <strong>
-                                ${prestador.calificacion}
-                            </strong>
-
-                            (${prestador.reseñas} reseñas)
-
-                        </p>
-
-
-                        <p class="text-secondary">
-
-                            ${prestador.zona}
-
-                        </p>
-
-
-                        <p>
-
-                            <strong>
-                                Servicios:
-                            </strong>
-
-                            ${servicios}
-
-                        </p>
-
-
+                    <p class="card-text">
+                        <strong>Servicios:</strong>
                         ${
-                            prestador.verificado
-                            ?
-                            `
-                            <span class="badge text-bg-success mb-3">
-                                ✓ Identidad verificada
-                            </span>
-                            `
-                            :
-                            ""
+                            servicios.length > 0
+                                ? servicios.join(", ")
+                                : "Sin servicios registrados"
                         }
+                    </p>
 
+                    <p class="card-text">
+                        <strong>Calificación:</strong>
+                        ${prestador.calificacion || 0}
+                    </p>
 
-                        <a
-                            href="perfil-prestador.html?id=${prestador.id}"
-                            class="btn btn-primary w-100"
-                        >
-                            Ver perfil
-                        </a>
-
-                    </div>
+                    <button
+                        class="btn btn-primary w-100"
+                        onclick="verPerfil(${prestador.id})"
+                    >
+                        Ver perfil
+                    </button>
 
                 </div>
 
             </div>
-
         `;
 
+        contenedor.appendChild(tarjeta);
     });
-
 }
-
 
 function buscarPrestadores() {
 
-    const servicio =
-        filtroServicio.value.toLowerCase();
+    const servicio = filtroServicio.value.toLowerCase();
+    const zona = filtroZona.value.trim().toLowerCase();
 
-    const zona =
-        filtroZona.value.toLowerCase();
+    const resultados = prestadores.filter(prestador => {
 
+        const servicios = prestador.servicios || [];
 
-    const resultadosFiltrados =
-        prestadores.filter(function(prestador) {
+        const coincideServicio =
+            servicio === "" ||
+            servicios.some(
+                item => item.toLowerCase() === servicio
+            );
 
-            const coincideServicio =
-                servicio === "" ||
-                prestador.servicios.some(function(item) {
+        const coincideZona =
+            zona === "" ||
+            prestador.zona.toLowerCase().includes(zona);
 
-                    return item.toLowerCase()
-                        .includes(servicio);
+        return coincideServicio && coincideZona;
+    });
 
-                });
-
-
-            const coincideZona =
-                zona === "" ||
-                prestador.zona
-                    .toLowerCase()
-                    .includes(zona);
-
-
-            return coincideServicio && coincideZona;
-
-        });
-
-
-    mostrarPrestadores(resultadosFiltrados);
-
+    mostrarPrestadores(resultados);
 }
 
+function verPerfil(id) {
 
-btnBuscar.addEventListener(
-    "click",
-    buscarPrestadores
-);
+    window.location.href =
+        `/paginas/perfil-prestador.html?id=${id}`;
+}
 
+btnBuscar.addEventListener("click", buscarPrestadores);
 
-mostrarPrestadores(prestadores);
+cargarPrestadores();
