@@ -1,4 +1,4 @@
-```javascript
+
 // =========================================
 // PAC-COP - PANEL DEL PRESTADOR
 // =========================================
@@ -214,4 +214,3 @@ formulario.addEventListener(
 
     }
 );
-```
