@@ -5,53 +5,70 @@ formulario.addEventListener("submit", async function (event) {
 
     event.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    const email =
+        document.getElementById("email").value;
+
+    const password =
+        document.getElementById("password").value;
 
     try {
 
-        const respuesta = await fetch("/api/users/login", {
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                email,
-                password
-            })
-        });
-
-        const resultado = await respuesta.json();
+        const respuesta = await fetch("/api/users");
 
         if (!respuesta.ok) {
+            throw new Error("No se pudieron obtener los usuarios");
+        }
+
+        const usuarios = await respuesta.json();
+
+        const usuario = usuarios.find(function (item) {
+
+            return (
+                item.email === email &&
+                item.password === password
+            );
+
+        });
+
+
+        if (!usuario) {
 
             mensaje.innerHTML = `
                 <div class="alert alert-danger">
-                    ${resultado.mensaje}
+                    Correo o contraseña incorrectos.
                 </div>
             `;
 
             return;
         }
 
-        sessionStorage.setItem(
+
+        localStorage.setItem(
             "usuario",
-            JSON.stringify(resultado.usuario)
+            JSON.stringify(usuario)
         );
+
 
         mensaje.innerHTML = `
             <div class="alert alert-success">
-                ${resultado.mensaje}
+                Inicio de sesión correcto.
             </div>
         `;
 
-        console.log("Usuario:", resultado.usuario);
+
+        setTimeout(function () {
+
+            window.location.href =
+                "inicio.html";
+
+        }, 500);
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Error al iniciar sesión:",
+            error
+        );
 
         mensaje.innerHTML = `
             <div class="alert alert-danger">
@@ -59,4 +76,5 @@ formulario.addEventListener("submit", async function (event) {
             </div>
         `;
     }
+
 });

@@ -6,16 +6,40 @@ const btnBuscar = document.getElementById("btnBuscar");
 
 let prestadores = [];
 
+function obtenerServicios(servicios) {
+
+    if (Array.isArray(servicios)) {
+        return servicios;
+    }
+
+    if (typeof servicios === "string") {
+
+        try {
+            const resultado = JSON.parse(servicios);
+
+            return Array.isArray(resultado)
+                ? resultado
+                : [];
+
+        } catch (error) {
+            return [];
+        }
+    }
+
+    return [];
+}
+
 async function cargarPrestadores() {
 
     try {
 
         const respuesta = await fetch("/api/users");
-        const usuarios = await respuesta.json();
 
         if (!respuesta.ok) {
-            throw new Error("No se pudieron obtener los usuarios");
+            throw new Error("Error al obtener los usuarios");
         }
+
+        const usuarios = await respuesta.json();
 
         prestadores = usuarios.filter(
             usuario => usuario.rol === "prestador"
@@ -25,7 +49,7 @@ async function cargarPrestadores() {
 
     } catch (error) {
 
-        console.error("Error:", error);
+        console.error("Error al cargar prestadores:", error);
 
         contenedor.innerHTML = `
             <div class="alert alert-danger">
@@ -52,7 +76,9 @@ function mostrarPrestadores(lista) {
 
     lista.forEach(prestador => {
 
-        const servicios = prestador.servicios || [];
+        const servicios = obtenerServicios(
+            prestador.servicios
+        );
 
         const tarjeta = document.createElement("div");
 
@@ -64,7 +90,8 @@ function mostrarPrestadores(lista) {
                 <div class="card-body">
 
                     <h5 class="card-title fw-bold">
-                        ${prestador.nombre} ${prestador.apellido}
+                        ${prestador.nombre}
+                        ${prestador.apellido}
                     </h5>
 
                     <p class="card-text">
@@ -104,22 +131,32 @@ function mostrarPrestadores(lista) {
 
 function buscarPrestadores() {
 
-    const servicio = filtroServicio.value.toLowerCase();
-    const zona = filtroZona.value.trim().toLowerCase();
+    const servicio = filtroServicio.value
+        .trim()
+        .toLowerCase();
+
+    const zona = filtroZona.value
+        .trim()
+        .toLowerCase();
 
     const resultados = prestadores.filter(prestador => {
 
-        const servicios = prestador.servicios || [];
+        const servicios = obtenerServicios(
+            prestador.servicios
+        );
 
         const coincideServicio =
             servicio === "" ||
             servicios.some(
-                item => item.toLowerCase() === servicio
+                item =>
+                    item.toLowerCase() === servicio
             );
 
         const coincideZona =
             zona === "" ||
-            prestador.zona.toLowerCase().includes(zona);
+            prestador.zona
+                .toLowerCase()
+                .includes(zona);
 
         return coincideServicio && coincideZona;
     });
@@ -133,6 +170,9 @@ function verPerfil(id) {
         `/paginas/perfil-prestador.html?id=${id}`;
 }
 
-btnBuscar.addEventListener("click", buscarPrestadores);
+btnBuscar.addEventListener(
+    "click",
+    buscarPrestadores
+);
 
 cargarPrestadores();

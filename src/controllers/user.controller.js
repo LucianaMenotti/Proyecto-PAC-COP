@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 
 export const crearUsuario = async (req, res) => {
     try {
+
         const {
             nombre,
             apellido,
@@ -30,7 +31,7 @@ export const crearUsuario = async (req, res) => {
             password,
             telefono,
             zona,
-            rol,
+            rol: rol || "dueño",
             servicios
         });
 
@@ -40,6 +41,7 @@ export const crearUsuario = async (req, res) => {
         });
 
     } catch (error) {
+
         console.error("Error al crear usuario:", error);
 
         res.status(500).json({
@@ -50,6 +52,7 @@ export const crearUsuario = async (req, res) => {
 
 export const iniciarSesion = async (req, res) => {
     try {
+
         const { email, password } = req.body;
 
         const usuario = await User.findOne({
@@ -57,6 +60,7 @@ export const iniciarSesion = async (req, res) => {
         });
 
         if (!usuario || usuario.password !== password) {
+
             return res.status(401).json({
                 mensaje: "Correo o contraseña incorrectos"
             });
@@ -68,6 +72,7 @@ export const iniciarSesion = async (req, res) => {
         });
 
     } catch (error) {
+
         console.error("Error al iniciar sesión:", error);
 
         res.status(500).json({
@@ -78,11 +83,13 @@ export const iniciarSesion = async (req, res) => {
 
 export const obtenerUsuarios = async (req, res) => {
     try {
+
         const usuarios = await User.findAll();
 
         res.status(200).json(usuarios);
 
     } catch (error) {
+
         console.error("Error al obtener usuarios:", error);
 
         res.status(500).json({
@@ -93,27 +100,24 @@ export const obtenerUsuarios = async (req, res) => {
 
 export const obtenerUsuarioPorId = async (req, res) => {
     try {
+
         const usuario = await User.findByPk(req.params.id);
 
         if (!usuario) {
-            return res.status(404).json({
-                mensaje: "Prestador no encontrado"
-            });
-        }
 
-        if (usuario.rol !== "prestador") {
             return res.status(404).json({
-                mensaje: "Prestador no encontrado"
+                mensaje: "Usuario no encontrado"
             });
         }
 
         res.status(200).json(usuario);
 
     } catch (error) {
-        console.error("Error al obtener prestador:", error);
+
+        console.error("Error al obtener usuario:", error);
 
         res.status(500).json({
-            mensaje: "Error al obtener el prestador"
+            mensaje: "Error al obtener el usuario"
         });
     }
 };
