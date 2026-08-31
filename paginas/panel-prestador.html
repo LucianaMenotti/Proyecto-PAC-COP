@@ -1,0 +1,910 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Pac-Cop - Panel del prestador</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Estilos generales -->
+    <link rel="stylesheet" href="../css/styles.css">
+
+    <!-- Estilos propios del panel -->
+    <link rel="stylesheet" href="../css/panel-prestador.css">
+</head>
+
+<body>
+
+<!-- ========================================================= -->
+<!-- NAVBAR -->
+<!-- ========================================================= -->
+
+<nav class="navbar bg-white border-bottom shadow-sm">
+    <div class="container py-2">
+
+        <a
+            href="../index.html"
+            class="navbar-brand fw-bold pac-brand"
+        >
+            Pac-Cop
+        </a>
+
+        <div class="d-flex align-items-center gap-2">
+
+            <span class="badge rounded-pill nivel-badge">
+                Nivel: Establecido
+            </span>
+
+            <span
+                id="avatarUsuario"
+                class="avatar"
+            >
+                P
+            </span>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<!-- ========================================================= -->
+<!-- CONTENIDO PRINCIPAL -->
+<!-- ========================================================= -->
+
+<main class="container py-4 py-md-5">
+
+    <!-- ENCABEZADO -->
+
+    <div class="panel-header mb-4">
+
+        <h1 class="fw-bold mb-2">
+            Panel del prestador
+        </h1>
+
+        <p class="text-secondary mb-0">
+            Administrá tus servicios, precios y rendimiento.
+        </p>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- TABS -->
+    <!-- ===================================================== -->
+
+    <ul
+        class="nav nav-tabs panel-tabs mb-4"
+        id="panelTabs"
+        role="tablist"
+    >
+
+        <li class="nav-item" role="presentation">
+
+            <button
+                class="nav-link active"
+                id="tab-niveles"
+                data-bs-toggle="tab"
+                data-bs-target="#niveles"
+                type="button"
+                role="tab"
+            >
+                <span>01</span>
+                Niveles y precio mínimo
+            </button>
+
+        </li>
+
+        <li class="nav-item" role="presentation">
+
+            <button
+                class="nav-link"
+                id="tab-publicar"
+                data-bs-toggle="tab"
+                data-bs-target="#publicar"
+                type="button"
+                role="tab"
+            >
+                <span>02</span>
+                Publicar servicio
+            </button>
+
+        </li>
+
+        <li class="nav-item" role="presentation">
+
+            <button
+                class="nav-link"
+                id="tab-rendimiento"
+                data-bs-toggle="tab"
+                data-bs-target="#rendimiento"
+                type="button"
+                role="tab"
+            >
+                <span>03</span>
+                Rendimiento
+            </button>
+
+        </li>
+
+        <li class="nav-item" role="presentation">
+
+            <button
+                class="nav-link"
+                id="tab-ruta"
+                data-bs-toggle="tab"
+                data-bs-target="#ruta"
+                type="button"
+                role="tab"
+            >
+                <span>04</span>
+                Ruta de hoy
+            </button>
+
+        </li>
+
+    </ul>
+
+
+    <!-- ===================================================== -->
+    <!-- CONTENIDO DE LOS TABS -->
+    <!-- ===================================================== -->
+
+    <div class="tab-content">
+
+
+        <!-- ================================================= -->
+        <!-- PANEL 1 - NIVELES -->
+        <!-- ================================================= -->
+
+        <section
+            class="tab-pane fade show active"
+            id="niveles"
+            role="tabpanel"
+            aria-labelledby="tab-niveles"
+        >
+
+            <div class="panel-section-header mb-4">
+
+                <h2 class="fw-bold">
+                    Tu nivel determina tu piso, no tu techo
+                </h2>
+
+                <p class="text-secondary mb-0">
+                    A medida que sumás servicios completados y buena
+                    calificación, subís de nivel. Cada nivel tiene un
+                    precio mínimo por servicio.
+                </p>
+
+            </div>
+
+
+            <!-- PROGRESO DE NIVEL -->
+
+            <div class="card panel-card mb-4">
+
+                <div class="card-body p-4">
+
+                    <div class="progress nivel-progress mb-3">
+
+                        <div
+                            class="progress-bar progreso"
+                            role="progressbar"
+                            style="width: 46%"
+                            aria-valuenow="46"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="row text-center g-3">
+
+                        <div class="col-4">
+
+                            <strong>
+                                Nuevo
+                            </strong>
+
+                            <small class="d-block text-secondary">
+                                0–9 servicios
+                            </small>
+
+                        </div>
+
+                        <div class="col-4 nivel-actual">
+
+                            <strong>
+                                Establecido
+                            </strong>
+
+                            <small class="d-block text-secondary">
+                                10–49 · +4★
+                            </small>
+
+                        </div>
+
+                        <div class="col-4">
+
+                            <strong>
+                                Top
+                            </strong>
+
+                            <small class="d-block text-secondary">
+                                50+ · +4.5★
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <p class="text-secondary mt-4 mb-0">
+
+                        Llevás
+                        <strong>18 servicios</strong>
+                        con
+                        <strong>4.6★</strong>
+                        de promedio.
+
+                        Te faltan
+                        <strong>32 servicios</strong>
+                        para alcanzar Top.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- TABLA DE PRECIOS -->
+
+            <div class="card panel-card">
+
+                <div class="card-body p-4">
+
+                    <h5 class="fw-bold mb-3">
+                        Precio mínimo por servicio
+                    </h5>
+
+                    <div class="table-responsive">
+
+                        <table class="table align-middle mb-3">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Servicio
+                                    </th>
+
+                                    <th>
+                                        Nuevo
+                                    </th>
+
+                                    <th>
+                                        Establecido
+                                    </th>
+
+                                    <th>
+                                        Top
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tablaPrecios">
+
+                                <!-- El JS puede completar esta tabla -->
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <p class="small text-secondary mb-0">
+                        El precio mínimo funciona como piso.
+                        Podés cobrar más, pero nunca menos.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================================================= -->
+        <!-- PANEL 2 - PUBLICAR -->
+        <!-- ================================================= -->
+
+        <section
+            class="tab-pane fade"
+            id="publicar"
+            role="tabpanel"
+            aria-labelledby="tab-publicar"
+        >
+
+            <div class="panel-section-header mb-4">
+
+                <h2 class="fw-bold">
+                    Publicá un servicio nuevo
+                </h2>
+
+                <p class="text-secondary mb-0">
+                    Te sugerimos un rango de precio según tu nivel
+                    y el tipo de servicio.
+                </p>
+
+            </div>
+
+
+            <div class="row g-4">
+
+
+                <!-- FORMULARIO -->
+
+                <div class="col-12 col-lg-7">
+
+                    <div class="card panel-card h-100">
+
+                        <div class="card-body p-4">
+
+                            <form id="publishForm">
+
+
+                                <!-- SERVICIO -->
+
+                                <div class="mb-3">
+
+                                    <label
+                                        class="form-label fw-semibold"
+                                        for="servicioSelect"
+                                    >
+                                        Tipo de servicio
+                                    </label>
+
+                                    <select
+                                        id="servicioSelect"
+                                        class="form-select"
+                                    >
+
+                                        <option value="paseo">
+                                            Paseo
+                                        </option>
+
+                                        <option value="guarderia">
+                                            Guardería
+                                        </option>
+
+                                        <option value="traslado">
+                                            Traslado
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- DURACIÓN -->
+
+                                <div
+                                    class="mb-3"
+                                    id="duracionField"
+                                >
+
+                                    <label
+                                        class="form-label fw-semibold"
+                                        for="duracionInput"
+                                    >
+                                        Duración
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="duracionInput"
+                                        class="form-control"
+                                        min="1"
+                                        value="30"
+                                    >
+
+                                </div>
+
+
+                                <!-- MASCOTAS -->
+
+                                <div
+                                    class="mb-3"
+                                    id="mascotasField"
+                                >
+
+                                    <label
+                                        class="form-label fw-semibold"
+                                        for="mascotasInput"
+                                    >
+                                        Cantidad de mascotas
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="mascotasInput"
+                                        class="form-control"
+                                        min="1"
+                                        max="5"
+                                        value="1"
+                                    >
+
+                                </div>
+
+
+                                <!-- PRECIO -->
+
+                                <div class="mb-4">
+
+                                    <label
+                                        class="form-label fw-semibold"
+                                        for="precioInput"
+                                    >
+                                        Tu precio
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            $
+                                        </span>
+
+                                        <input
+                                            type="number"
+                                            id="precioInput"
+                                            class="form-control"
+                                            min="0"
+                                            step="100"
+                                            required
+                                        >
+
+                                    </div>
+
+                                    <div
+                                        id="precioError"
+                                        class="text-danger small mt-2 d-none"
+                                    >
+                                        El precio está por debajo del
+                                        mínimo permitido.
+                                    </div>
+
+                                </div>
+
+
+                                <!-- BOTONES -->
+
+                                <div class="d-grid gap-2">
+
+                                    <button
+                                        type="button"
+                                        id="useSuggested"
+                                        class="btn btn-turquesa"
+                                    >
+                                        Usar precio sugerido
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-pac"
+                                    >
+                                        Publicar servicio
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SUGERENCIA -->
+
+                <div class="col-12 col-lg-5">
+
+                    <div class="suggestion-card">
+
+                        <h5 class="fw-bold mb-2">
+                            Rango sugerido
+                        </h5>
+
+                        <p class="text-secondary mb-4">
+                            Precio recomendado para tu nivel.
+                        </p>
+
+
+                        <div class="range-box mb-4">
+
+                            <div class="range-progress"></div>
+
+                        </div>
+
+
+                        <div class="row text-center g-3">
+
+                            <div class="col-4">
+
+                                <small class="text-secondary d-block">
+                                    Mínimo
+                                </small>
+
+                                <strong
+                                    id="precioMin"
+                                    class="d-block mt-1"
+                                >
+                                    $5000
+                                </strong>
+
+                            </div>
+
+                            <div class="col-4">
+
+                                <small class="text-secondary d-block">
+                                    Promedio
+                                </small>
+
+                                <strong
+                                    id="precioPromedio"
+                                    class="d-block mt-1"
+                                >
+                                    $7000
+                                </strong>
+
+                            </div>
+
+                            <div class="col-4">
+
+                                <small class="text-secondary d-block">
+                                    Máximo
+                                </small>
+
+                                <strong
+                                    id="precioMax"
+                                    class="d-block mt-1"
+                                >
+                                    $10000
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================================================= -->
+        <!-- PANEL 3 - RENDIMIENTO -->
+        <!-- ================================================= -->
+
+        <section
+            class="tab-pane fade"
+            id="rendimiento"
+            role="tabpanel"
+            aria-labelledby="tab-rendimiento"
+        >
+
+            <div class="panel-section-header mb-4">
+
+                <h2 class="fw-bold">
+                    Cómo viene tu rendimiento
+                </h2>
+
+                <p class="text-secondary mb-0">
+                    Estas métricas ayudan a definir tus
+                    recomendaciones de precio.
+                </p>
+
+            </div>
+
+
+            <!-- MÉTRICAS -->
+
+            <div class="row g-3 mb-4">
+
+
+                <div class="col-12 col-md-4">
+
+                    <div class="card metric-card h-100">
+
+                        <div class="card-body text-center p-4">
+
+                            <div class="metric-number">
+                                18
+                            </div>
+
+                            <div class="text-secondary">
+                                Servicios completados
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-4">
+
+                    <div class="card metric-card h-100">
+
+                        <div class="card-body text-center p-4">
+
+                            <div class="metric-number">
+                                4.6<span>★</span>
+                            </div>
+
+                            <div class="text-secondary">
+                                Calificación promedio
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-4">
+
+                    <div class="card metric-card h-100">
+
+                        <div class="card-body text-center p-4">
+
+                            <div class="metric-number">
+                                1
+                            </div>
+
+                            <div class="text-secondary">
+                                Reservas últimas 2 semanas
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- RECOMENDACIÓN -->
+
+            <div class="alert recomendacion mb-4">
+
+                <h5 class="fw-bold">
+                    Te recomendamos mantener tu precio actual
+                </h5>
+
+                <p class="mb-3">
+                    Tu calificación es alta (4.6★), pero tuviste
+                    pocas reservas recientemente. Antes de subir
+                    el precio, esperá a validar que la demanda
+                    se sostenga.
+                </p>
+
+                <button class="btn btn-pac">
+                    Mantener precio actual
+                </button>
+
+            </div>
+
+
+            <!-- HISTORIAL -->
+
+            <div class="card panel-card">
+
+                <div class="card-body p-4">
+
+                    <h5 class="fw-bold mb-3">
+                        Evolución de tu precio
+                    </h5>
+
+                    <div class="chart-placeholder mb-2">
+
+                        <div class="chart-line"></div>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between text-secondary small">
+
+                        <span>
+                            Hace 6 quincenas
+                        </span>
+
+                        <span>
+                            Hoy
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================================================= -->
+        <!-- PANEL 4 - RUTA -->
+        <!-- ================================================= -->
+
+        <section
+            class="tab-pane fade"
+            id="ruta"
+            role="tabpanel"
+            aria-labelledby="tab-ruta"
+        >
+
+            <div class="panel-section-header mb-4">
+
+                <h2 class="fw-bold">
+                    Tu recorrido de hoy
+                </h2>
+
+                <p class="text-secondary mb-0">
+                    Orden sugerido según cercanía y horario.
+                </p>
+
+            </div>
+
+
+            <!--
+                EL MAPA SE DEJA FUERA POR AHORA.
+
+                La integración original utilizaba Google Maps,
+                pero esa parte todavía no fue incorporada al proyecto.
+
+                Se agregará posteriormente sin modificar la lista
+                de recorridos.
+            -->
+
+
+            <!-- RECORRIDO -->
+
+            <div class="d-grid gap-3">
+
+
+                <!-- RUTA 1 -->
+
+                <div class="route-card">
+
+                    <span class="route-number">
+                        1
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Toby · Paseo 30 min
+                        </strong>
+
+                        <p class="text-secondary mb-1">
+                            Barrio San Miguel
+                        </p>
+
+                        <small>
+                            Salida sugerida:
+                            <strong>08:35</strong>
+                            — Servicio 09:00
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RUTA 2 -->
+
+                <div class="route-card">
+
+                    <span class="route-number">
+                        2
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Kira · Paseo 45 min
+                        </strong>
+
+                        <p class="text-secondary mb-1">
+                            Barrio Namqom
+                        </p>
+
+                        <small>
+                            Salida sugerida:
+                            <strong>09:50</strong>
+                            — Servicio 10:15
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RUTA 3 -->
+
+                <div class="route-card route-alert">
+
+                    <span class="route-number">
+                        3
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Rocky · Paseo 30 min
+                        </strong>
+
+                        <p class="text-secondary mb-1">
+                            Centro
+                        </p>
+
+                        <small>
+                            Salida sugerida:
+                            <strong>11:05</strong>
+                            — Servicio 11:30
+                        </small>
+
+                        <p class="text-danger small fw-semibold mb-0 mt-2">
+                            Salí en los próximos minutos
+                            para llegar a tiempo.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<!-- ========================================================= -->
+<!-- BOOTSTRAP JS -->
+<!-- ========================================================= -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+<!-- JS del panel -->
+<script src="../js/panel-prestador.js"></script>
+
+</body>
+</html>
