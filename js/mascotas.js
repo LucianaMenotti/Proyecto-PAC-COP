@@ -1,9 +1,23 @@
+
+// =========================================
+// PAC-COP - MIS MASCOTAS
+// =========================================
+
+
+// -----------------------------------------
+// ELEMENTOS
+// -----------------------------------------
+
 const contenedor =
     document.getElementById("mascotas");
 
 const mensaje =
     document.getElementById("mensaje");
 
+
+// -----------------------------------------
+// USUARIO LOGUEADO
+// -----------------------------------------
 
 const usuarioGuardado =
     localStorage.getItem("usuario");
@@ -16,22 +30,42 @@ if (!usuarioGuardado) {
 
 } else {
 
-    const usuario =
-        JSON.parse(usuarioGuardado);
+    try {
+
+        const usuario =
+            JSON.parse(usuarioGuardado);
 
 
-    if (usuario.rol !== "dueño") {
+        // Solo los dueños pueden acceder
+        if (usuario.rol !== "dueño") {
+
+            window.location.href =
+                "inicio.html";
+
+        } else {
+
+            cargarMascotas(usuario.id);
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Error al leer el usuario:",
+            error
+        );
+
+        localStorage.removeItem("usuario");
 
         window.location.href =
-            "inicio.html";
-
-    } else {
-
-        cargarMascotas(usuario.id);
-
+            "login.html";
     }
 }
 
+
+// -----------------------------------------
+// CARGAR MASCOTAS
+// -----------------------------------------
 
 async function cargarMascotas(userId) {
 
@@ -56,6 +90,13 @@ async function cargarMascotas(userId) {
             await respuesta.json();
 
 
+        contenedor.innerHTML = "";
+
+
+        // ---------------------------------
+        // SIN MASCOTAS
+        // ---------------------------------
+
         if (mascotas.length === 0) {
 
             mensaje.innerHTML = `
@@ -68,6 +109,13 @@ async function cargarMascotas(userId) {
             return;
         }
 
+
+        mensaje.innerHTML = "";
+
+
+        // ---------------------------------
+        // MOSTRAR MASCOTAS
+        // ---------------------------------
 
         mascotas.forEach(function (mascota) {
 
@@ -95,7 +143,7 @@ async function cargarMascotas(userId) {
 
                             <p>
                                 <strong>Edad:</strong>
-                                ${mascota.edad || "No especificada"}
+                                ${mascota.edad ?? "No especificada"}
                             </p>
 
                             ${
@@ -109,6 +157,15 @@ async function cargarMascotas(userId) {
                                 :
                                 ""
                             }
+
+                            <hr>
+
+                            <a
+                                href="FichaSalud.html?id=${mascota.id}"
+                                class="btn btn-outline-primary w-100"
+                            >
+                                🩺 Ficha de salud
+                            </a>
 
                         </div>
 
