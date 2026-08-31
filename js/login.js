@@ -1,3 +1,4 @@
+
 const formulario = document.getElementById("formLogin");
 const mensaje = document.getElementById("mensaje");
 
@@ -43,6 +44,7 @@ formulario.addEventListener("submit", async function (event) {
         }
 
 
+        // Guardar usuario que inició sesión
         localStorage.setItem(
             "usuario",
             JSON.stringify(usuario)
@@ -56,12 +58,23 @@ formulario.addEventListener("submit", async function (event) {
         `;
 
 
+        // Redirigir según el tipo de usuario
         setTimeout(function () {
 
-            window.location.href =
-                "inicio.html";
+            if (usuario.rol === "prestador") {
+
+                window.location.href =
+                    "panel-prestador.html";
+
+            } else {
+
+                window.location.href =
+                    "inicio.html";
+
+            }
 
         }, 500);
+
 
     } catch (error) {
 
