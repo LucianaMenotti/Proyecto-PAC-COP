@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagar reserva · WoofPal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pago.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div class="pago-wrap">
+
+  <header class="pago-header">
+    <p class="pago-eyebrow">Reserva #<span id="reservaId">4821</span></p>
+    <h1>Pagar el servicio</h1>
+  </header>
+
+  <!-- Resumen de la reserva: siempre visible arriba, sirve de referencia en todos los pasos -->
+  <section class="resumen" aria-label="Resumen de la reserva">
+    <div class="resumen-prestador">
+      <img id="prestadorFoto" src="" alt="" class="resumen-avatar">
+      <div>
+        <p class="resumen-nombre" id="prestadorNombre">Julieta Ramos</p>
+        <p class="resumen-servicio" id="servicioNombre">Paseo · 1 hora</p>
+      </div>
+    </div>
+    <dl class="resumen-datos">
+      <div>
+        <dt>Fecha</dt>
+        <dd id="servicioFecha">Sáb 5 sep, 17:00</dd>
+      </div>
+      <div>
+        <dt>Mascota</dt>
+        <dd id="mascotaNombre">Toby</dd>
+      </div>
+      <div class="resumen-monto">
+        <dt>Total</dt>
+        <dd>$<span id="montoTotal">4.500</span></dd>
+      </div>
+    </dl>
+  </section>
+
+  <div class="flujo">
+
+    <!-- Rastreador de pasos -->
+    <nav class="pasos" aria-label="Progreso del pago">
+      <ol id="listaPasos">
+        <li data-paso="metodo" class="paso activo">
+          <span class="paso-marca"></span>
+          <div>
+            <p class="paso-titulo">Método de pago</p>
+            <p class="paso-desc">Tarjeta o billetera virtual</p>
+          </div>
+        </li>
+        <li data-paso="confirmar" class="paso">
+          <span class="paso-marca"></span>
+          <div>
+            <p class="paso-titulo">Confirmar y pagar</p>
+            <p class="paso-desc">Retención segura del monto</p>
+          </div>
+        </li>
+        <li data-paso="comprobante" class="paso">
+          <span class="paso-marca"></span>
+          <div>
+            <p class="paso-titulo">Comprobante</p>
+            <p class="paso-desc">Descargá tu constancia</p>
+          </div>
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Contenido de cada paso -->
+    <div class="panel">
+
+      <!-- PASO 1: Método de pago -->
+      <section class="paso-contenido" id="panel-metodo">
+        <div class="segmentado" role="tablist" aria-label="Elegir método de pago">
+          <button type="button" class="segmento activo" data-metodo="tarjeta" role="tab" aria-selected="true">Tarjeta</button>
+          <button type="button" class="segmento" data-metodo="billetera" role="tab" aria-selected="false">Billetera virtual</button>
+        </div>
+
+        <!-- Formulario de tarjeta -->
+        <form id="formTarjeta" class="form-tarjeta" novalidate>
+          <label class="campo">
+            <span>Número de tarjeta</span>
+            <input type="text" id="numTarjeta" inputmode="numeric" placeholder="0000 0000 0000 0000" maxlength="19" required>
+            <span class="campo-error" id="err-numTarjeta"></span>
+          </label>
+
+          <label class="campo">
+            <span>Nombre del titular</span>
+            <input type="text" id="nombreTitular" placeholder="Como figura en la tarjeta" required>
+            <span class="campo-error" id="err-nombreTitular"></span>
+          </label>
+
+          <div class="campo-fila">
+            <label class="campo">
+              <span>Vencimiento</span>
+              <input type="text" id="vencTarjeta" inputmode="numeric" placeholder="MM/AA" maxlength="5" required>
+              <span class="campo-error" id="err-vencTarjeta"></span>
+            </label>
+            <label class="campo campo-cvv">
+              <span>CVV</span>
+              <input type="text" id="cvvTarjeta" inputmode="numeric" placeholder="123" maxlength="4" required>
+              <span class="campo-error" id="err-cvvTarjeta"></span>
+            </label>
+          </div>
+
+          <label class="campo-checkbox">
+            <input type="checkbox" id="guardarTarjeta">
+            <span>Guardar tarjeta para futuros pagos</span>
+          </label>
+        </form>
+
+        <!-- Opción billetera virtual -->
+        <div class="form-billetera" id="formBilletera" hidden>
+          <p class="billetera-texto">Vas a ser redirigido a tu billetera virtual para autorizar el pago de <strong>$<span class="montoTexto"></span></strong>.</p>
+          <div class="billetera-caja">
+            <div class="billetera-logo" aria-hidden="true">MP</div>
+            <div>
+              <p class="billetera-nombre">Billetera virtual</p>
+              <p class="billetera-detalle">Autorización externa · sin cargo adicional</p>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="boton-primario" id="btnContinuarMetodo">Continuar</button>
+      </section>
+
+      <!-- PASO 2: Confirmación y pago (escrow) -->
+      <section class="paso-contenido" id="panel-confirmar" hidden>
+
+        <div class="estado-pago" id="estadoPago">
+          <!-- estado inicial: a confirmar -->
+          <div class="estado-bloque" id="estado-previo">
+            <p class="escrow-explicacion">
+              El monto se retiene de forma segura al confirmar la reserva y se libera al prestador recién cuando el servicio se completa.
+            </p>
+            <dl class="detalle-pago">
+              <div><dt>Método</dt><dd id="metodoElegido">Tarjeta terminada en 0000</dd></div>
+              <div><dt>Monto a retener</dt><dd>$<span class="montoTexto"></span></dd></div>
+            </dl>
+            <button type="button" class="boton-primario" id="btnConfirmarPago">Confirmar y pagar</button>
+          </div>
+
+          <!-- estado: procesando -->
+          <div class="estado-bloque" id="estado-procesando" hidden>
+            <div class="cargando" role="status" aria-live="polite">
+              <span class="cargando-anillo" aria-hidden="true"></span>
+              <p>Procesando el pago con tu <span id="procesandoMetodo">tarjeta</span>…</p>
+            </div>
+          </div>
+
+          <!-- estado: retenido (escrow activo) -->
+          <div class="estado-bloque" id="estado-retenido" hidden>
+            <span class="insignia insignia-retenido">Pago retenido</span>
+            <p class="escrow-explicacion">
+              Tu pago de <strong>$<span class="montoTexto"></span></strong> quedó retenido de forma segura. Se liberará al prestador cuando el servicio se marque como completado.
+            </p>
+            <!-- Este botón simula lo que en producción dispara el prestador o el sistema al cerrar el servicio -->
+            <button type="button" class="boton-secundario" id="btnLiberarPago">Marcar servicio como completado (demo)</button>
+          </div>
+
+          <!-- estado: liberado -->
+          <div class="estado-bloque" id="estado-liberado" hidden>
+            <span class="insignia insignia-liberado">Pago liberado al prestador</span>
+            <p class="escrow-explicacion">El servicio se completó y el prestador ya recibió el pago.</p>
+            <button type="button" class="boton-primario" id="btnVerComprobante">Ver comprobante</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PASO 3: Comprobante -->
+      <section class="paso-contenido" id="panel-comprobante" hidden>
+        <div class="comprobante" id="comprobante">
+          <div class="comprobante-encabezado">
+            <p class="comprobante-marca">WoofPal</p>
+            <p class="comprobante-titulo">Comprobante de pago</p>
+          </div>
+          <dl class="comprobante-datos">
+            <div><dt>N.º de transacción</dt><dd id="compTransaccion">—</dd></div>
+            <div><dt>Fecha de pago</dt><dd id="compFecha">—</dd></div>
+            <div><dt>Servicio</dt><dd id="compServicio">—</dd></div>
+            <div><dt>Prestador</dt><dd id="compPrestador">—</dd></div>
+            <div><dt>Método</dt><dd id="compMetodo">—</dd></div>
+            <div><dt>Estado</dt><dd id="compEstado">—</dd></div>
+          </dl>
+          <div class="comprobante-total">
+            <span>Total pagado</span>
+            <span>$<span class="montoTexto"></span></span>
+          </div>
+        </div>
+
+        <div class="comprobante-acciones">
+          <button type="button" class="boton-secundario" id="btnImprimir">Imprimir</button>
+          <button type="button" class="boton-primario" id="btnDescargar">Descargar comprobante</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="pago.js"></script>
+</body>
+</html>
