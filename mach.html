@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscador de Prestadores Certificados</title>
+    <link rel="stylesheet" href="css.ml/mach.css" />
+  </head>
+  <body>
+    <main class="dashboard">
+      <!-- Encabezado del Buscador -->
+      <header class="search-header">
+        <h1>Búsqueda de Prestadores</h1>
+        <p>
+          Prestadores con experiencia certificada priorizados en los primeros
+          resultados.
+        </p>
+        <div class="search-bar">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Buscar por servicio (ej. Paseador, Veterinaria)..."
+          />
+          <button id="btn-search" class="btn btn-solid">Buscar</button>
+        </div>
+      </header>
+
+      <!-- Lista de Resultados (Escenario 1) -->
+      <section class="results-container">
+        <div class="results-header">
+          <h2>Resultados Encontrados</h2>
+          <span class="results-count" id="results-count"
+            >Mostrando prestadores</span
+          >
+        </div>
+
+        <div id="providers-list" class="providers-list">
+          <!-- Se puebla dinámicamente desde JS ordenando certificados primero -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal de Alerta para Sin Certificado (Escenario 2) -->
+    <div id="uncertified-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Sin Certificación Verificada</h2>
+          <button id="btn-close-modal" class="close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="alert-box">
+            <p class="alert-title">Advertencia de Seguridad</p>
+            <p class="alert-desc">
+              Este prestador no cuenta con certificado verificado en la
+              plataforma. Al no poseer acreditación, el cuidado de tu mascota
+              podría no contar con los mismos estándares de seguridad.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-cancel-reservation" class="btn btn-solid">
+              Ver Prestadores Certificados
+            </button>
+            <button id="btn-continue-reservation" class="btn btn-outline">
+              Continuar de todos modos
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="mach.js"></script>
+  </body>
+</html>

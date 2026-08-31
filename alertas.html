@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Alertas - Prestador</title>
+    <!-- BOOTSTRAP 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- CSS PERSONALIZADO -->
+    <link rel="stylesheet" href="css.ml/alertas.css" />
+  </head>
+  <body>
+    <header class="header-app text-white text-center py-3 sticky-top">
+      <h2 class="mb-0 fw-bold">PANEL DE ALERTAS Y DECISIÓN</h2>
+      <p class="mb-0 opacity-75">
+        Uso exclusivo para el prestador del servicio
+      </p>
+    </header>
+
+    <div class="container my-4">
+      <div class="row g-4">
+        <!-- ALERTA DEL DUEÑO -->
+        <div class="col-lg-6">
+          <div class="card card-custom card-alert-danger h-100">
+            <div class="card-header border-0 fw-bold">
+              Mensaje de Alerta del Dueño
+            </div>
+            <div class="card-body d-flex align-items-center">
+              <p id="mostrar-alerta" class="fs-5 fw-bold mb-0">
+                Cargando alertas...
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- DATOS CLÍNICOS -->
+        <div class="col-lg-6">
+          <div class="card card-custom h-100">
+            <div class="card-header header-teal text-white fw-bold">
+              📋 Ficha Clínica de la Mascota
+            </div>
+            <ul class="list-group list-group-flush" id="mostrar-datos">
+              <!-- Se llena con JS -->
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORMULARIO DE DECISIÓN -->
+      <div class="card card-custom mt-4">
+        <div class="card-header header-teal text-white fw-bold fs-5">
+          Decisión del Prestador
+        </div>
+        <div class="card-body p-4">
+          <form id="prestador-form">
+            <div class="mb-4">
+              <label class="form-label fw-bold d-block fs-5 label-custom"
+                >¿Aceptas tomar este servicio?</label
+              >
+
+              <div class="form-check form-check-inline mt-2">
+                <input
+                  class="form-check-input custom-radio"
+                  type="radio"
+                  name="decision"
+                  id="acepta-si"
+                  value="si"
+                  required
+                />
+                <label class="form-check-label fs-5" for="acepta-si"
+                  >✔️ Sí, acepto el servicio</label
+                >
+              </div>
+
+              <div class="form-check form-check-inline mt-2">
+                <input
+                  class="form-check-input custom-radio"
+                  type="radio"
+                  name="decision"
+                  id="acepta-no"
+                  value="no"
+                />
+                <label class="form-check-label fs-5" for="acepta-no"
+                  >❌ No, rechazo el servicio</label
+                >
+              </div>
+            </div>
+
+            <!-- CONTENEDOR OCULTO PARA EL MOTIVO -->
+            <div
+              id="motivo-rechazo-container"
+              class="mb-4"
+              style="display: none"
+            >
+              <label for="motivo-rechazo" class="form-label fw-bold text-danger"
+                >Motivo del rechazo (Opcional):</label
+              >
+              <textarea
+                class="form-control input-danger"
+                id="motivo-rechazo"
+                rows="2"
+                placeholder="Si lo deseas, explica brevemente por qué no puedes tomar este servicio..."
+              ></textarea>
+            </div>
+
+            <div class="form-check mb-4">
+              <input
+                class="form-check-input custom-checkbox"
+                type="checkbox"
+                id="checkSeguridad"
+                required
+              />
+              <label
+                class="form-check-label fw-bold label-custom"
+                for="checkSeguridad"
+              >
+                Confirmo que he leído la ficha clínica y las alertas
+                correspondientes antes de tomar esta decisión.
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-teal w-100 py-3 fw-bold fs-5 transition-btn"
+              id="btn-submit"
+            >
+              Confirmar Decisión
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="alertas.js"></script>
+  </body>
+</html>
