@@ -1,0 +1,198 @@
+/* ============================================
+   WoofPal — Variables y extensiones de Bootstrap
+   ============================================ */
+
+:root {
+  --bs-turquesa: #1f7a74;
+  --bs-turquesa-soft: #e4f3f1;
+  --bs-crema: #fbf6ec;
+  --bs-coral: #ff6f52;
+  --bs-coral-hover: #e85f44;
+  --bs-linea: #dcd5c4;
+  --bs-linea-subtle: #ece6d8;
+  --bs-tinta: #223333;
+  --bs-tinta-suave: #5b6b6a;
+
+  --fuente-display: "Fraunces", serif;
+  --fuente-texto: "Inter", sans-serif;
+}
+
+body {
+  background-color: var(--bs-crema);
+  color: var(--bs-tinta);
+  font-family: var(--fuente-texto);
+}
+
+.display-title {
+  font-family: var(--fuente-display);
+}
+
+.text-brand {
+  color: var(--bs-turquesa) !important;
+}
+.text-accent {
+  color: var(--bs-coral) !important;
+}
+.bg-brand {
+  background-color: var(--bs-turquesa) !important;
+}
+.bg-brand-soft {
+  background-color: var(--bs-turquesa-soft) !important;
+}
+.border-line {
+  border-color: var(--bs-linea) !important;
+}
+.border-line-subtle {
+  border-color: var(--bs-linea-subtle) !important;
+}
+
+.pago-wrap {
+  max-width: 820px;
+}
+
+.min-panel-height {
+  min-height: 380px;
+}
+
+/* ---------- Botones temáticos ---------- */
+.btn-accent {
+  background-color: var(--bs-coral);
+  color: #fff;
+  border: none;
+}
+.btn-accent:hover,
+.btn-accent:focus {
+  background-color: var(--bs-coral-hover);
+  color: #fff;
+}
+
+.btn-brand-soft {
+  background-color: var(--bs-turquesa-soft);
+  border: none;
+}
+.btn-brand-soft:hover {
+  background-color: #d4ece9;
+}
+
+/* ---------- Stepper lateral / superior ---------- */
+.resumen-avatar-wrap {
+  width: 46px;
+  height: 46px;
+}
+
+.pasos-lista::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: var(--bs-linea);
+}
+
+.paso {
+  position: relative;
+  padding-left: 2rem;
+  padding-bottom: 1.75rem;
+}
+
+.paso:last-child {
+  padding-bottom: 0;
+}
+
+.paso-marca {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bs-crema);
+  border: 2px solid var(--bs-linea);
+  z-index: 1;
+}
+
+.paso.activo .paso-marca {
+  border-color: var(--bs-coral);
+  background: var(--bs-coral);
+}
+
+.paso.hecho .paso-marca {
+  border-color: var(--bs-turquesa);
+  background: var(--bs-turquesa);
+}
+
+.paso.activo .paso-titulo {
+  color: var(--bs-tinta);
+}
+.paso.hecho .paso-titulo {
+  color: var(--bs-turquesa);
+}
+
+/* ---------- Segmented Control ---------- */
+.segmento.activo {
+  background-color: var(--bs-turquesa) !important;
+  color: #fff !important;
+}
+
+/* ---------- Billetera ---------- */
+.badge-billetera {
+  width: 42px;
+  height: 42px;
+}
+
+/* ---------- Comprobante Ticket ---------- */
+.comprobante-ticket {
+  max-width: 440px;
+  background-color: var(--bs-crema);
+  border: 1px dashed var(--bs-linea);
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+/* ---------- Responsive Stepper (Mobile) ---------- */
+@media (max-width: 767.98px) {
+  .pasos-lista::before {
+    left: 0;
+    right: 0;
+    top: 7px;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+  }
+
+  .paso {
+    padding-left: 0;
+    padding-top: 1.6rem;
+    padding-bottom: 0;
+    flex: 1;
+    text-align: center;
+  }
+
+  .paso-marca {
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- Impresión ---------- */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #comprobante,
+  #comprobante * {
+    visibility: visible;
+  }
+  #comprobante {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none !important;
+  }
+}
