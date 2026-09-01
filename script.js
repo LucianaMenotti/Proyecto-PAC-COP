@@ -39,26 +39,10 @@ function money(n){
   return "$" + Math.round(n).toLocaleString("es-AR");
 }
 
-// ---------- Tabs ----------
-const tabs = document.querySelectorAll(".tab");
-const panels = document.querySelectorAll(".panel");
-
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
-    panels.forEach(p => { p.classList.remove("is-active"); p.hidden = true; });
-
-    tab.classList.add("is-active");
-    tab.setAttribute("aria-selected", "true");
-    const target = document.getElementById(tab.dataset.target);
-    target.classList.add("is-active");
-    target.hidden = false;
-
-    // El mapa de Leaflet necesita el contenedor visible para calcular su tamaño,
-    // así que lo iniciamos (o le recalculamos el tamaño) recién al abrir esta pestaña.
-    if (target.id === "panel-ruta") initRouteMap();
-  });
-});
+// ---------- Tabs (manejadas por Bootstrap; solo enganchamos el mapa) ----------
+// El mapa de Leaflet necesita el contenedor visible para calcular su tamaño,
+// así que lo iniciamos (o le recalculamos el tamaño) recién al abrir esta pestaña.
+document.getElementById("tab-ruta").addEventListener("shown.bs.tab", initRouteMap);
 
 // ---------- Panel 1: tabla de pisos por nivel (unidad de referencia) ----------
 const floorTableBody = document.querySelector("#floorTable tbody");
@@ -78,10 +62,10 @@ function renderFloorTable(){
   getFloorRows().forEach(({ label, base }) => {
     const row = document.createElement("tr");
     const cells = ["nuevo", "establecido", "top"].map(level => {
-      if (base === null) return `<td class="floor-table__variable">A convenir</td>`;
+      if (base === null) return `<td class="text-secondary fst-italic">A convenir</td>`;
       const value = base * LEVEL_FLOOR_MULT[level];
       const isCurrent = level === currentLevel;
-      return `<td class="${isCurrent ? "is-top" : ""}">${money(value)}</td>`;
+      return `<td class="${isCurrent ? "table-primary fw-bold" : ""}">${money(value)}</td>`;
     }).join("");
     row.innerHTML = `<th scope="row">${label}</th>${cells}`;
     floorTableBody.appendChild(row);
@@ -96,6 +80,7 @@ renderFloorTable();
 // nivel, se muestra una advertencia informativa, pero el botón sigue activo.
 const servicePickerEl = document.getElementById("servicePicker");
 const serviceCardsEl = document.getElementById("serviceCards");
+const serviceCardsEmptyEl = document.getElementById("serviceCardsEmpty");
 const publishBtn = document.getElementById("publishBtn");
 const publishForm = document.getElementById("publishForm");
 
@@ -105,19 +90,19 @@ let publishedServices = [
   { service: "paseo", price: 4500, duracion: 30, mascotas: 1 },
 ];
 
-// Construye los checkboxes a partir de SERVICES, para no repetir la lista a mano
+// Construye los chips (checkbox con look de botón, patrón btn-check de
+// Bootstrap) a partir de SERVICES, para no repetir la lista a mano
 Object.entries(SERVICES).forEach(([key, service]) => {
-  const option = document.createElement("label");
-  option.className = "service-picker__option";
-  option.innerHTML = `
-    <input type="checkbox" class="service-picker__checkbox" value="${key}">
-    <span>${service.label}</span>
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <input type="checkbox" class="btn-check js-service-checkbox" id="chip-${key}" value="${key}" autocomplete="off">
+    <label class="btn btn-outline-primary rounded-pill" for="chip-${key}">${service.label}</label>
   `;
-  servicePickerEl.appendChild(option);
+  servicePickerEl.append(...wrap.children);
 });
 
 servicePickerEl.addEventListener("change", (e) => {
-  if (!e.target.matches(".service-picker__checkbox")) return;
+  if (!e.target.matches(".js-service-checkbox")) return;
   if (e.target.checked) addServiceCard(e.target.value);
   else removeServiceCard(e.target.value);
   updatePublishBtnState();
@@ -126,6 +111,7 @@ servicePickerEl.addEventListener("change", (e) => {
 function updatePublishBtnState(){
   const anyChecked = serviceCardsEl.children.length > 0;
   publishBtn.disabled = !anyChecked;
+  serviceCardsEmptyEl.classList.toggle("d-none", anyChecked);
 }
 
 // Crea la tarjeta de un servicio tildado, con los campos que le correspondan
@@ -134,15 +120,13 @@ function updatePublishBtnState(){
 function addServiceCard(key){
   const service = SERVICES[key];
   const card = document.createElement("div");
-  card.className = "service-card";
+  card.className = "card p-3";
   card.dataset.service = key;
 
   if (service.variablePricing){
     card.innerHTML = `
-      <div class="service-card__head">
-        <p class="service-card__title">${service.label}</p>
-      </div>
-      <p class="service-card__note">
+      <p class="fw-bold fw-display mb-2">${service.label}</p>
+      <p class="text-secondary small mb-0">
         Vas a ofrecer este servicio, pero no tiene un precio publicado: como
         depende de la distancia y el destino, el costo se coordina
         directamente con cada familia al momento de la reserva.
@@ -155,50 +139,50 @@ function addServiceCard(key){
   let fieldsHtml = "";
   if (service.unit){
     fieldsHtml += `
-      <div class="field">
-        <label for="duracion-${key}">Duración estimada (${service.unit})</label>
-        <input type="number" id="duracion-${key}" class="js-duracion"
+      <div class="col">
+        <label for="duracion-${key}" class="form-label small text-secondary">Duración estimada (${service.unit})</label>
+        <input type="number" id="duracion-${key}" class="form-control js-duracion"
           min="${service.unit === "minutos" ? 10 : 1}" step="1"
           value="${service.defaultDuration ?? service.unitRef}">
       </div>`;
   }
   if (service.allowsPets){
     fieldsHtml += `
-      <div class="field">
-        <label for="mascotas-${key}">Cantidad de mascotas (hasta ${service.maxPets}, si son dóciles)</label>
-        <input type="number" id="mascotas-${key}" class="js-mascotas"
+      <div class="col">
+        <label for="mascotas-${key}" class="form-label small text-secondary">Cantidad de mascotas (hasta ${service.maxPets}, si son dóciles)</label>
+        <input type="number" id="mascotas-${key}" class="form-control js-mascotas"
           min="1" max="${service.maxPets}" step="1" value="1">
       </div>`;
   }
   fieldsHtml += `
-    <div class="field">
-      <label for="precio-${key}">Tu precio</label>
-      <div class="price-input">
-        <span>$</span>
-        <input type="number" id="precio-${key}" class="js-precio" step="100">
+    <div class="col">
+      <label for="precio-${key}" class="form-label small text-secondary">Tu precio</label>
+      <div class="input-group">
+        <span class="input-group-text">$</span>
+        <input type="number" id="precio-${key}" class="form-control js-precio" step="100">
       </div>
     </div>`;
 
   card.innerHTML = `
-    <div class="service-card__head">
-      <p class="service-card__title">${service.label}</p>
-      <button type="button" class="service-card__suggest">Usar precio sugerido</button>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <p class="fw-bold fw-display mb-0">${service.label}</p>
+      <button type="button" class="btn btn-sm btn-light text-primary service-card__suggest">Usar precio sugerido</button>
     </div>
-    <div class="service-card__fields">${fieldsHtml}</div>
-    <div class="service-card__range">
-      <div class="range-bar__track">
-        <div class="range-bar__fill"></div>
-        <div class="range-bar__marker range-bar__marker--min"><span>Mínimo</span></div>
-        <div class="range-bar__marker range-bar__marker--avg"><span>Promedio zona</span></div>
-        <div class="range-bar__marker range-bar__marker--max"><span>Máximo visto</span></div>
+    <div class="row g-3 mb-3">${fieldsHtml}</div>
+    <div class="rounded-3 p-3 mb-3" style="background: var(--brand-mint)">
+      <div class="range-track">
+        <div class="progress" style="height: 10px"><div class="progress-bar" style="width: 100%"></div></div>
+        <div class="range-marker range-marker--min"><span>Mínimo</span></div>
+        <div class="range-marker range-marker--avg"><span>Promedio zona</span></div>
+        <div class="range-marker range-marker--max"><span>Máximo visto</span></div>
       </div>
-      <dl class="range-card__values"></dl>
+      <div class="row row-cols-3 text-center g-2 mb-0 range-values"></div>
     </div>
-    <p class="service-card__warning" hidden>
+    <div class="alert alert-warning py-2 px-3 small mb-0 d-none service-card__warning" role="alert">
       Este precio está por debajo del promedio sugerido para tu nivel. Podés
       publicarlo igual — no es obligatorio igualar el promedio — pero tené en
       cuenta que puede afectar cómo te perciben las familias.
-    </p>
+    </div>
   `;
   serviceCardsEl.appendChild(card);
 
@@ -222,7 +206,7 @@ function addServiceCard(key){
 }
 
 function removeServiceCard(key){
-  const card = serviceCardsEl.querySelector(`.service-card[data-service="${key}"]`);
+  const card = serviceCardsEl.querySelector(`.card[data-service="${key}"]`);
   if (card) card.remove();
 }
 
@@ -259,14 +243,13 @@ function renderCardRange(key, card){
   const span = max - min || 1;
   const avgPos = ((avg - min) / span) * 100;
 
-  card.querySelector(".range-bar__marker--min").style.left = "0%";
-  card.querySelector(".range-bar__marker--avg").style.left = avgPos + "%";
-  card.querySelector(".range-bar__marker--max").style.left = "100%";
-  card.querySelector(".range-bar__fill").style.width = "100%";
-  card.querySelector(".range-card__values").innerHTML = `
-    <div><dt>Mínimo</dt><dd>${money(min)}</dd></div>
-    <div><dt>Promedio zona</dt><dd>${money(avg)}</dd></div>
-    <div><dt>Máximo visto</dt><dd>${money(max)}</dd></div>
+  card.querySelector(".range-marker--min").style.left = "0%";
+  card.querySelector(".range-marker--avg").style.left = avgPos + "%";
+  card.querySelector(".range-marker--max").style.left = "100%";
+  card.querySelector(".range-values").innerHTML = `
+    <div class="col"><p class="small text-secondary mb-0">Mínimo</p><p class="fw-bold fw-display mb-0">${money(min)}</p></div>
+    <div class="col"><p class="small text-secondary mb-0">Promedio zona</p><p class="fw-bold fw-display mb-0">${money(avg)}</p></div>
+    <div class="col"><p class="small text-secondary mb-0">Máximo visto</p><p class="fw-bold fw-display mb-0">${money(max)}</p></div>
   `;
 
   updateCardWarning(key, card);
@@ -280,13 +263,13 @@ function updateCardWarning(key, card){
   const warning = card.querySelector(".service-card__warning");
   const value = Number(precioInput.value);
   const belowMin = precioInput.value !== "" && value < min;
-  warning.hidden = !belowMin;
-  precioInput.style.borderColor = belowMin ? "var(--amber)" : "var(--line)";
+  warning.classList.toggle("d-none", !belowMin);
+  precioInput.classList.toggle("border-warning", belowMin);
 }
 
 publishForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  const cards = serviceCardsEl.querySelectorAll(".service-card");
+  const cards = serviceCardsEl.querySelectorAll(".card");
   if (!cards.length) return;
 
   cards.forEach(card => {
@@ -327,7 +310,7 @@ function renderProfileServices(){
 
   if (!publishedServices.length){
     profileServicesEl.innerHTML = `
-      <p class="profile-services__empty">Todavía no publicaste ningún servicio.</p>
+      <p class="col-12 text-secondary small mb-0">Todavía no publicaste ningún servicio.</p>
     `;
     return;
   }
@@ -341,12 +324,14 @@ function renderProfileServices(){
     // cálculo de mínimo ni advertencia de precio bajo.
     if (service.variablePricing){
       return `
-        <div class="profile-service-card">
-          <div class="profile-service-card__head">
-            <p class="profile-service-card__title">${service.label}</p>
-            <button type="button" class="profile-service-card__delete" data-service="${entry.service}" aria-label="Eliminar ${service.label}">✕</button>
+        <div class="col">
+          <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+              <p class="fw-bold mb-0">${service.label}</p>
+              <button type="button" class="btn btn-sm btn-light rounded-circle profile-service-card__delete" data-service="${entry.service}" aria-label="Eliminar ${service.label}" style="width: 26px; height: 26px; padding: 0">✕</button>
+            </div>
+            <p class="fw-semibold text-secondary mb-0">A coordinar según distancia</p>
           </div>
-          <p class="profile-service-card__price profile-service-card__price--variable">A coordinar según distancia</p>
         </div>
       `;
     }
@@ -367,14 +352,16 @@ function renderProfileServices(){
     if (entry.mascotas) detailBits.push(`${entry.mascotas} mascota${entry.mascotas > 1 ? "s" : ""}`);
 
     return `
-      <div class="profile-service-card${belowMin ? " is-below" : ""}">
-        <div class="profile-service-card__head">
-          <p class="profile-service-card__title">${service.label}</p>
-          <button type="button" class="profile-service-card__delete" data-service="${entry.service}" aria-label="Eliminar ${service.label}">✕</button>
+      <div class="col">
+        <div class="card p-3${belowMin ? " border-warning" : ""}">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <p class="fw-bold mb-0">${service.label}</p>
+            <button type="button" class="btn btn-sm btn-light rounded-circle profile-service-card__delete" data-service="${entry.service}" aria-label="Eliminar ${service.label}" style="width: 26px; height: 26px; padding: 0">✕</button>
+          </div>
+          ${detailBits.length ? `<p class="small text-secondary mb-1">${detailBits.join(" · ")}</p>` : ""}
+          <p class="fw-display fs-4 fw-bold ${belowMin ? "text-warning" : "text-primary"} mb-0">${money(entry.price)}</p>
+          ${belowMin ? `<p class="small text-warning fw-semibold mb-0">Por debajo del promedio sugerido</p>` : ""}
         </div>
-        ${detailBits.length ? `<p class="profile-service-card__detail">${detailBits.join(" · ")}</p>` : ""}
-        <p class="profile-service-card__price">${money(entry.price)}</p>
-        ${belowMin ? `<p class="profile-service-card__note">Por debajo del promedio sugerido</p>` : ""}
       </div>
     `;
   }).join("");
@@ -392,7 +379,7 @@ profileServicesEl.addEventListener("click", (e) => {
 
   // Si ese servicio seguía tildado en el formulario de publicación,
   // lo destildamos y sacamos su tarjeta para que quede todo consistente.
-  const checkbox = servicePickerEl.querySelector(`.service-picker__checkbox[value="${key}"]`);
+  const checkbox = servicePickerEl.querySelector(`.js-service-checkbox[value="${key}"]`);
   if (checkbox && checkbox.checked){
     checkbox.checked = false;
     removeServiceCard(key);
@@ -447,13 +434,13 @@ function initRouteMap(){
     fitSelectedRoutes: true,
     show: false, // oculta el panel de instrucciones paso a paso, nos quedamos con el dibujo del mapa
     lineOptions: {
-      styles: [{ color: "#5EB5AE", weight: 5, opacity: 0.9 }], // var(--turquoise)
+      styles: [{ color: "#5EB5AE", weight: 5, opacity: 0.9 }], // var(--bs-primary)
     },
     createMarker: function (i, waypoint) {
       if (i === 0){
         const icon = L.divIcon({
           className: "",
-          html: `<div class="route-pin route-pin--base">●</div>`,
+          html: `<div class="route-pin rounded-circle text-bg-warning d-flex align-items-center justify-content-center" style="width: 22px; height: 22px; font-size: .6rem">●</div>`,
           iconSize: [22, 22],
           iconAnchor: [11, 11],
         });
@@ -462,7 +449,7 @@ function initRouteMap(){
       const stop = ROUTE_STOPS[i - 1];
       const icon = L.divIcon({
         className: "",
-        html: `<div class="route-pin${stop.alert ? " route-pin--alert" : ""}">${stop.order}</div>`,
+        html: `<div class="route-pin rounded-circle text-bg-${stop.alert ? "danger" : "primary"} fw-bold d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: .8rem">${stop.order}</div>`,
         iconSize: [26, 26],
         iconAnchor: [13, 13],
       });
@@ -521,7 +508,7 @@ function renderTransportJobCard(job){
   const reasonLabel = TRANSPORT_REASON_LABELS[job.reason] || "Otro";
 
   const appointmentHtml = job.partnered && job.appointmentTime
-    ? `<p class="transport-job__appointment">Destino con convenio · turno reservado: <strong>${job.appointmentTime}</strong></p>`
+    ? `<p class="small mb-2">Destino con convenio · turno reservado: <strong>${job.appointmentTime}</strong></p>`
     : "";
 
   let roundTripHtml = "";
@@ -533,8 +520,8 @@ function renderTransportJobCard(job){
       ? "Vos hacés los dos tramos"
       : "El tramo de vuelta lo hace otro prestador";
     roundTripHtml = `
-      <div class="transport-job__roundtrip">
-        <span class="transport-job__roundtrip-tag">Ida y vuelta</span>
+      <div class="d-flex flex-wrap gap-3 small text-secondary border-dashed border-top border-bottom py-2 mb-2">
+        <span class="fw-bold text-danger">Ida y vuelta</span>
         <span>${returnText}</span>
         <span>${providerText}</span>
         <span>Cobro único por el traslado completo</span>
@@ -546,79 +533,78 @@ function renderTransportJobCard(job){
 
   if (job.stage === "pendiente"){
     statusHtml = `
-      <p class="transport-job__status">
+      <p class="small text-secondary mb-2">
         Pendiente de confirmar recepción — todavía no salgas hacia destino.
       </p>`;
     actionHtml = `
-      <button type="button" class="btn btn--primary btn--sm js-transport-action" data-job="${job.id}" data-action="recibir">
+      <button type="button" class="btn btn-primary btn-sm js-transport-action" data-job="${job.id}" data-action="recibir">
         Confirmar recepción de ${job.pet}
       </button>`;
   } else if (job.stage === "en_camino"){
     statusHtml = `
-      <p class="transport-job__status transport-job__status--active">
+      <p class="small text-primary fw-semibold mb-2">
         En camino a destino. El dueño ya puede ver tu ubicación en vivo
         (mismo mapa que usás en los paseos).
       </p>`;
     actionHtml = `
-      <button type="button" class="btn btn--primary btn--sm js-transport-action" data-job="${job.id}" data-action="entregar">
+      <button type="button" class="btn btn-primary btn-sm js-transport-action" data-job="${job.id}" data-action="entregar">
         Notificar llegada a destino
       </button>`;
   } else if (job.stage === "entregada"){
     statusHtml = `
-      <p class="transport-job__status transport-job__status--done">
+      <p class="small text-primary fw-bold mb-2">
         Entregada en destino — se notificó al dueño.
       </p>`;
     if (job.roundTrip.enabled && !job.roundTrip.returnTime){
       actionHtml = `
-        <div class="transport-job__return-form">
-          <label for="return-${job.id}">Confirmar hora de vuelta</label>
-          <div class="transport-job__return-inputs">
-            <input type="time" id="return-${job.id}" class="js-return-time">
-            <button type="button" class="btn btn--ghost btn--sm js-confirm-return" data-job="${job.id}">
-              Confirmar
-            </button>
+        <div class="d-flex flex-wrap gap-2 align-items-end">
+          <div>
+            <label for="return-${job.id}" class="form-label small text-secondary mb-1">Confirmar hora de vuelta</label>
+            <input type="time" id="return-${job.id}" class="form-control form-control-sm js-return-time">
           </div>
-          <p class="transport-job__return-hint">
-            Si todavía no sabés la hora (por ejemplo, depende de cuánto dure
-            el turno), podés dejarlo así y confirmarlo más tarde.
-          </p>
-        </div>`;
+          <button type="button" class="btn btn-outline-secondary btn-sm js-confirm-return" data-job="${job.id}">
+            Confirmar
+          </button>
+        </div>
+        <p class="small text-secondary mt-1 mb-0">
+          Si todavía no sabés la hora (por ejemplo, depende de cuánto dure
+          el turno), podés dejarlo así y confirmarlo más tarde.
+        </p>`;
     } else if (job.roundTrip.enabled){
       actionHtml = `
-        <p class="transport-job__return-note">
+        <p class="small text-primary fw-semibold mb-0">
           Vuelta programada para las <strong>${job.roundTrip.returnTime}</strong>.
         </p>`;
     }
   }
 
   return `
-    <article class="transport-job" data-job="${job.id}">
-      <div class="transport-job__head">
-        <p class="transport-job__pet">${job.pet}</p>
-        <span class="transport-job__reason">${reasonLabel}</span>
+    <div class="card p-3" data-job="${job.id}">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <p class="fw-bold fw-display mb-0">${job.pet}</p>
+        <span class="badge rounded-pill text-bg-primary">${reasonLabel}</span>
       </div>
 
-      <div class="transport-job__route">
-        <div class="transport-job__point">
-          <span class="transport-job__point-label">Origen</span>
+      <div class="route-line rounded-3 p-3 d-flex flex-wrap gap-3 align-items-center mb-2">
+        <div>
+          <span class="d-block text-uppercase text-primary fw-bold" style="font-size: .72rem">Origen</span>
           <span>${job.origin}</span>
         </div>
-        <span class="transport-job__arrow" aria-hidden="true">→</span>
-        <div class="transport-job__point">
-          <span class="transport-job__point-label">Destino</span>
+        <span class="text-primary fw-bold" aria-hidden="true">→</span>
+        <div>
+          <span class="d-block text-uppercase text-primary fw-bold" style="font-size: .72rem">Destino</span>
           <span>${job.destination}</span>
         </div>
       </div>
 
-      <p class="transport-job__meta">
-        Recogida ${job.scheduledPickup} · Tiempo estimado de traslado:
-        ${job.etaMinutes} min
+      <p class="small text-secondary mb-2">
+        Recogida ${job.scheduledPickup} · Tiempo estimado de traslado: ${job.etaMinutes} min
       </p>
       ${appointmentHtml}
       ${roundTripHtml}
       ${statusHtml}
       ${actionHtml}
-    </article>
+    </div>
   `;
 }
 
