@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../css/fichaSalud.css" />
   </head>
   <body>
+    <!-- FORMULARIO PRINCIPAL -->
     <div id="vista-dueno" class="dashboard-form">
       <header class="form-header">
         <h1>Ficha de Salud</h1>
@@ -18,7 +19,7 @@
           <legend>Datos Obligatorios</legend>
 
           <div class="form-group">
-            <label for="raza">Raza:</label>
+            <label for="raza">Nombre:</label>
             <input type="text" id="raza" name="raza" required />
           </div>
 
@@ -45,43 +46,69 @@
               <option value="Incompleto">Incompleto</option>
               <option value="No vacunado">No vacunado</option>
             </select>
+            <textarea
+              name="vacunacion-detalle"
+              style="margin-top: 10px"
+              placeholder="En caso de vacunacion faltante, indique cual."
+            ></textarea>
           </div>
 
           <div class="form-group">
-            <label for="reactividad">Reactividad:</label>
+            <label for="reactividad">Comportamiento:</label>
             <select id="reactividad" name="reactividad" required>
               <option value="">Seleccione...</option>
               <option value="Tranquilo">Tranquilo</option>
-              <option value="Reactivo a otros perros">
-                Reactivo a otros perros
-              </option>
+              <option value="Reactivo a otros perros">Reactivo</option>
               <option value="Miedoso / Asustadizo">Miedoso / Asustadizo</option>
             </select>
           </div>
         </fieldset>
 
         <fieldset class="alert-fieldset">
-          <legend>Alertas para el Prestador</legend>
+          <legend>Indicaciones para el Prestador</legend>
           <div class="form-group">
             <label for="alerta-general">
-              ¿Hay alguna alerta o indicación importante que el prestador deba
-              saber?
+              ¿Hay alguna indicación importante que el prestador deba saber?
+              (Opcional)
             </label>
             <textarea
               id="alerta-general"
               name="alerta-general"
               placeholder="Ej: Toma medicación a las 18hs, muerde si se asusta, alergia al pollo..."
-              required
             ></textarea>
           </div>
         </fieldset>
 
-        <button type="submit" class="btn-submit">
-          Guardar Ficha y Solicitar Servicio
+        <button type="submit" id="btn-submit-form" class="btn-submit">
+          Guardar Ficha
         </button>
       </form>
+    </div>
+
+    <!-- PANTALLA DE RESUMEN -->
+    <div id="resumen-pantalla" class="hidden">
+      <header class="form-header">
+        <h1 id="titulo-resumen">Ficha de Salud</h1>
+        <p id="subtitulo-resumen">Revisa que todo esté correcto.</p>
+      </header>
+
+      <div id="resumen-contenido">
+        <!-- Los datos se inyectarán aquí mediante JS -->
+      </div>
+
+      <!-- Botones de acción: Editar oculto por defecto -->
+      <div class="botones-acciones">
+        <button id="btn-finalizar" class="btn-submit">
+          Aceptar y Finalizar
+        </button>
+        <button id="btn-editar" class="btn-secondary hidden">
+          Editar Ficha
+        </button>
+      </div>
     </div>
 
     <script src="../js/fichaSalud.js"></script>
   </body>
 </html>
+
+
