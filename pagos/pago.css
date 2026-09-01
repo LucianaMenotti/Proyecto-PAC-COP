@@ -1,149 +1,93 @@
 /* ============================================
-   WoofPal — Pago del servicio
-   Paleta: turquesa (marca), crema (fondo), coral (acento)
+   WoofPal — Variables y extensiones de Bootstrap
    ============================================ */
 
 :root {
-  --turquesa: #1F7A74;
-  --turquesa-suave: #E4F3F1;
-  --crema: #FBF6EC;
-  --coral: #FF6F52;
-  --coral-suave: #FFE9E2;
-  --tinta: #223333;
-  --tinta-suave: #5B6B6A;
-  --linea: #DCD5C4;
-  --blanco: #FFFFFF;
-  --ambar: #B8862E;
-  --ambar-suave: #FBF0DD;
+  --bs-turquesa: #1f7a74;
+  --bs-turquesa-soft: #e4f3f1;
+  --bs-crema: #fbf6ec;
+  --bs-coral: #ff6f52;
+  --bs-coral-hover: #e85f44;
+  --bs-linea: #dcd5c4;
+  --bs-linea-subtle: #ece6d8;
+  --bs-tinta: #223333;
+  --bs-tinta-suave: #5b6b6a;
 
-  --fuente-display: 'Fraunces', serif;
-  --fuente-texto: 'Inter', sans-serif;
+  --fuente-display: "Fraunces", serif;
+  --fuente-texto: "Inter", sans-serif;
 }
 
-* { box-sizing: border-box; }
-
 body {
-  margin: 0;
-  background: var(--crema);
-  color: var(--tinta);
+  background-color: var(--bs-crema);
+  color: var(--bs-tinta);
   font-family: var(--fuente-texto);
-  line-height: 1.5;
+}
+
+.display-title {
+  font-family: var(--fuente-display);
+}
+
+.text-brand {
+  color: var(--bs-turquesa) !important;
+}
+.text-accent {
+  color: var(--bs-coral) !important;
+}
+.bg-brand {
+  background-color: var(--bs-turquesa) !important;
+}
+.bg-brand-soft {
+  background-color: var(--bs-turquesa-soft) !important;
+}
+.border-line {
+  border-color: var(--bs-linea) !important;
+}
+.border-line-subtle {
+  border-color: var(--bs-linea-subtle) !important;
 }
 
 .pago-wrap {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 2.5rem 1.25rem 4rem;
+  max-width: 820px;
 }
 
-/* ---------- Encabezado ---------- */
-
-.pago-header {
-  margin-bottom: 1.75rem;
+.min-panel-height {
+  min-height: 380px;
 }
 
-.pago-eyebrow {
-  margin: 0 0 0.35rem;
-  font-size: 0.85rem;
-  color: var(--tinta-suave);
+/* ---------- Botones temáticos ---------- */
+.btn-accent {
+  background-color: var(--bs-coral);
+  color: #fff;
+  border: none;
+}
+.btn-accent:hover,
+.btn-accent:focus {
+  background-color: var(--bs-coral-hover);
+  color: #fff;
 }
 
-.pago-header h1 {
-  margin: 0;
-  font-family: var(--fuente-display);
-  font-weight: 600;
-  font-size: 2rem;
-  color: var(--turquesa);
+.btn-brand-soft {
+  background-color: var(--bs-turquesa-soft);
+  border: none;
+}
+.btn-brand-soft:hover {
+  background-color: #d4ece9;
 }
 
-/* ---------- Resumen de la reserva ---------- */
-
-.resumen {
-  background: var(--blanco);
-  border: 1px solid var(--linea);
-  border-radius: 14px;
-  padding: 1.25rem 1.4rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem 1.5rem;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+/* ---------- Stepper lateral / superior ---------- */
+.resumen-avatar-wrap {
+  width: 46px;
+  height: 46px;
 }
 
-.resumen-prestador {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.resumen-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--turquesa-suave);
-  object-fit: cover;
-}
-
-.resumen-nombre {
-  margin: 0;
-  font-weight: 600;
-}
-
-.resumen-servicio {
-  margin: 0.1rem 0 0;
-  color: var(--tinta-suave);
-  font-size: 0.9rem;
-}
-
-.resumen-datos {
-  display: flex;
-  gap: 1.75rem;
-  margin: 0;
-}
-
-.resumen-datos dt {
-  font-size: 0.75rem;
-  color: var(--tinta-suave);
-  margin-bottom: 0.15rem;
-}
-
-.resumen-datos dd {
-  margin: 0;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.resumen-monto dd {
-  color: var(--coral);
-  font-family: var(--fuente-display);
-  font-size: 1.15rem;
-}
-
-/* ---------- Layout del flujo: rastreador + panel ---------- */
-
-.flujo {
-  display: grid;
-  grid-template-columns: 210px 1fr;
-  gap: 2rem;
-  align-items: start;
-}
-
-.pasos ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  position: relative;
-}
-
-.pasos ol::before {
+.pasos-lista::before {
   content: "";
   position: absolute;
   left: 7px;
   top: 10px;
   bottom: 10px;
   width: 2px;
-  background: var(--linea);
+  background: var(--bs-linea);
 }
 
 .paso {
@@ -152,7 +96,9 @@ body {
   padding-bottom: 1.75rem;
 }
 
-.paso:last-child { padding-bottom: 0; }
+.paso:last-child {
+  padding-bottom: 0;
+}
 
 .paso-marca {
   position: absolute;
@@ -161,348 +107,54 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--crema);
-  border: 2px solid var(--linea);
+  background: var(--bs-crema);
+  border: 2px solid var(--bs-linea);
   z-index: 1;
 }
 
 .paso.activo .paso-marca {
-  border-color: var(--coral);
-  background: var(--coral);
+  border-color: var(--bs-coral);
+  background: var(--bs-coral);
 }
 
 .paso.hecho .paso-marca {
-  border-color: var(--turquesa);
-  background: var(--turquesa);
+  border-color: var(--bs-turquesa);
+  background: var(--bs-turquesa);
 }
 
-.paso-titulo {
-  margin: 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--tinta-suave);
+.paso.activo .paso-titulo {
+  color: var(--bs-tinta);
+}
+.paso.hecho .paso-titulo {
+  color: var(--bs-turquesa);
 }
 
-.paso.activo .paso-titulo { color: var(--tinta); }
-.paso.hecho .paso-titulo { color: var(--turquesa); }
-
-.paso-desc {
-  margin: 0.15rem 0 0;
-  font-size: 0.8rem;
-  color: var(--tinta-suave);
-}
-
-.panel {
-  background: var(--blanco);
-  border: 1px solid var(--linea);
-  border-radius: 14px;
-  padding: 1.75rem;
-  min-height: 320px;
-}
-
-/* ---------- Selector de método (segmentado) ---------- */
-
-.segmentado {
-  display: inline-flex;
-  background: var(--turquesa-suave);
-  border-radius: 999px;
-  padding: 4px;
-  margin-bottom: 1.5rem;
-}
-
-.segmento {
-  border: none;
-  background: transparent;
-  padding: 0.5rem 1.1rem;
-  border-radius: 999px;
-  font-family: var(--fuente-texto);
-  font-weight: 600;
-  font-size: 0.88rem;
-  color: var(--turquesa);
-  cursor: pointer;
-}
-
+/* ---------- Segmented Control ---------- */
 .segmento.activo {
-  background: var(--turquesa);
-  color: var(--blanco);
+  background-color: var(--bs-turquesa) !important;
+  color: #fff !important;
 }
 
-/* ---------- Formulario de tarjeta ---------- */
-
-.form-tarjeta { display: grid; gap: 1rem; }
-
-.campo {
-  display: grid;
-  gap: 0.35rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--tinta-suave);
-}
-
-.campo input {
-  font-family: var(--fuente-texto);
-  font-size: 1rem;
-  color: var(--tinta);
-  padding: 0.65rem 0.8rem;
-  border: 1px solid var(--linea);
-  border-radius: 9px;
-  background: var(--crema);
-}
-
-.campo input:focus-visible {
-  outline: 2px solid var(--turquesa);
-  outline-offset: 1px;
-}
-
-.campo input.invalido {
-  border-color: var(--coral);
-}
-
-.campo-error {
-  min-height: 1.1em;
-  font-size: 0.78rem;
-  color: var(--coral);
-  font-weight: 500;
-}
-
-.campo-fila {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1rem;
-}
-
-.campo-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--tinta-suave);
-  margin-top: 0.25rem;
-}
-
-/* ---------- Billetera virtual ---------- */
-
-.billetera-texto {
-  color: var(--tinta-suave);
-  margin: 0 0 1.1rem;
-}
-
-.billetera-caja {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  background: var(--turquesa-suave);
-  border-radius: 12px;
-  padding: 1rem 1.1rem;
-}
-
-.billetera-logo {
+/* ---------- Billetera ---------- */
+.badge-billetera {
   width: 42px;
   height: 42px;
-  border-radius: 10px;
-  background: var(--turquesa);
-  color: var(--blanco);
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  font-family: var(--fuente-display);
 }
 
-.billetera-nombre {
-  margin: 0;
-  font-weight: 600;
+/* ---------- Comprobante Ticket ---------- */
+.comprobante-ticket {
+  max-width: 440px;
+  background-color: var(--bs-crema);
+  border: 1px dashed var(--bs-linea);
 }
 
-.billetera-detalle {
-  margin: 0.1rem 0 0;
-  font-size: 0.8rem;
-  color: var(--tinta-suave);
+.border-dashed {
+  border-style: dashed !important;
 }
 
-/* ---------- Botones ---------- */
-
-.boton-primario, .boton-secundario {
-  font-family: var(--fuente-texto);
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.75rem 1.4rem;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  margin-top: 1.5rem;
-}
-
-.boton-primario {
-  background: var(--coral);
-  color: var(--blanco);
-}
-
-.boton-primario:hover { background: #E85F44; }
-
-.boton-primario:disabled {
-  background: var(--linea);
-  color: var(--tinta-suave);
-  cursor: not-allowed;
-}
-
-.boton-secundario {
-  background: var(--turquesa-suave);
-  color: var(--turquesa);
-}
-
-.boton-secundario:hover { background: #D4ECE9; }
-
-/* ---------- Estado del pago / escrow ---------- */
-
-.escrow-explicacion {
-  color: var(--tinta-suave);
-  max-width: 46ch;
-}
-
-.detalle-pago {
-  display: grid;
-  gap: 0.6rem;
-  margin: 1.1rem 0 0;
-  padding: 1rem 1.1rem;
-  background: var(--crema);
-  border-radius: 10px;
-}
-
-.detalle-pago div {
-  display: flex;
-  justify-content: space-between;
-}
-
-.detalle-pago dt { color: var(--tinta-suave); }
-.detalle-pago dd { margin: 0; font-weight: 600; }
-
-.cargando {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  color: var(--tinta-suave);
-  padding: 1.5rem 0;
-}
-
-.cargando-anillo {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 3px solid var(--turquesa-suave);
-  border-top-color: var(--turquesa);
-  animation: girar 0.8s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes girar {
-  to { transform: rotate(360deg); }
-}
-
-.insignia {
-  display: inline-block;
-  padding: 0.3rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  margin-bottom: 0.9rem;
-}
-
-.insignia-retenido {
-  background: var(--ambar-suave);
-  color: var(--ambar);
-}
-
-.insignia-liberado {
-  background: var(--turquesa-suave);
-  color: var(--turquesa);
-}
-
-/* ---------- Comprobante ---------- */
-
-.comprobante {
-  background: var(--crema);
-  border: 1px dashed var(--linea);
-  border-radius: 10px;
-  padding: 1.5rem 1.6rem;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.comprobante-encabezado {
-  text-align: center;
-  border-bottom: 1px dashed var(--linea);
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-}
-
-.comprobante-marca {
-  margin: 0;
-  font-family: var(--fuente-display);
-  font-weight: 600;
-  font-size: 1.3rem;
-  color: var(--turquesa);
-}
-
-.comprobante-titulo {
-  margin: 0.2rem 0 0;
-  color: var(--tinta-suave);
-  font-size: 0.85rem;
-}
-
-.comprobante-datos {
-  display: grid;
-  gap: 0.55rem;
-  margin: 0;
-}
-
-.comprobante-datos div {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.88rem;
-  gap: 1rem;
-}
-
-.comprobante-datos dt { color: var(--tinta-suave); }
-.comprobante-datos dd {
-  margin: 0;
-  font-weight: 600;
-  text-align: right;
-}
-
-.comprobante-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  border-top: 1px dashed var(--linea);
-  margin-top: 1rem;
-  padding-top: 1rem;
-  font-family: var(--fuente-display);
-  font-size: 1.25rem;
-  color: var(--coral);
-  font-weight: 600;
-}
-
-.comprobante-acciones {
-  display: flex;
-  gap: 0.9rem;
-  justify-content: center;
-  margin-top: 1.5rem;
-}
-
-/* ---------- Responsive ---------- */
-
-@media (max-width: 640px) {
-  .flujo {
-    grid-template-columns: 1fr;
-  }
-
-  .pasos ol {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .pasos ol::before {
+/* ---------- Responsive Stepper (Mobile) ---------- */
+@media (max-width: 767.98px) {
+  .pasos-lista::before {
     left: 0;
     right: 0;
     top: 7px;
@@ -524,23 +176,23 @@ body {
     top: 0;
     transform: translateX(-50%);
   }
-
-  .paso-desc { display: none; }
-
-  .campo-fila { grid-template-columns: 1fr 1fr; }
-
-  .resumen { flex-direction: column; align-items: flex-start; }
 }
 
-/* ---------- Impresión (comprobante) ---------- */
-
+/* ---------- Impresión ---------- */
 @media print {
-  body * { visibility: hidden; }
-  .comprobante, .comprobante * { visibility: visible; }
-  .comprobante {
+  body * {
+    visibility: hidden;
+  }
+  #comprobante,
+  #comprobante * {
+    visibility: visible;
+  }
+  #comprobante {
     position: absolute;
     top: 0;
     left: 0;
+    width: 100%;
     border: none;
+    box-shadow: none !important;
   }
 }

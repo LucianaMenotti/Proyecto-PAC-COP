@@ -1,15 +1,10 @@
 /* ============================================
-   WoofPal — Pago del servicio
-   Frontend puro. Los puntos donde este proyecto
-   se conecta a la API (Express/Sequelize) están
-   marcados con "TODO backend".
+   WoofPal — Pago del servicio (Bootstrap 5)
    ============================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* ---------- Datos de la reserva ----------
-     TODO backend: reemplazar por los datos reales de la
-     reserva (ej. GET /api/reservas/:id) en vez de este mock. */
+  /* ---------- Datos de la reserva ---------- */
   const reserva = {
     id: 4821,
     prestador: 'Julieta Ramos',
@@ -19,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     monto: 4500
   };
 
-  // Pinta el resumen con los datos de la reserva
+  // Renderizar datos de la reserva
   document.getElementById('reservaId').textContent = reserva.id;
   document.getElementById('prestadorNombre').textContent = reserva.prestador;
   document.getElementById('servicioNombre').textContent = reserva.servicio;
@@ -34,14 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Estado del flujo ---------- */
   let metodoActual = 'tarjeta';
   let datosTarjeta = null;
-  let transaccion = null; // se completa al confirmar el pago
+  let transaccion = null;
 
   /* ---------- Navegación entre pasos ---------- */
   const pasos = ['metodo', 'confirmar', 'comprobante'];
 
   function irAPaso(nombrePaso) {
     pasos.forEach(p => {
-      document.getElementById(`panel-${p}`).hidden = (p !== nombrePaso);
+      const panel = document.getElementById(`panel-${p}`);
+      if (p === nombrePaso) {
+        panel.classList.remove('d-none');
+      } else {
+        panel.classList.add('d-none');
+      }
     });
 
     document.querySelectorAll('.paso').forEach(li => {
@@ -55,8 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---------- Paso 1: método de pago ---------- */
-
+  /* ---------- Paso 1: Selección de método ---------- */
   const segmentos = document.querySelectorAll('.segmento');
   const formTarjeta = document.getElementById('formTarjeta');
   const formBilletera = document.getElementById('formBilletera');
@@ -65,25 +64,32 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       segmentos.forEach(b => {
         b.classList.remove('activo');
+        b.classList.add('text-brand');
         b.setAttribute('aria-selected', 'false');
       });
       btn.classList.add('activo');
+      btn.classList.remove('text-brand');
       btn.setAttribute('aria-selected', 'true');
 
       metodoActual = btn.dataset.metodo;
-      formTarjeta.hidden = metodoActual !== 'tarjeta';
-      formBilletera.hidden = metodoActual !== 'billetera';
+      if (metodoActual === 'tarjeta') {
+        formTarjeta.classList.remove('d-none');
+        formBilletera.classList.add('d-none');
+      } else {
+        formTarjeta.classList.add('d-none');
+        formBilletera.classList.remove('d-none');
+      }
     });
   });
 
-  // Formateo en vivo del número de tarjeta: 0000 0000 0000 0000
+  // Formateo del número de tarjeta: 0000 0000 0000 0000
   const inputNumero = document.getElementById('numTarjeta');
   inputNumero.addEventListener('input', () => {
     let valor = inputNumero.value.replace(/\D/g, '').slice(0, 16);
     inputNumero.value = valor.replace(/(\d{4})(?=\d)/g, '$1 ');
   });
 
-  // Formateo en vivo del vencimiento: MM/AA
+  // Formateo de fecha de vencimiento: MM/AA
   const inputVenc = document.getElementById('vencTarjeta');
   inputVenc.addEventListener('input', () => {
     let valor = inputVenc.value.replace(/\D/g, '').slice(0, 4);
@@ -96,11 +102,19 @@ document.addEventListener('DOMContentLoaded', () => {
     inputCvv.value = inputCvv.value.replace(/\D/g, '').slice(0, 4);
   });
 
+  // Validación con clases nativas de Bootstrap
   function marcarError(idInput, mensaje) {
     const input = document.getElementById(idInput);
     const error = document.getElementById(`err-${idInput}`);
-    input.classList.toggle('invalido', Boolean(mensaje));
-    error.textContent = mensaje || '';
+    if (mensaje) {
+      input.classList.add('is-invalid');
+      input.classList.remove('is-valid');
+      error.textContent = mensaje;
+    } else {
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+      error.textContent = '';
+    }
   }
 
   function validarTarjeta() {
@@ -116,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const nombre = document.getElementById('nombreTitular').value.trim();
     if (nombre.length < 3) {
-      marcarError('nombreTitular', 'Ingresá el nombre como figura en la tarjeta.');
+      marcarError('nombreTitular', 'Ingresá el nombre completo del titular.');
       valido = false;
     } else {
       marcarError('nombreTitular', '');
@@ -125,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const venc = inputVenc.value;
     const coincideFormato = /^(0[1-9]|1[0-2])\/\d{2}$/.test(venc);
     if (!coincideFormato) {
-      marcarError('vencTarjeta', 'Formato MM/AA.');
+      marcarError('vencTarjeta', 'Formato inválido (MM/AA).');
       valido = false;
     } else {
       const [mes, anio] = venc.split('/').map(Number);
@@ -141,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (inputCvv.value.length < 3) {
-      marcarError('cvvTarjeta', 'CVV inválido.');
+      marcarError('cvvTarjeta', 'CVV de 3 o 4 dígitos.');
       valido = false;
     } else {
       marcarError('cvvTarjeta', '');
@@ -168,18 +182,21 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('metodoElegido').textContent = 'Billetera virtual';
     }
 
-    // Reinicia el paso 2 al estado inicial cada vez que se llega a él
     mostrarEstado('estado-previo');
     irAPaso('confirmar');
   });
 
-  /* ---------- Paso 2: confirmar pago y escrow ---------- */
-
+  /* ---------- Paso 2: Confirmar y Escrow ---------- */
   const estados = ['estado-previo', 'estado-procesando', 'estado-retenido', 'estado-liberado'];
 
   function mostrarEstado(idEstado) {
     estados.forEach(id => {
-      document.getElementById(id).hidden = (id !== idEstado);
+      const el = document.getElementById(id);
+      if (id === idEstado) {
+        el.classList.remove('d-none');
+      } else {
+        el.classList.add('d-none');
+      }
     });
   }
 
@@ -188,9 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
       metodoActual === 'tarjeta' ? 'tarjeta' : 'billetera virtual';
     mostrarEstado('estado-procesando');
 
-    /* TODO backend: acá va la llamada real, por ejemplo
-       POST /api/pagos  { reservaId, metodo, monto }
-       y la respuesta reemplaza a este mock de transacción. */
     setTimeout(() => {
       transaccion = {
         id: 'WP-' + Math.floor(100000 + Math.random() * 900000),
@@ -204,10 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1400);
   });
 
-  // Simula el evento que en producción dispara el sistema al completarse el servicio
   document.getElementById('btnLiberarPago').addEventListener('click', () => {
-    /* TODO backend: POST /api/pagos/:id/liberar cuando el
-       prestador marca el servicio como completado. */
     transaccion.estado = 'Liberado al prestador';
     mostrarEstado('estado-liberado');
   });
@@ -217,8 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     irAPaso('comprobante');
   });
 
-  /* ---------- Paso 3: comprobante ---------- */
-
+  /* ---------- Paso 3: Comprobante ---------- */
   function completarComprobante() {
     document.getElementById('compTransaccion').textContent = transaccion.id;
     document.getElementById('compFecha').textContent =
