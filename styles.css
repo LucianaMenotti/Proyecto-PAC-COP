@@ -1,0 +1,94 @@
+/* ============================================================
+   Panel del prestador (sobre Bootstrap 5.3)
+   La marca se logra pisando las variables de Bootstrap, así que
+   clases como btn-primary, badge, progress, alert, etc. ya salen
+   con los colores correctos sin escribir CSS propio para cada una.
+   Acá solo queda lo que Bootstrap no resuelve por sí solo.
+   ============================================================ */
+
+:root {
+  --bs-primary: #5eb5ae;
+  --bs-primary-rgb: 94, 181, 174;
+  --bs-primary-bg-subtle: #eaf6f4;
+  --bs-primary-border-subtle: #bfe3df;
+  --bs-primary-text-emphasis: #3e8c86;
+
+  --bs-warning: #e8a33d;
+  --bs-warning-rgb: 232, 163, 61;
+  --bs-warning-bg-subtle: #fcf3e3;
+  --bs-warning-border-subtle: #f0d6a6;
+  --bs-warning-text-emphasis: #8a5a0f;
+
+  --bs-danger: #e8798a;
+  --bs-danger-rgb: 232, 121, 138;
+
+  --bs-body-bg: #fffbf3;
+  --bs-body-color: #2b2b2b;
+  --bs-secondary-color: #6b6b6b;
+  --bs-border-color: #e7e2d6;
+  --bs-border-radius: 14px;
+  --bs-border-radius-lg: 20px;
+  --bs-border-radius-sm: 10px;
+  --bs-body-font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --brand-mint: #eaf6f4;
+  --brand-display:
+    ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  line-height: 1.5;
+}
+.fw-display {
+  font-family: var(--brand-display);
+}
+.paw {
+  fill: var(--bs-body-bg);
+}
+
+/* Barrita de rango de precio con marcadores min/promedio/máximo,
+   usada dentro de cada tarjeta de servicio a publicar */
+.range-track {
+  position: relative;
+  margin: 0 6px 40px;
+}
+.range-marker {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 18px;
+  background: var(--bs-body-color);
+  transform: translateX(-50%);
+}
+.range-marker span {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+}
+
+/* Caja de origen → destino de un traslado */
+.route-line {
+  background: var(--brand-mint);
+}
+.border-dashed {
+  border-style: dashed !important;
+}
+
+/* Pines del mapa (Leaflet) */
+.route-pin {
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+.leaflet-routing-container {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

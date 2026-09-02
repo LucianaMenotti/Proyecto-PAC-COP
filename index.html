@@ -4,22 +4,115 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Pac-Cop - Servicios para mascotas</title>
+    <title>Pac-Cop - Servicios para mascotas, Pago Seguro y Seguimiento GPS</title>
 
+    <!-- Bootstrap 5.3 CSS & Bootstrap Icons -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+
+    <!-- Fuentes Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <link rel="stylesheet" href="css/styles.css" />
+
+    <style>
+      :root {
+        --pac-primary: #1f7a74;
+        --pac-primary-dark: #155551;
+        --pac-accent: #ff6f52;
+        --pac-bg-soft: #f4fbf9;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: #2c3e50;
+      }
+
+      .font-display {
+        font-family: 'Fraunces', serif;
+      }
+
+      .navbar-brand-pac {
+        font-family: 'Fraunces', serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: var(--pac-primary) !important;
+      }
+
+      .btn-primary {
+        background-color: var(--pac-primary);
+        border-color: var(--pac-primary);
+      }
+
+      .btn-primary:hover, .btn-primary:focus {
+        background-color: var(--pac-primary-dark);
+        border-color: var(--pac-primary-dark);
+      }
+
+      .btn-outline-primary {
+        color: var(--pac-primary);
+        border-color: var(--pac-primary);
+      }
+
+      .btn-outline-primary:hover {
+        background-color: var(--pac-primary);
+        border-color: var(--pac-primary);
+        color: #fff;
+      }
+
+      .btn-accent {
+        background-color: var(--pac-accent);
+        border-color: var(--pac-accent);
+        color: #fff;
+      }
+
+      .btn-accent:hover {
+        background-color: #e85b3e;
+        border-color: #e85b3e;
+        color: #fff;
+      }
+
+      .text-primary-pac {
+        color: var(--pac-primary) !important;
+      }
+
+      .text-accent-pac {
+        color: var(--pac-accent) !important;
+      }
+
+      .bg-soft-pac {
+        background-color: var(--pac-bg-soft);
+      }
+
+      .feature-card {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        border: 1px solid #e9ecef;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.08) !important;
+      }
+    </style>
   </head>
 
   <body>
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <!-- NAVBAR UNIFICADO -->
+    <nav class="navbar navbar-expand-xl bg-white shadow-sm sticky-top">
       <div class="container">
-        <a class="navbar-brand fw-bold text-primary" href="index.html">
-          Pac-Cop
+        <a class="navbar-brand navbar-brand-pac d-flex align-items-center gap-2" href="index.html">
+          <i class="bi bi-shield-fill-check text-primary-pac fs-3"></i>
+          <span>Pac-Cop</span>
         </a>
 
         <button
@@ -27,122 +120,440 @@
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarPrincipal"
+          aria-controls="navbarPrincipal"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarPrincipal">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <ul class="navbar-nav me-auto mb-2 mb-xl-0 ms-xl-4 gap-xl-1">
             <li class="nav-item">
-              <a class="nav-link" href="#como-funciona"> ¿Cómo funciona? </a>
+              <a class="nav-link fw-medium" href="#como-funciona">¿Cómo funciona?</a>
             </li>
-
             <li class="nav-item">
-              <a class="nav-link" href="#servicios"> Servicios </a>
+              <a class="nav-link fw-medium" href="#servicios">Servicios</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link fw-medium text-primary-pac" href="pagos/pago.html">
+                <i class="bi bi-credit-card-2-front me-1"></i>Pago Seguro
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link fw-medium text-accent-pac" href="seguimiento gps en tiempo real/seguimiento.html">
+                <i class="bi bi-geo-alt-fill me-1"></i>Seguimiento GPS
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link fw-medium" href="panel-prestador.html">
+                <i class="bi bi-speedometer2 me-1"></i>Panel Prestador
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link fw-medium" href="paginas/buscar-prestadores.html">
+                <i class="bi bi-search me-1"></i>Buscar
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link fw-medium" href="paginas/FichaSalud.html">
+                <i class="bi bi-heart-pulse me-1"></i>Ficha de Salud
+              </a>
             </li>
           </ul>
 
-          <div class="d-flex gap-2">
-            <a href="paginas/login.html" class="btn btn-outline-primary">
-              Iniciar sesión
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="paginas/login.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar sesión
             </a>
-
-            <a href="paginas\registro.html" class="btn btn-primary">
-              Registrarse
+            <a href="paginas/registro.html" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+              <i class="bi bi-person-plus-fill me-1"></i> Registrarse
             </a>
           </div>
         </div>
       </div>
     </nav>
 
-    <!-- HERO -->
-    <section class="hero py-5">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-lg-6">
-            <span class="badge bg-primary-subtle text-primary mb-3">
-              La Mejor Red de Servicios para Mascotas en Formosa
-            </span>
+    <!-- HERO SECTION -->
+    <header class="hero py-5 bg-soft-pac position-relative overflow-hidden">
+      <div class="container py-3 py-lg-4">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-7">
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-white rounded-pill border shadow-sm mb-3">
+              <span class="badge bg-success rounded-pill">Activo</span>
+              <span class="small fw-semibold text-secondary">
+                Red de Servicios para Mascotas · Formosa
+              </span>
+            </div>
 
-            <h1 class="display-4 fw-bold">
-              El cuidado que tu mascota necesita.
+            <h1 class="display-4 font-display fw-bold text-dark lh-sm">
+              El cuidado, pago seguro y <span class="text-primary-pac">GPS en vivo</span> que tu mascota merece.
             </h1>
 
-            <p class="lead text-secondary mt-3">
-              Encontrá paseadores y prestadores de servicios confiables para
-              cuidar a tu mascota cuando vos no podés.
+            <p class="lead text-secondary mt-3 pe-lg-4">
+              Encontrá paseadores y cuidadores calificados. Pagá con <strong>custodia garantizada</strong> (el dinero se libera al completarse el servicio) y seguí cada paso de tu mascota con <strong>tracking GPS en tiempo real</strong>.
             </p>
 
-            <div class="d-flex flex-wrap gap-2 mt-4">
-              <a
-                href="paginas/buscar-prestadores.html"
-                class="btn btn-primary btn-lg"
-              >
-                Buscar prestadores
+            <div class="d-flex flex-wrap gap-3 mt-4 pt-2">
+              <a href="paginas/buscar-prestadores.html" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+                <i class="bi bi-search me-1"></i> Buscar prestadores
               </a>
+              <a href="seguimiento gps en tiempo real/seguimiento.html" class="btn btn-accent btn-lg rounded-pill px-4 shadow-sm">
+                <i class="bi bi-geo-alt-fill me-1"></i> Probar Seguimiento GPS
+              </a>
+              <a href="pagos/pago.html" class="btn btn-outline-primary btn-lg rounded-pill px-4">
+                <i class="bi bi-shield-lock-fill me-1"></i> Flujo de Pago Seguro
+              </a>
+            </div>
 
-              <a
-                href="paginas/registro-prestador.html"
-                class="btn btn-outline-primary btn-lg"
-              >
-                Quiero ofrecer servicios
+            <div class="row mt-4 pt-3 g-3 text-secondary small border-top">
+              <div class="col-auto d-flex align-items-center gap-2">
+                <i class="bi bi-shield-check text-success fs-5"></i>
+                <span>Pago con Escrow</span>
+              </div>
+              <div class="col-auto d-flex align-items-center gap-2">
+                <i class="bi bi-broadcast text-danger fs-5"></i>
+                <span>GPS en vivo (Leaflet)</span>
+              </div>
+              <div class="col-auto d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-pdf text-primary-pac fs-5"></i>
+                <span>Comprobantes PDF</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-5 text-center">
+            <div class="position-relative d-inline-block">
+              <img
+                src="assets/img/descarga (58).png"
+                alt="Mascota feliz con Pac-Cop"
+                class="img-fluid rounded-4 shadow-lg"
+                style="max-height: 420px; object-fit: cover;"
+              />
+              <div class="position-absolute bottom-0 start-0 translate-middle-y bg-white p-3 rounded-4 shadow border text-start ms-n3" style="max-width: 220px;">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="spinner-grow spinner-grow-sm text-danger" role="status"></span>
+                  <span class="badge bg-danger-subtle text-danger fw-bold">En paseo</span>
+                </div>
+                <p class="small fw-bold mb-0">Toby · San Miguel</p>
+                <small class="text-secondary">Paseo activo · 1.2 km</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ACCESOS DIRECTOS A MÓDULOS INTEGRADOS -->
+    <section class="py-5 bg-white">
+      <div class="container">
+        <div class="text-center mb-5">
+          <span class="badge bg-primary-subtle text-primary-pac px-3 py-2 rounded-pill fw-semibold mb-2">
+            Ecosistema Integrado Pac-Cop
+          </span>
+          <h2 class="font-display fw-bold display-6">Módulos y Funcionalidades Principales</h2>
+          <p class="text-secondary mx-auto" style="max-width: 640px;">
+            Accedé de forma directa a todas las herramientas desarrolladas para dueños de mascotas y prestadores de servicios.
+          </p>
+        </div>
+
+        <div class="row g-4">
+          <!-- Card 1: Pago Seguro -->
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 feature-card rounded-4 p-4 shadow-sm bg-white">
+              <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary-pac rounded-4 p-3 mb-3" style="width: 58px; height: 58px;">
+                <i class="bi bi-shield-lock-fill fs-3"></i>
+              </div>
+              <h4 class="fw-bold fs-5 mb-2">Pago Seguro (Escrow)</h4>
+              <p class="text-secondary small flex-grow-1">
+                El dinero queda retenido de forma segura hasta que el servicio finaliza con éxito. Genera comprobantes descargables en PDF.
+              </p>
+              <div class="pt-3 border-top">
+                <a href="pagos/pago.html" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-semibold">
+                  Abrir Pago Seguro <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Seguimiento GPS -->
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 feature-card rounded-4 p-4 shadow-sm bg-white border-primary">
+              <div class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-accent-pac rounded-4 p-3 mb-3" style="width: 58px; height: 58px;">
+                <i class="bi bi-geo-alt-fill fs-3"></i>
+              </div>
+              <h4 class="fw-bold fs-5 mb-2">Seguimiento GPS en Vivo</h4>
+              <p class="text-secondary small flex-grow-1">
+                Visualizá la posición en tiempo real sobre mapa Leaflet, cronómetro de duración, cálculo de distancia Haversine y resumen final.
+              </p>
+              <div class="pt-3 border-top">
+                <a href="seguimiento gps en tiempo real/seguimiento.html" class="btn btn-accent btn-sm rounded-pill w-100 fw-semibold">
+                  Ver Tracking GPS <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Panel Prestador -->
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 feature-card rounded-4 p-4 shadow-sm bg-white">
+              <div class="d-inline-flex align-items-center justify-content-center bg-info-subtle text-info-emphasis rounded-4 p-3 mb-3" style="width: 58px; height: 58px;">
+                <i class="bi bi-speedometer2 fs-3"></i>
+              </div>
+              <h4 class="fw-bold fs-5 mb-2">Panel del Prestador</h4>
+              <p class="text-secondary small flex-grow-1">
+                Gestión de reservas, recomendador inteligente de precios por zona y optimización de rutas del día para paseadores y traslados.
+              </p>
+              <div class="pt-3 border-top">
+                <a href="panel-prestador.html" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-semibold">
+                  Panel de Rutas y Precios <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Ficha de Salud -->
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 feature-card rounded-4 p-4 shadow-sm bg-white">
+              <div class="d-inline-flex align-items-center justify-content-center bg-warning-subtle text-warning-emphasis rounded-4 p-3 mb-3" style="width: 58px; height: 58px;">
+                <i class="bi bi-heart-pulse-fill fs-3"></i>
+              </div>
+              <h4 class="fw-bold fs-5 mb-2">Ficha de Salud Digital</h4>
+              <p class="text-secondary small flex-grow-1">
+                Historial médico de tu mascota, control de vacunación, libreta sanitaria y datos de contacto ante cualquier emergencia.
+              </p>
+              <div class="pt-3 border-top">
+                <a href="paginas/FichaSalud.html" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-semibold">
+                  Ver Ficha de Salud <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DETALLE DESTACADO: SEGUIMIENTO GPS -->
+    <section id="seguimiento-gps" class="py-5 bg-light">
+      <div class="container py-3">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-6">
+            <span class="badge bg-danger-subtle text-accent-pac px-3 py-2 rounded-pill fw-semibold mb-3">
+              <i class="bi bi-broadcast me-1"></i> Innovación y Tranquilidad
+            </span>
+            <h2 class="font-display fw-bold display-6 text-dark">
+              Seguimiento GPS en tiempo real para cada paseo o traslado
+            </h2>
+            <p class="lead text-secondary mt-3">
+              Nunca más te preguntes dónde está tu mascota. Nuestra plataforma incorpora mapas interactivos con geolocalización continua.
+            </p>
+
+            <ul class="list-unstyled d-flex flex-column gap-3 mt-4">
+              <li class="d-flex align-items-start gap-3">
+                <i class="bi bi-check-circle-fill text-success fs-5 mt-1"></i>
+                <div>
+                  <strong class="d-block text-dark">Ubicación viva sobre mapa interactivo</strong>
+                  <span class="text-secondary small">Integrado con OpenStreetMap y Leaflet, mostrando el trazado exacto de las calles de Formosa.</span>
+                </div>
+              </li>
+              <li class="d-flex align-items-start gap-3">
+                <i class="bi bi-check-circle-fill text-success fs-5 mt-1"></i>
+                <div>
+                  <strong class="d-block text-dark">Cronómetro y distancia recorrida</strong>
+                  <span class="text-secondary small">Cálculo preciso de kilómetros mediante algoritmo Haversine y tiempo total de actividad.</span>
+                </div>
+              </li>
+              <li class="d-flex align-items-start gap-3">
+                <i class="bi bi-check-circle-fill text-success fs-5 mt-1"></i>
+                <div>
+                  <strong class="d-block text-dark">Resumen y mapa final al terminar</strong>
+                  <span class="text-secondary small">Historial con hora de inicio, finalización y trazado completo del recorrido.</span>
+                </div>
+              </li>
+            </ul>
+
+            <div class="mt-4 pt-2">
+              <a href="seguimiento gps en tiempo real/seguimiento.html" class="btn btn-accent btn-lg rounded-pill px-4 shadow-sm">
+                <i class="bi bi-play-circle-fill me-1"></i> Probar Demo de Seguimiento GPS
               </a>
             </div>
           </div>
 
-          <div class="col-lg-6 figure-img ratio-1x1 mt-5 mt-lg-0">
-            <img
-              src="assets/img/descarga (58).png"
-              class="d-flex ratio small"
-            />
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white p-3">
+              <div class="bg-dark text-white p-3 rounded-3 mb-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success rounded-pill px-2 py-1">En curso</span>
+                  <span class="fw-bold small">Paseo de Toby · 1 hora</span>
+                </div>
+                <span class="text-white-50 small font-monospace">GPS: Activo</span>
+              </div>
+              <div class="p-4 bg-light rounded-3 text-center border">
+                <div class="row g-2 mb-3">
+                  <div class="col-4">
+                    <div class="bg-white p-2 rounded border">
+                      <small class="text-secondary d-block">Inicio</small>
+                      <strong class="text-dark">17:00</strong>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="bg-white p-2 rounded border">
+                      <small class="text-secondary d-block">Duración</small>
+                      <strong class="text-primary-pac">32:15 min</strong>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="bg-white p-2 rounded border">
+                      <small class="text-secondary d-block">Distancia</small>
+                      <strong class="text-accent-pac">2.4 km</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="py-4 px-3 bg-white rounded border d-flex flex-column align-items-center justify-content-center">
+                  <i class="bi bi-map text-primary-pac display-4 mb-2"></i>
+                  <p class="small text-secondary mb-2">Mapa interactivo con trazado en tiempo real</p>
+                  <a href="seguimiento gps en tiempo real/seguimiento.html" class="btn btn-sm btn-primary rounded-pill px-3">
+                    Abrir visor completo de tracking
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DETALLE DESTACADO: PAGO SEGURO CON ESCROW -->
+    <section id="pago-seguro" class="py-5 bg-white">
+      <div class="container py-3">
+        <div class="row align-items-center g-5 flex-lg-row-reverse">
+          <div class="col-lg-6">
+            <span class="badge bg-primary-subtle text-primary-pac px-3 py-2 rounded-pill fw-semibold mb-3">
+              <i class="bi bi-shield-check me-1"></i> Garantía y Confianza
+            </span>
+            <h2 class="font-display fw-bold display-6 text-dark">
+              Pago protegido con sistema Escrow (Custodia Segura)
+            </h2>
+            <p class="lead text-secondary mt-3">
+              Tus pagos están 100% protegidos. Cuando contratás un servicio, el monto se retiene de forma segura y se libera al prestador únicamente cuando confirmás que el servicio fue realizado satisfactoriamente.
+            </p>
+
+            <div class="row g-3 mt-3">
+              <div class="col-sm-6">
+                <div class="p-3 border rounded-3 bg-light h-100">
+                  <h6 class="fw-bold mb-1 text-dark"><i class="bi bi-credit-card text-primary-pac me-1"></i> Múltiples Medios</h6>
+                  <p class="small text-secondary mb-0">Tarjetas de débito/crédito y billeteras virtuales con validación en tiempo real.</p>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="p-3 border rounded-3 bg-light h-100">
+                  <h6 class="fw-bold mb-1 text-dark"><i class="bi bi-file-earmark-check text-primary-pac me-1"></i> Comprobante PDF</h6>
+                  <p class="small text-secondary mb-0">Descargá o imprimí al instante tu comprobante oficial con número de transacción.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-2">
+              <a href="pagos/pago.html" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+                <i class="bi bi-shield-lock-fill me-1"></i> Probar Pasarela de Pago Seguro
+              </a>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 p-4 bg-soft-pac">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-dark">Estado del Pago #4821</h5>
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill fw-bold">
+                  <i class="bi bi-hourglass-split me-1"></i> En custodia segura
+                </span>
+              </div>
+              <div class="bg-white p-3 rounded-3 border mb-3">
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                  <span class="small text-secondary">Prestador</span>
+                  <span class="small fw-semibold">Julieta Ramos (Paseo 1h)</span>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                  <span class="small text-secondary">Mascota</span>
+                  <span class="small fw-semibold">Toby</span>
+                </div>
+                <div class="d-flex justify-content-between pt-2">
+                  <span class="small text-secondary">Monto retenido</span>
+                  <span class="fw-bold text-accent-pac fs-5">$4.500</span>
+                </div>
+              </div>
+              <div class="text-center">
+                <p class="small text-secondary mb-3">
+                  Los fondos se liberan automáticamente cuando el prestador completa la tarea o al confirmar en el sistema.
+                </p>
+                <a href="pagos/pago.html" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                  Simular confirmación y comprobante
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- COMO FUNCIONA -->
-    <section id="como-funciona" class="py-5">
-      <div class="container">
+    <section id="como-funciona" class="py-5 bg-light">
+      <div class="container py-3">
         <div class="text-center mb-5">
-          <h2 class="fw-bold">¿Cómo Funciona?</h2>
-
-          <p class="text-secondary">Es muy sencillo :3</p>
+          <span class="badge bg-primary-subtle text-primary-pac px-3 py-2 rounded-pill fw-semibold mb-2">
+            Paso a Paso
+          </span>
+          <h2 class="font-display fw-bold display-6">¿Cómo Funciona Pac-Cop?</h2>
+          <p class="text-secondary mx-auto" style="max-width: 600px;">
+            Diseñado para ser fácil, transparente y seguro tanto para dueños como para prestadores.
+          </p>
         </div>
 
         <div class="row g-4">
-          <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm text-center p-4">
-              <h4 class="mt-3">Buscas</h4>
-
-              <p class="text-secondary">
-                Encontrá prestadores según el servicio, en tu zona, los podes
-                filtrar por tus preferencias como el precio y su calificion que
-                necesitás.
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4 bg-white">
+              <div class="rounded-circle bg-primary-subtle text-primary-pac fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                1
+              </div>
+              <h5 class="fw-bold">1. Buscás y Elegís</h5>
+              <p class="text-secondary small mb-0">
+                Filtrá por servicio (paseo, cuidado, traslado), zona en Formosa, precios y calificaciones de otros usuarios.
               </p>
             </div>
           </div>
 
-          <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm text-center p-4">
-              <h4 class="mt-3">Elegis</h4>
-
-              <p class="text-secondary">
-                Consultas el perfil del prestador, sus servicios u
-                calificaciones. Te contactas con el mediante una solicutd y
-                esperas que te acepte.
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4 bg-white">
+              <div class="rounded-circle bg-primary-subtle text-primary-pac fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                2
+              </div>
+              <h5 class="fw-bold">2. Pagás Seguro</h5>
+              <p class="text-secondary small mb-0">
+                Confirmás la reserva. Tu dinero queda resguardado en custodia y el prestador recibe la notificación para iniciar.
               </p>
             </div>
           </div>
 
-          <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm text-center p-4">
-              <h4 class="mt-3">Comprobar</h4>
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4 bg-white">
+              <div class="rounded-circle bg-danger-subtle text-accent-pac fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                3
+              </div>
+              <h5 class="fw-bold">3. Seguís en Vivo</h5>
+              <p class="text-secondary small mb-0">
+                Durante el paseo o traslado, mirá el GPS en tiempo real en el mapa, su cronómetro y distancia recorrida.
+              </p>
+            </div>
+          </div>
 
-              <p class="text-secondary">
-                Una ves contratado el servicio y asegurate de que tu mascota
-                reciba la atención que necesita. si te surgen dudas siempre
-                podes chatear con el prestador de servicios y el te mantendra al
-                tanto.
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4 bg-white">
+              <div class="rounded-circle bg-success-subtle text-success fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                4
+              </div>
+              <h5 class="fw-bold">4. Liberás & Calificás</h5>
+              <p class="text-secondary small mb-0">
+                Al recibir a tu mascota feliz, el pago se libera al prestador y podés descargar tu comprobante PDF oficial.
               </p>
             </div>
           </div>
@@ -150,53 +561,67 @@
       </div>
     </section>
 
-    <!-- SERVICIOS -->
-    <section id="servicios" class="py-5 bg-light">
-      <div class="container">
+    <!-- SERVICIOS PRINCIPALES -->
+    <section id="servicios" class="py-5 bg-white">
+      <div class="container py-3">
         <div class="text-center mb-5">
-          <h2 class="fw-bold">Nuestros Servicios Principales</h2>
-
+          <span class="badge bg-primary-subtle text-primary-pac px-3 py-2 rounded-pill fw-semibold mb-2">
+            Nuestra Oferta
+          </span>
+          <h2 class="font-display fw-bold display-6">Servicios para tu Mascota</h2>
           <p class="text-secondary">
-            Encontrá el servicio adecuado para tu mascota.
+            Todo lo necesario para su salud, bienestar y diversión en un solo lugar.
           </p>
         </div>
 
         <div class="row g-4">
           <div class="col-md-4">
-            <div class="card service-card h-100 border-0 shadow-sm">
-              <div class="card-body text-center p-4">
-                <h4 class="mt-3">Paseo</h4>
-
-                <p class="text-secondary">
-                  Encontrá paseadores para que tu mascota pueda salir, caminar y
-                  gastar energía.
-                </p>
+            <div class="card service-card h-100 border-0 shadow-sm rounded-4 p-4 text-center">
+              <div class="rounded-circle bg-soft-pac text-primary-pac mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                <i class="bi bi-person-walking fs-2"></i>
+              </div>
+              <h4 class="fw-bold mb-2">Paseo Diario</h4>
+              <p class="text-secondary small">
+                Paseadores verificados con seguimiento satelital en directo para que tu perro descargue energía de manera segura.
+              </p>
+              <div class="mt-3">
+                <a href="seguimiento gps en tiempo real/seguimiento.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                  Ver demo GPS
+                </a>
               </div>
             </div>
           </div>
 
           <div class="col-md-4">
-            <div class="card service-card h-100 border-0 shadow-sm">
-              <div class="card-body text-center p-4">
-                <h4 class="mt-3">Cuidado</h4>
-
-                <p class="text-secondary">
-                  Personas que pueden acompañar y cuidar a tu mascota mientras
-                  estás fuera.
-                </p>
+            <div class="card service-card h-100 border-0 shadow-sm rounded-4 p-4 text-center">
+              <div class="rounded-circle bg-soft-pac text-primary-pac mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                <i class="bi bi-house-heart fs-2"></i>
+              </div>
+              <h4 class="fw-bold mb-2">Cuidado y Guardería</h4>
+              <p class="text-secondary small">
+                Cuidadores dedicados en casa o guardería familiar cuando tenés que viajar o cumplir largas jornadas de trabajo.
+              </p>
+              <div class="mt-3">
+                <a href="paginas/buscar-prestadores.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                  Buscar cuidadores
+                </a>
               </div>
             </div>
           </div>
 
           <div class="col-md-4">
-            <div class="card service-card h-100 border-0 shadow-sm">
-              <div class="card-body text-center p-4">
-                <h4 class="mt-3">Traslado</h4>
-
-                <p class="text-secondary">
-                  Encontráras personas que puedan ayudarte con el traslado para
-                  ti y tu mascota.
-                </p>
+            <div class="card service-card h-100 border-0 shadow-sm rounded-4 p-4 text-center">
+              <div class="rounded-circle bg-soft-pac text-primary-pac mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                <i class="bi bi-car-front fs-2"></i>
+              </div>
+              <h4 class="fw-bold mb-2">Traslado Seguro</h4>
+              <p class="text-secondary small">
+                Movilidad punto a punto con confirmación de origen, destino y entrega para visitas veterinarias o peluquería.
+              </p>
+              <div class="mt-3">
+                <a href="panel-prestador.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                  Ver traslados en panel
+                </a>
               </div>
             </div>
           </div>
@@ -204,35 +629,81 @@
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="py-5">
-      <div class="container">
-        <div class="cta-box text-center p-5">
-          <h2 class="fw-bold">¿Necesitás ayuda con tu mascota?</h2>
-
-          <p class="mt-3">
-            Encontrá un prestador de servicios en tu zona ahora mismo.
+    <!-- CALL TO ACTION (CTA) -->
+    <section class="py-5 bg-soft-pac">
+      <div class="container py-4">
+        <div class="cta-box text-center p-5 bg-white shadow-sm rounded-4 border">
+          <h2 class="font-display fw-bold display-6 mb-3">¿Listo para comenzar con Pac-Cop?</h2>
+          <p class="lead text-secondary mx-auto mb-4" style="max-width: 600px;">
+            Unite a la comunidad de amantes de las mascotas en Formosa. Seguridad, seguimiento satelital y pagos protegidos en un solo lugar.
           </p>
 
-          <a
-            href="paginas/buscar-prestadores.html"
-            class="btn btn-primary btn-lg mt-1"
-          >
-            Encontrar un prestador de servios
-          </a>
+          <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="paginas/buscar-prestadores.html" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+              <i class="bi bi-search me-1"></i> Encontrar prestador en mi zona
+            </a>
+            <a href="paginas/registro-prestador.html" class="btn btn-outline-primary btn-lg rounded-pill px-4">
+              <i class="bi bi-briefcase me-1"></i> Ofrecer mis servicios
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="py-4 bg-dark text-white">
-      <div class="container text-center">
-        <p class="mb-0">@Pac-Cop</p>
+    <!-- FOOTER UNIFICADO -->
+    <footer class="py-5 bg-dark text-white">
+      <div class="container">
+        <div class="row g-4 mb-4">
+          <div class="col-lg-4">
+            <h5 class="font-display fw-bold text-primary-pac fs-4 mb-3">
+              <i class="bi bi-shield-fill-check me-1"></i> Pac-Cop
+            </h5>
+            <p class="text-white-50 small">
+              Plataforma integral para el cuidado, paseo y traslado de mascotas con pago seguro garantizado y seguimiento GPS en tiempo real.
+            </p>
+            <p class="text-white-50 small mb-0">
+              Formosa, Argentina.
+            </p>
+          </div>
 
-        <small class="text-secondary"> Proyecto Grupal Insano >:3 </small>
+          <div class="col-6 col-lg-2">
+            <h6 class="fw-bold mb-3 text-white">Plataforma</h6>
+            <ul class="list-unstyled small d-flex flex-column gap-2">
+              <li><a href="index.html" class="text-white-50 text-decoration-none">Inicio</a></li>
+              <li><a href="#como-funciona" class="text-white-50 text-decoration-none">¿Cómo funciona?</a></li>
+              <li><a href="#servicios" class="text-white-50 text-decoration-none">Servicios</a></li>
+              <li><a href="paginas/buscar-prestadores.html" class="text-white-50 text-decoration-none">Buscar prestadores</a></li>
+            </ul>
+          </div>
+
+          <div class="col-6 col-lg-3">
+            <h6 class="fw-bold mb-3 text-white">Herramientas</h6>
+            <ul class="list-unstyled small d-flex flex-column gap-2">
+              <li><a href="pagos/pago.html" class="text-white-50 text-decoration-none"><i class="bi bi-credit-card me-1"></i> Pago Seguro (Escrow)</a></li>
+              <li><a href="seguimiento gps en tiempo real/seguimiento.html" class="text-white-50 text-decoration-none"><i class="bi bi-geo-alt me-1"></i> Seguimiento GPS</a></li>
+              <li><a href="panel-prestador.html" class="text-white-50 text-decoration-none"><i class="bi bi-speedometer2 me-1"></i> Panel del Prestador</a></li>
+              <li><a href="paginas/FichaSalud.html" class="text-white-50 text-decoration-none"><i class="bi bi-heart-pulse me-1"></i> Ficha de Salud</a></li>
+            </ul>
+          </div>
+
+          <div class="col-6 col-lg-3">
+            <h6 class="fw-bold mb-3 text-white">Cuenta</h6>
+            <ul class="list-unstyled small d-flex flex-column gap-2">
+              <li><a href="paginas/login.html" class="text-white-50 text-decoration-none">Iniciar sesión</a></li>
+              <li><a href="paginas/registro.html" class="text-white-50 text-decoration-none">Registrarse</a></li>
+              <li><a href="paginas/registro-dueno.html" class="text-white-50 text-decoration-none">Registro Dueño</a></li>
+              <li><a href="paginas/registro-prestador.html" class="text-white-50 text-decoration-none">Registro Prestador</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pt-4 border-top border-secondary text-center text-white-50 small">
+          <p class="mb-0">© 2026 Pac-Cop · Proyecto Grupal</p>
+        </div>
       </div>
     </footer>
 
+    <!-- Bootstrap 5.3 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

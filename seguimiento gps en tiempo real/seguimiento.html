@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seguimiento GPS en vivo · Pac-Cop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+    />
+    <link rel="stylesheet" href="seguimiento.css" />
+  </head>
+  <body>
+    <!-- Barra de navegación superior -->
+    <nav class="seg-nav">
+      <div class="seg-nav-container">
+        <a class="seg-nav-brand" href="../index.html">Pac-Cop</a>
+        <a class="seg-nav-back" href="../index.html">← Volver al Inicio</a>
+      </div>
+    </nav>
+
+    <div class="seg-wrap">
+      <header class="seg-header">
+        <p class="seg-eyebrow">Servicio #<span id="servicioId">7734</span></p>
+        <h1>Seguimiento del paseo en vivo</h1>
+      </header>
+
+      <!-- Resumen del servicio, visible en todo momento -->
+      <section class="resumen" aria-label="Resumen del servicio">
+        <div class="resumen-prestador">
+          <div class="resumen-avatar-box">JR</div>
+          <div>
+            <p class="resumen-nombre" id="prestadorNombre">Julieta Ramos</p>
+            <p class="resumen-servicio" id="servicioNombre">Paseo · 1 hora</p>
+          </div>
+        </div>
+        <dl class="resumen-datos">
+          <div>
+            <dt>Mascota</dt>
+            <dd id="mascotaNombre">Toby</dd>
+          </div>
+          <div>
+            <dt>Programado</dt>
+            <dd id="horaProgramada">17:00 hs</dd>
+          </div>
+          <div class="resumen-estado">
+            <dt>Estado</dt>
+            <dd>
+              <span class="insignia" id="insigniaEstado">Programado</span>
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <div class="flujo">
+        <!-- Rastreador de etapas -->
+        <nav class="pasos" aria-label="Etapas del servicio">
+          <ol id="listaPasos">
+            <li data-paso="programado" class="paso activo">
+              <span class="paso-marca"></span>
+              <div>
+                <p class="paso-titulo">Inicio</p>
+                <p class="paso-desc">Esperando que comience</p>
+              </div>
+            </li>
+            <li data-paso="en-curso" class="paso">
+              <span class="paso-marca"></span>
+              <div>
+                <p class="paso-titulo">Tracking en vivo</p>
+                <p class="paso-desc">Ubicación GPS en tiempo real</p>
+              </div>
+            </li>
+            <li data-paso="finalizado" class="paso">
+              <span class="paso-marca"></span>
+              <div>
+                <p class="paso-titulo">Finalización</p>
+                <p class="paso-desc">Duración y resumen</p>
+              </div>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="panel">
+          <!-- ETAPA 1: antes de iniciar -->
+          <section class="paso-contenido" id="panel-programado">
+            <div class="espera">
+              <p class="espera-texto">
+                El servicio todavía no comenzó. Vas a ver la ubicación de
+                <strong id="mascotaNombreEspera">Toby</strong> en el mapa en
+                cuanto
+                <span id="prestadorNombreEspera">el prestador</span> inicie el
+                paseo.
+              </p>
+              <div class="espera-hora">
+                <span class="espera-hora-label">Horario programado</span>
+                <span class="espera-hora-valor" id="horaProgramadaGrande"
+                  >17:00 hs</span
+                >
+              </div>
+              <!-- TODO backend: este botón es solo para la demo. En producción, el estado
+               "en-curso" lo dispara el prestador desde su panel al arrancar el servicio,
+               y este frontend se entera por WebSocket / polling a GET /api/servicios/:id -->
+              <button type="button" class="boton-primario" id="btnIniciarDemo">
+                Iniciar servicio (demo)
+              </button>
+            </div>
+          </section>
+
+          <!-- ETAPA 2: tracking en vivo -->
+          <section class="paso-contenido" id="panel-en-curso" hidden>
+            <div class="tracking-datos">
+              <div class="tracking-dato">
+                <span class="tracking-dato-label">Iniciado</span>
+                <span class="tracking-dato-valor" id="horaInicioReal">—</span>
+              </div>
+              <div class="tracking-dato">
+                <span class="tracking-dato-label">Duración</span>
+                <span class="tracking-dato-valor" id="cronometro">00:00</span>
+              </div>
+              <div class="tracking-dato">
+                <span class="tracking-dato-label">Distancia recorrida</span>
+                <span class="tracking-dato-valor"
+                  ><span id="distanciaRecorrida">0.0</span> km</span
+                >
+              </div>
+            </div>
+
+            <div
+              id="mapaVivo"
+              class="mapa"
+              aria-label="Mapa con la ubicación en tiempo real de la mascota"
+            ></div>
+
+            <!-- TODO backend: este botón es solo para la demo. En producción el prestador
+             marca "servicio completado" desde su panel y este estado llega por el mismo
+             canal en tiempo real que actualiza la posición GPS. -->
+            <button
+              type="button"
+              class="boton-secundario"
+              id="btnFinalizarDemo"
+            >
+              Finalizar servicio (demo)
+            </button>
+          </section>
+
+          <!-- ETAPA 3: finalización -->
+          <section class="paso-contenido" id="panel-finalizado" hidden>
+            <span class="insignia insignia-finalizado"
+              >Servicio completado</span
+            >
+
+            <div
+              id="mapaFinal"
+              class="mapa mapa-final"
+              aria-label="Recorrido completo del servicio"
+            ></div>
+
+            <dl class="resumen-final">
+              <div>
+                <dt>Hora de inicio</dt>
+                <dd id="finHoraInicio">—</dd>
+              </div>
+              <div>
+                <dt>Hora de finalización</dt>
+                <dd id="finHoraFin">—</dd>
+              </div>
+              <div>
+                <dt>Duración total</dt>
+                <dd id="finDuracion">—</dd>
+              </div>
+              <div>
+                <dt>Distancia recorrida</dt>
+                <dd><span id="finDistancia">—</span> km</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="seguimiento.js"></script>
+  </body>
+</html>
