@@ -47,22 +47,22 @@ const iniciarServidor = async () => {
             "Tablas sincronizadas correctamente"
         );
 
-        app.listen(PORT, () => {
-
-            console.log(
-                `Servidor ejecutándose en http://localhost:${PORT}`
-            );
-
-        });
-
     } catch (error) {
 
-        console.error(
-            "Error al iniciar Pac-Cop:",
+        console.warn(
+            "Aviso base de datos:",
             error.message
         );
 
     }
+
+    app.listen(PORT, () => {
+
+        console.log(
+            `Servidor Pac-Cop ejecutándose en http://localhost:${PORT}`
+        );
+
+    });
 };
 
 iniciarServidor();
