@@ -1,5 +1,5 @@
 /* ============================================================
-   WoofPal — Panel del prestador (sobre Bootstrap 5.3)
+   Panel del prestador (sobre Bootstrap 5.3)
    La marca se logra pisando las variables de Bootstrap, así que
    clases como btn-primary, badge, progress, alert, etc. ya salen
    con los colores correctos sin escribir CSS propio para cada una.
@@ -32,7 +32,8 @@
   --bs-body-font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
 
   --brand-mint: #eaf6f4;
-  --brand-display: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+  --brand-display:
+    ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
 }
 
 body {

@@ -1,5 +1,5 @@
 /* ============================================
-   WoofPal — Pago del servicio (Bootstrap 5)
+   Pago del servicio
    ============================================ */
 
 document.addEventListener('DOMContentLoaded', () => {

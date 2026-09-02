@@ -1,26 +1,27 @@
 /* ============================================
-   WoofPal — Tracking GPS en vivo
-   Mismas variables de marca que pago.css
+   Tracking GPS en vivo
    ============================================ */
 
 :root {
-  --turquesa: #1F7A74;
-  --turquesa-suave: #E4F3F1;
-  --crema: #FBF6EC;
-  --coral: #FF6F52;
-  --coral-suave: #FFE9E2;
+  --turquesa: #1f7a74;
+  --turquesa-suave: #e4f3f1;
+  --crema: #fbf6ec;
+  --coral: #ff6f52;
+  --coral-suave: #ffe9e2;
   --tinta: #223333;
-  --tinta-suave: #5B6B6A;
-  --linea: #DCD5C4;
-  --blanco: #FFFFFF;
-  --ambar: #B8862E;
-  --ambar-suave: #FBF0DD;
+  --tinta-suave: #5b6b6a;
+  --linea: #dcd5c4;
+  --blanco: #ffffff;
+  --ambar: #b8862e;
+  --ambar-suave: #fbf0dd;
 
-  --fuente-display: 'Fraunces', serif;
-  --fuente-texto: 'Inter', sans-serif;
+  --fuente-display: "Fraunces", serif;
+  --fuente-texto: "Inter", sans-serif;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -81,7 +82,10 @@ body {
   object-fit: cover;
 }
 
-.resumen-nombre { margin: 0; font-weight: 600; }
+.resumen-nombre {
+  margin: 0;
+  font-weight: 600;
+}
 
 .resumen-servicio {
   margin: 0.1rem 0 0;
@@ -165,7 +169,9 @@ body {
   padding-bottom: 1.75rem;
 }
 
-.paso:last-child { padding-bottom: 0; }
+.paso:last-child {
+  padding-bottom: 0;
+}
 
 .paso-marca {
   position: absolute;
@@ -196,8 +202,12 @@ body {
   color: var(--tinta-suave);
 }
 
-.paso.activo .paso-titulo { color: var(--tinta); }
-.paso.hecho .paso-titulo { color: var(--turquesa); }
+.paso.activo .paso-titulo {
+  color: var(--tinta);
+}
+.paso.hecho .paso-titulo {
+  color: var(--turquesa);
+}
 
 .paso-desc {
   margin: 0.15rem 0 0;
@@ -279,7 +289,9 @@ body {
   background: var(--turquesa-suave);
 }
 
-.mapa-final { height: 260px; }
+.mapa-final {
+  height: 260px;
+}
 
 /* ---------- Etapa 3: resumen final ---------- */
 
@@ -299,12 +311,19 @@ body {
   gap: 1rem;
 }
 
-.resumen-final dt { color: var(--tinta-suave); font-size: 0.85rem; }
-.resumen-final dd { margin: 0; font-weight: 600; }
+.resumen-final dt {
+  color: var(--tinta-suave);
+  font-size: 0.85rem;
+}
+.resumen-final dd {
+  margin: 0;
+  font-weight: 600;
+}
 
 /* ---------- Botones ---------- */
 
-.boton-primario, .boton-secundario {
+.boton-primario,
+.boton-secundario {
   font-family: var(--fuente-texto);
   font-weight: 600;
   font-size: 0.95rem;
@@ -319,14 +338,18 @@ body {
   color: var(--blanco);
 }
 
-.boton-primario:hover { background: #E85F44; }
+.boton-primario:hover {
+  background: #e85f44;
+}
 
 .boton-secundario {
   background: var(--turquesa-suave);
   color: var(--turquesa);
 }
 
-.boton-secundario:hover { background: #D4ECE9; }
+.boton-secundario:hover {
+  background: #d4ece9;
+}
 
 /* ---------- Marcador GPS animado en el mapa ---------- */
 
@@ -342,7 +365,9 @@ body {
 /* ---------- Responsive ---------- */
 
 @media (max-width: 640px) {
-  .flujo { grid-template-columns: 1fr; }
+  .flujo {
+    grid-template-columns: 1fr;
+  }
 
   .pasos ol {
     display: flex;
@@ -351,8 +376,12 @@ body {
   }
 
   .pasos ol::before {
-    left: 0; right: 0; top: 7px; bottom: auto;
-    width: auto; height: 2px;
+    left: 0;
+    right: 0;
+    top: 7px;
+    bottom: auto;
+    width: auto;
+    height: 2px;
   }
 
   .paso {
@@ -369,9 +398,18 @@ body {
     transform: translateX(-50%);
   }
 
-  .paso-desc { display: none; }
+  .paso-desc {
+    display: none;
+  }
 
-  .resumen { flex-direction: column; align-items: flex-start; }
-  .resumen-final { grid-template-columns: 1fr; }
-  .tracking-datos { gap: 1rem; }
+  .resumen {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .resumen-final {
+    grid-template-columns: 1fr;
+  }
+  .tracking-datos {
+    gap: 1rem;
+  }
 }

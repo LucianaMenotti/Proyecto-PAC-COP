@@ -1,5 +1,5 @@
 // ============================================================
-// WoofPal — Panel del prestador
+// Panel del prestador
 // Datos mock: en el proyecto real esto vendría del backend
 // (endpoints de precios por zona/nivel y de estadísticas del prestador)
 // ============================================================

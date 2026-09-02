@@ -1,5 +1,5 @@
 /* ============================================
-   WoofPal — Tracking GPS en vivo
+  Tracking GPS en vivo
    Frontend puro. Los puntos donde este proyecto se
    conecta a la API real (Express/Sequelize) o a un
    canal en tiempo real (WebSocket) están marcados

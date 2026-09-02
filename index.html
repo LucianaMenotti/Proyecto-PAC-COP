@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WoofPal — Panel del prestador</title>
+    <title>Panel del prestador</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -22,25 +22,45 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="d-flex align-items-center justify-content-between bg-white border-bottom px-4 py-3">
+    <header
+      class="d-flex align-items-center justify-content-between bg-white border-bottom px-4 py-3"
+    >
       <div class="d-flex align-items-center gap-3">
         <span
           class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
           style="width: 44px; height: 44px; background: var(--bs-primary)"
           aria-hidden="true"
         >
-          <svg viewBox="0 0 100 100" class="paw" style="width: 26px; height: 26px">
+          <svg
+            viewBox="0 0 100 100"
+            class="paw"
+            style="width: 26px; height: 26px"
+          >
             <ellipse cx="50" cy="62" rx="20" ry="16" />
-            <ellipse cx="26" cy="38" rx="9" ry="11" transform="rotate(-18 26 38)" />
+            <ellipse
+              cx="26"
+              cy="38"
+              rx="9"
+              ry="11"
+              transform="rotate(-18 26 38)"
+            />
             <ellipse cx="41" cy="24" rx="9" ry="12" />
             <ellipse cx="59" cy="24" rx="9" ry="12" />
-            <ellipse cx="74" cy="38" rx="9" ry="11" transform="rotate(18 74 38)" />
+            <ellipse
+              cx="74"
+              cy="38"
+              rx="9"
+              ry="11"
+              transform="rotate(18 74 38)"
+            />
           </svg>
         </span>
         <p class="text-secondary small mb-0">Panel del prestador</p>
       </div>
       <div class="d-flex align-items-center gap-3">
-        <span class="badge rounded-pill text-bg-primary">Nivel: Establecido</span>
+        <span class="badge rounded-pill text-bg-primary"
+          >Nivel: Establecido</span
+        >
         <span
           class="rounded-circle d-flex align-items-center justify-content-center text-bg-danger fw-bold flex-shrink-0"
           style="width: 36px; height: 36px; font-size: 0.9rem"
@@ -63,7 +83,8 @@
             aria-controls="panel-niveles"
             aria-selected="true"
           >
-            <span class="fw-display text-primary me-1">01</span>Niveles y precio mínimo
+            <span class="fw-display text-primary me-1">01</span>Niveles y precio
+            mínimo
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -77,7 +98,8 @@
             aria-controls="panel-publicar"
             aria-selected="false"
           >
-            <span class="fw-display text-primary me-1">02</span>Publicar servicio
+            <span class="fw-display text-primary me-1">02</span>Publicar
+            servicio
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -91,7 +113,8 @@
             aria-controls="panel-rendimiento"
             aria-selected="false"
           >
-            <span class="fw-display text-primary me-1">03</span>Rendimiento y precio
+            <span class="fw-display text-primary me-1">03</span>Rendimiento y
+            precio
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -126,35 +149,66 @@
 
       <div class="tab-content">
         <!-- ================= PANEL 1 — Niveles y precio mínimo ================= -->
-        <section class="tab-pane fade show active" id="panel-niveles" role="tabpanel" aria-labelledby="tab-niveles">
+        <section
+          class="tab-pane fade show active"
+          id="panel-niveles"
+          role="tabpanel"
+          aria-labelledby="tab-niveles"
+        >
           <div class="mb-4" style="max-width: 620px">
-            <h1 class="fw-display h3">Tu nivel determina tu piso, no tu techo</h1>
+            <h1 class="fw-display h3">
+              Tu nivel determina tu piso, no tu techo
+            </h1>
             <p class="text-secondary mb-0">
-              A medida que sumás servicios completados y buena calificación, subís de nivel. Cada nivel tiene un
-              precio mínimo por servicio — vos podés cobrar más, nunca menos.
+              A medida que sumás servicios completados y buena calificación,
+              subís de nivel. Cada nivel tiene un precio mínimo por servicio —
+              vos podés cobrar más, nunca menos.
             </p>
           </div>
 
           <div class="mb-2" role="group" aria-label="Progreso de nivel">
-            <div class="progress" style="height: 8px" role="progressbar" aria-label="Progreso de nivel" aria-valuenow="46" aria-valuemin="0" aria-valuemax="100">
+            <div
+              class="progress"
+              style="height: 8px"
+              role="progressbar"
+              aria-label="Progreso de nivel"
+              aria-valuenow="46"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
               <div class="progress-bar" style="width: 46%"></div>
             </div>
             <div class="d-flex justify-content-between mt-2 small">
-              <span class="text-center flex-fill">Nuevo<br /><span class="text-secondary">0–9 servicios</span></span>
-              <span class="text-center flex-fill fw-semibold text-primary"
-                >Establecido<br /><span class="text-secondary fw-normal">10–49 · +4★</span></span
+              <span class="text-center flex-fill"
+                >Nuevo<br /><span class="text-secondary"
+                  >0–9 servicios</span
+                ></span
               >
-              <span class="text-center flex-fill fw-semibold">Top<br /><span class="text-secondary fw-normal">50+ · +4.5★</span></span>
+              <span class="text-center flex-fill fw-semibold text-primary"
+                >Establecido<br /><span class="text-secondary fw-normal"
+                  >10–49 · +4★</span
+                ></span
+              >
+              <span class="text-center flex-fill fw-semibold"
+                >Top<br /><span class="text-secondary fw-normal"
+                  >50+ · +4.5★</span
+                ></span
+              >
             </div>
           </div>
           <p class="text-secondary small my-4">
-            Llevás <strong>18 servicios</strong> con <strong>4.6★</strong> de promedio. Te faltan
-            <strong>32 servicios</strong> para alcanzar Top.
+            Llevás <strong>18 servicios</strong> con <strong>4.6★</strong> de
+            promedio. Te faltan <strong>32 servicios</strong> para alcanzar Top.
           </p>
 
           <div class="card p-4">
-            <table class="table table-borderless align-middle mb-2" id="floorTable">
-              <caption class="caption-top small text-secondary">Precio mínimo por servicio y nivel</caption>
+            <table
+              class="table table-borderless align-middle mb-2"
+              id="floorTable"
+            >
+              <caption class="caption-top small text-secondary">
+                Precio mínimo por servicio y nivel
+              </caption>
               <thead>
                 <tr>
                   <th scope="col">Servicio</th>
@@ -166,28 +220,39 @@
               <tbody></tbody>
             </table>
             <p class="small text-secondary mb-0">
-              Los valores son el piso para la unidad de referencia de cada servicio (paseo: 1 hora y 1 mascota ·
-              guardería: 8 horas). El precio escala proporcionalmente si cambiás la duración, y en el paseo también
-              si sumás más mascotas al mismo recorrido. En traslados el precio se coordina directamente con cada
-              familia según la distancia, por eso no tiene un mínimo fijo.
+              Los valores son el piso para la unidad de referencia de cada
+              servicio (paseo: 1 hora y 1 mascota · guardería: 8 horas). El
+              precio escala proporcionalmente si cambiás la duración, y en el
+              paseo también si sumás más mascotas al mismo recorrido. En
+              traslados el precio se coordina directamente con cada familia
+              según la distancia, por eso no tiene un mínimo fijo.
             </p>
           </div>
         </section>
 
         <!-- ================= PANEL 2 — Publicar servicio ================= -->
-        <section class="tab-pane fade" id="panel-publicar" role="tabpanel" aria-labelledby="tab-publicar">
+        <section
+          class="tab-pane fade"
+          id="panel-publicar"
+          role="tabpanel"
+          aria-labelledby="tab-publicar"
+        >
           <div class="mb-4" style="max-width: 620px">
             <h1 class="fw-display h3">Publicá tus servicios</h1>
             <p class="text-secondary mb-0">
-              Podés ofrecer más de uno a la vez — paseo, guardería y traslado no son excluyentes. Te sugerimos un
-              rango de precio para cada servicio según tu nivel; podés usarlo tal cual o cargar el tuyo, incluso por
-              debajo del sugerido si preferís arrancar más accesible.
+              Podés ofrecer más de uno a la vez — paseo, guardería y traslado no
+              son excluyentes. Te sugerimos un rango de precio para cada
+              servicio según tu nivel; podés usarlo tal cual o cargar el tuyo,
+              incluso por debajo del sugerido si preferís arrancar más
+              accesible.
             </p>
           </div>
 
           <form id="publishForm">
             <fieldset class="mb-4 border-0 p-0">
-              <legend class="h6 text-secondary">¿Qué servicios querés publicar?</legend>
+              <legend class="h6 text-secondary">
+                ¿Qué servicios querés publicar?
+              </legend>
               <div class="d-flex flex-wrap gap-2" id="servicePicker"></div>
             </fieldset>
 
@@ -197,18 +262,29 @@
               Elegí al menos un servicio arriba para cargar el precio.
             </p>
 
-            <button type="submit" class="btn btn-primary rounded-pill" id="publishBtn" disabled>
+            <button
+              type="submit"
+              class="btn btn-primary rounded-pill"
+              id="publishBtn"
+              disabled
+            >
               Publicar servicios seleccionados
             </button>
           </form>
         </section>
 
         <!-- ================= PANEL 3 — Rendimiento y precio ================= -->
-        <section class="tab-pane fade" id="panel-rendimiento" role="tabpanel" aria-labelledby="tab-rendimiento">
+        <section
+          class="tab-pane fade"
+          id="panel-rendimiento"
+          role="tabpanel"
+          aria-labelledby="tab-rendimiento"
+        >
           <div class="mb-4" style="max-width: 620px">
             <h1 class="fw-display h3">Cómo viene tu rendimiento</h1>
             <p class="text-secondary mb-0">
-              Estas métricas alimentan la recomendación de precio. La decisión final siempre es tuya.
+              Estas métricas alimentan la recomendación de precio. La decisión
+              final siempre es tuya.
             </p>
           </div>
 
@@ -221,14 +297,18 @@
             </div>
             <div class="col">
               <div class="card text-center p-3 h-100">
-                <p class="fw-display fs-2 fw-bold text-primary mb-0">4.6<span class="fs-5">★</span></p>
+                <p class="fw-display fs-2 fw-bold text-primary mb-0">
+                  4.6<span class="fs-5">★</span>
+                </p>
                 <p class="small text-secondary mb-0">Calificación promedio</p>
               </div>
             </div>
             <div class="col">
               <div class="card text-center p-3 h-100">
                 <p class="fw-display fs-2 fw-bold text-primary mb-0">1</p>
-                <p class="small text-secondary mb-0">Reservas — últimas 2 semanas</p>
+                <p class="small text-secondary mb-0">
+                  Reservas — últimas 2 semanas
+                </p>
               </div>
             </div>
           </div>
@@ -236,22 +316,36 @@
           <div class="alert alert-warning d-flex gap-3 mb-4" role="alert">
             <div class="fw-bold" aria-hidden="true">!</div>
             <div>
-              <p class="fw-bold mb-1">Te recomendamos mantener tu precio actual</p>
+              <p class="fw-bold mb-1">
+                Te recomendamos mantener tu precio actual
+              </p>
               <p class="small mb-3">
-                Tu calificación es alta (4.6★), pero tuviste solo 1 reserva en las últimas 2 semanas. Antes de subir
-                el precio, esperá a validar que la demanda se sostenga — si subís ahora podrías perder las próximas
-                reservas.
+                Tu calificación es alta (4.6★), pero tuviste solo 1 reserva en
+                las últimas 2 semanas. Antes de subir el precio, esperá a
+                validar que la demanda se sostenga — si subís ahora podrías
+                perder las próximas reservas.
               </p>
               <div class="d-flex gap-2 flex-wrap">
-                <button class="btn btn-primary btn-sm rounded-pill">Mantener precio actual</button>
-                <button class="btn btn-outline-secondary btn-sm rounded-pill">Ver otras opciones</button>
+                <button class="btn btn-primary btn-sm rounded-pill">
+                  Mantener precio actual
+                </button>
+                <button class="btn btn-outline-secondary btn-sm rounded-pill">
+                  Ver otras opciones
+                </button>
               </div>
             </div>
           </div>
 
           <div class="card p-4">
-            <p class="fw-bold small mb-3">Evolución de tu precio — Paseo (30 min)</p>
-            <svg viewBox="0 0 520 140" class="w-100" style="height: 120px" preserveAspectRatio="none">
+            <p class="fw-bold small mb-3">
+              Evolución de tu precio — Paseo (30 min)
+            </p>
+            <svg
+              viewBox="0 0 520 140"
+              class="w-100"
+              style="height: 120px"
+              preserveAspectRatio="none"
+            >
               <polyline
                 points="10,110 100,95 190,90 280,70 370,55 460,40"
                 fill="none"
@@ -269,19 +363,27 @@
                 <circle cx="460" cy="40" r="5" fill="var(--bs-danger)" />
               </g>
             </svg>
-            <div class="d-flex justify-content-between small text-secondary mt-1">
+            <div
+              class="d-flex justify-content-between small text-secondary mt-1"
+            >
               <span>Hace 6 quincenas</span><span>Hoy</span>
             </div>
           </div>
         </section>
 
         <!-- ================= PANEL 4 — Ruta de hoy ================= -->
-        <section class="tab-pane fade" id="panel-ruta" role="tabpanel" aria-labelledby="tab-ruta">
+        <section
+          class="tab-pane fade"
+          id="panel-ruta"
+          role="tabpanel"
+          aria-labelledby="tab-ruta"
+        >
           <div class="mb-4" style="max-width: 620px">
             <h1 class="fw-display h3">Tu recorrido de hoy</h1>
             <p class="text-secondary mb-0">
-              Orden sugerido según cercanía y horario, con la hora en la que conviene salir para cada paseo. Los
-              traslados se muestran aparte, porque tienen origen y destino en vez de un solo punto.
+              Orden sugerido según cercanía y horario, con la hora en la que
+              conviene salir para cada paseo. Los traslados se muestran aparte,
+              porque tienen origen y destino en vez de un solo punto.
             </p>
           </div>
 
@@ -296,7 +398,8 @@
                   aria-label="Mapa con el recorrido de los 3 paseos de hoy en Formosa"
                 ></div>
                 <p class="text-center small text-secondary mt-2 mb-0">
-                  Mapa interactivo (Leaflet + OpenStreetMap) · coordenadas aproximadas de cada barrio
+                  Mapa interactivo (Leaflet + OpenStreetMap) · coordenadas
+                  aproximadas de cada barrio
                 </p>
               </div>
             </div>
@@ -312,7 +415,9 @@
                   <div>
                     <p class="fw-bold mb-0">Toby · Paseo 30 min</p>
                     <p class="text-secondary small mb-1">Barrio San Miguel</p>
-                    <p class="small mb-0">Salida sugerida: <strong>08:35</strong> — Servicio 09:00</p>
+                    <p class="small mb-0">
+                      Salida sugerida: <strong>08:35</strong> — Servicio 09:00
+                    </p>
                   </div>
                 </li>
                 <li class="list-group-item d-flex gap-3 px-0">
@@ -324,10 +429,14 @@
                   <div>
                     <p class="fw-bold mb-0">Kira · Paseo 45 min</p>
                     <p class="text-secondary small mb-1">Barrio Namqom</p>
-                    <p class="small mb-0">Salida sugerida: <strong>09:50</strong> — Servicio 10:15</p>
+                    <p class="small mb-0">
+                      Salida sugerida: <strong>09:50</strong> — Servicio 10:15
+                    </p>
                   </div>
                 </li>
-                <li class="list-group-item d-flex gap-3 px-0 border-top border-danger">
+                <li
+                  class="list-group-item d-flex gap-3 px-0 border-top border-danger"
+                >
                   <span
                     class="rounded-circle text-bg-danger fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
                     style="width: 30px; height: 30px"
@@ -336,9 +445,12 @@
                   <div>
                     <p class="fw-bold mb-0">Rocky · Paseo 30 min</p>
                     <p class="text-secondary small mb-1">Centro</p>
-                    <p class="small mb-0">Salida sugerida: <strong>11:05</strong> — Servicio 11:30</p>
+                    <p class="small mb-0">
+                      Salida sugerida: <strong>11:05</strong> — Servicio 11:30
+                    </p>
                     <p class="text-danger small fw-semibold mb-0">
-                      Son las 10:50 y todavía estás en Namqom — salí en los próximos minutos para llegar a tiempo.
+                      Son las 10:50 y todavía estás en Namqom — salí en los
+                      próximos minutos para llegar a tiempo.
                     </p>
                   </div>
                 </li>
@@ -349,30 +461,47 @@
           <div class="mt-5">
             <h2 class="fw-display h4">Traslados de hoy</h2>
             <p class="text-secondary" style="max-width: 640px">
-              Cada traslado tiene origen y destino propios, un motivo, y pasos que tenés que confirmar vos: recepción
-              de la mascota antes de salir, y llegada a destino al terminar.
+              Cada traslado tiene origen y destino propios, un motivo, y pasos
+              que tenés que confirmar vos: recepción de la mascota antes de
+              salir, y llegada a destino al terminar.
             </p>
             <div class="d-grid gap-3" id="transportJobsList"></div>
           </div>
         </section>
 
         <!-- ================= PANEL 5 — Mi perfil ================= -->
-        <section class="tab-pane fade" id="panel-perfil" role="tabpanel" aria-labelledby="tab-perfil">
+        <section
+          class="tab-pane fade"
+          id="panel-perfil"
+          role="tabpanel"
+          aria-labelledby="tab-perfil"
+        >
           <div class="mb-4" style="max-width: 620px">
             <h1 class="fw-display h3">Tu perfil como prestador</h1>
-            <p class="text-secondary mb-0">Así te ven las familias que buscan un prestador en WoofPal.</p>
+            <p class="text-secondary mb-0">
+              Así te ven las familias que buscan un prestador
+            </p>
           </div>
 
-          <div class="card d-flex flex-row flex-wrap justify-content-between align-items-center gap-3 p-4 mb-4">
+          <div
+            class="card d-flex flex-row flex-wrap justify-content-between align-items-center gap-3 p-4 mb-4"
+          >
             <div>
-              <p class="fw-display fs-2 fw-bold text-primary mb-0">4.6<span class="fs-4">★</span></p>
+              <p class="fw-display fs-2 fw-bold text-primary mb-0">
+                4.6<span class="fs-4">★</span>
+              </p>
               <p class="small text-secondary mb-0">18 servicios completados</p>
             </div>
-            <span class="badge rounded-pill text-bg-primary">Nivel: Establecido</span>
+            <span class="badge rounded-pill text-bg-primary"
+              >Nivel: Establecido</span
+            >
           </div>
 
           <h2 class="fw-display h5 mb-3">Servicios que ofrecés actualmente</h2>
-          <div class="row row-cols-1 row-cols-sm-2 g-3" id="profileServices"></div>
+          <div
+            class="row row-cols-1 row-cols-sm-2 g-3"
+            id="profileServices"
+          ></div>
         </section>
       </div>
     </main>
