@@ -119,6 +119,22 @@ async function cargarMascotas(userId) {
 
         mascotas.forEach(function (mascota) {
 
+            // Comprobar si la ficha de salud
+            // tiene información
+            const fichaCompleta =
+                mascota.condicion ||
+                mascota.alergias ||
+                mascota.vacunacion ||
+                mascota.reactividad ||
+                mascota.alertaDueno;
+
+
+            const textoBoton =
+                fichaCompleta
+                    ? "✏️ Editar ficha de salud"
+                    : "🩺 Completar ficha de salud";
+
+
             contenedor.innerHTML += `
 
                 <div class="col-md-6 col-lg-4">
@@ -164,7 +180,7 @@ async function cargarMascotas(userId) {
                                 href="FichaSalud.html?id=${mascota.id}"
                                 class="btn btn-outline-primary w-100"
                             >
-                                🩺 Ficha de salud
+                                ${textoBoton}
                             </a>
 
                         </div>
@@ -193,3 +209,4 @@ async function cargarMascotas(userId) {
     }
 
 }
+

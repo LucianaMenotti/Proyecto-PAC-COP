@@ -1,9 +1,32 @@
+
+// =========================================
+// PAC-COP - REGISTRAR MASCOTA
+// =========================================
+
+
+// -----------------------------------------
+// ELEMENTOS
+// -----------------------------------------
+
 const formulario =
     document.getElementById("formMascota");
 
 const mensaje =
     document.getElementById("mensaje");
 
+const fichaAhora =
+    document.getElementById("fichaAhora");
+
+const fichaDespues =
+    document.getElementById("fichaDespues");
+
+const datosSalud =
+    document.getElementById("datosSalud");
+
+
+// -----------------------------------------
+// USUARIO LOGUEADO
+// -----------------------------------------
 
 const usuarioGuardado =
     localStorage.getItem("usuario");
@@ -11,80 +34,251 @@ const usuarioGuardado =
 
 if (!usuarioGuardado) {
 
-    window.location.href =
-        "login.html";
+    window.location.href = "login.html";
 
 } else {
 
-    const usuario =
-        JSON.parse(usuarioGuardado);
+    try {
+
+        const usuario =
+            JSON.parse(usuarioGuardado);
 
 
-    if (usuario.rol !== "dueño") {
+        // Solo los dueños pueden registrar mascotas
+        if (usuario.rol !== "dueño") {
 
-        window.location.href =
-            "inicio.html";
+            window.location.href = "inicio.html";
+
+        } else {
+
+            inicializarFormulario(usuario);
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Error al leer el usuario:",
+            error
+        );
+
+        localStorage.removeItem("usuario");
+
+        window.location.href = "login.html";
+    }
+}
+
+
+// -----------------------------------------
+// MOSTRAR / OCULTAR FICHA
+// -----------------------------------------
+
+fichaAhora.addEventListener(
+    "change",
+    function () {
+
+        if (fichaAhora.checked) {
+
+            datosSalud.classList.remove("d-none");
+
+        }
 
     }
+);
 
+
+fichaDespues.addEventListener(
+    "change",
+    function () {
+
+        if (fichaDespues.checked) {
+
+            datosSalud.classList.add("d-none");
+
+        }
+
+    }
+);
+
+
+// -----------------------------------------
+// FORMULARIO
+// -----------------------------------------
+
+function inicializarFormulario(usuario) {
 
     formulario.addEventListener(
         "submit",
-        async function (event) {
+        async function (evento) {
 
-            event.preventDefault();
+            evento.preventDefault();
 
+
+            mensaje.innerHTML = "";
+
+
+            // =============================
+            // DATOS DE LA MASCOTA
+            // =============================
+
+            const nombre =
+                document
+                    .getElementById("nombreMascota")
+                    .value
+                    .trim();
+
+
+            const especie =
+                document
+                    .getElementById("especie")
+                    .value;
+
+
+            const raza =
+                document
+                    .getElementById("raza")
+                    .value
+                    .trim();
+
+
+            const edadValor =
+                document
+                    .getElementById("edad")
+                    .value;
+
+
+            const edad =
+                edadValor !== ""
+                    ? Number(edadValor)
+                    : null;
+
+
+            const descripcion =
+                document
+                    .getElementById("descripcion")
+                    .value
+                    .trim();
+
+
+            if (!nombre || !especie) {
+
+                mostrarMensaje(
+                    "Completá el nombre y la especie de la mascota.",
+                    "danger"
+                );
+
+                return;
+            }
+
+
+            // =============================
+            // FICHA DE SALUD
+            // =============================
+
+            let condicion = null;
+            let alergias = null;
+            let vacunacion = null;
+            let reactividad = null;
+            let alertaDueno = null;
+
+
+            if (fichaAhora.checked) {
+
+                condicion =
+                    document
+                        .getElementById("condicion")
+                        .value
+                        .trim();
+
+
+                alergias =
+                    document
+                        .getElementById("alergias")
+                        .value
+                        .trim();
+
+
+                vacunacion =
+                    document
+                        .getElementById("vacunacion")
+                        .value;
+
+
+                reactividad =
+                    document
+                        .getElementById("reactividad")
+                        .value;
+
+
+                alertaDueno =
+                    document
+                        .getElementById("alertaGeneral")
+                        .value
+                        .trim();
+
+
+                if (
+                    !condicion ||
+                    !alergias ||
+                    !vacunacion ||
+                    !reactividad ||
+                    !alertaDueno
+                ) {
+
+                    mostrarMensaje(
+                        "Completá todos los datos de la ficha de salud o elegí completarla más adelante.",
+                        "danger"
+                    );
+
+                    return;
+                }
+
+            }
+
+
+            // =============================
+            // DATOS A ENVIAR
+            // =============================
 
             const datos = {
 
-                nombre:
-                    document.getElementById(
-                        "nombreMascota"
-                    ).value,
+                nombre,
+                especie,
+                raza: raza || null,
+                edad,
+                descripcion: descripcion || null,
 
-                especie:
-                    document.getElementById(
-                        "especie"
-                    ).value,
+                condicion,
+                alergias,
+                vacunacion,
+                reactividad,
+                alertaDueno,
 
-                raza:
-                    document.getElementById(
-                        "raza"
-                    ).value,
-
-                edad:
-                    Number(
-                        document.getElementById(
-                            "edad"
-                        ).value
-                    ),
-
-                descripcion:
-                    document.getElementById(
-                        "descripcion"
-                    ).value,
-
-                userId:
-                    usuario.id
+                userId: usuario.id
             };
 
+
+            // =============================
+            // GUARDAR MASCOTA
+            // =============================
 
             try {
 
                 const respuesta =
-                    await fetch("/api/mascotas", {
+                    await fetch(
+                        "/api/mascotas",
+                        {
+                            method: "POST",
 
-                        method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify(datos)
-
-                    });
+                            body:
+                                JSON.stringify(datos)
+                        }
+                    );
 
 
                 const resultado =
@@ -93,32 +287,44 @@ if (!usuarioGuardado) {
 
                 if (!respuesta.ok) {
 
-                    mensaje.innerHTML = `
-                        <div class="alert alert-danger">
-                            ${resultado.mensaje}
-                        </div>
-                    `;
+                    mostrarMensaje(
+                        resultado.mensaje ||
+                        "No se pudo registrar la mascota.",
+                        "danger"
+                    );
 
                     return;
                 }
 
 
-                mensaje.innerHTML = `
-                    <div class="alert alert-success">
-                        ¡Mascota registrada correctamente!
-                    </div>
-                `;
+                // =========================
+                // ÉXITO
+                // =========================
+
+                mostrarMensaje(
+                    fichaAhora.checked
+                        ? "¡Mascota y ficha de salud registradas correctamente!"
+                        : "¡Mascota registrada correctamente! Podés completar la ficha de salud más adelante.",
+                    "success"
+                );
 
 
                 formulario.reset();
 
+                datosSalud.classList.add("d-none");
 
-                setTimeout(function () {
+                fichaDespues.checked = true;
 
-                    window.location.href =
-                        "mis-mascotas.html";
 
-                }, 1000);
+                setTimeout(
+                    function () {
+
+                        window.location.href =
+                            "mis-mascotas.html";
+
+                    },
+                    1200
+                );
 
 
             } catch (error) {
@@ -128,15 +334,33 @@ if (!usuarioGuardado) {
                     error
                 );
 
-                mensaje.innerHTML = `
-                    <div class="alert alert-danger">
-                        No se pudo conectar con el servidor.
-                    </div>
-                `;
+
+                mostrarMensaje(
+                    "No se pudo conectar con el servidor. Verificá que el backend esté ejecutándose.",
+                    "danger"
+                );
 
             }
 
         }
     );
+
+}
+
+
+// -----------------------------------------
+// MENSAJES
+// -----------------------------------------
+
+function mostrarMensaje(
+    texto,
+    tipo
+) {
+
+    mensaje.innerHTML = `
+        <div class="alert alert-${tipo}">
+            ${texto}
+        </div>
+    `;
 
 }
