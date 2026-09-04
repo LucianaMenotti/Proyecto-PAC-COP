@@ -3,42 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ficha de Salud - Dueño</title>
+    <title>Ficha de Salud - Pac-Cop</title>
     <link rel="stylesheet" href="../css/fichaSalud.css" />
   </head>
+
   <body>
     <div id="vista-dueno" class="dashboard-form">
       <header class="form-header">
         <h1>Ficha de Salud</h1>
-        <p>Completa esta ficha obligatoria antes de solicitar un servicio.</p>
+
+        <p>
+          Completá la información de salud de
+          <strong id="nombreMascota">tu mascota</strong>.
+        </p>
+
+        <p>
+          Esta información ayuda al prestador a conocer las necesidades de tu
+          mascota durante el servicio.
+        </p>
       </header>
 
       <form id="health-form">
+        <!-- ===============================
+             DATOS DE SALUD
+        ================================ -->
+
         <fieldset class="normal-fieldset">
-          <legend>Datos Obligatorios</legend>
+          <legend>Datos de Salud</legend>
 
           <div class="form-group">
-            <label for="raza">Raza:</label>
-            <input type="text" id="raza" name="raza" required />
+            <label for="condicion"> Condición Médica: </label>
+
+            <textarea
+              id="condicion"
+              name="condicion"
+              placeholder="Indique si tiene alguna condición médica o enfermedad."
+              required
+            ></textarea>
           </div>
 
           <div class="form-group">
-            <label for="edad">Edad (años):</label>
-            <input type="number" id="edad" name="edad" required min="0" />
+            <label for="alergias"> Alergias: </label>
+
+            <textarea
+              id="alergias"
+              name="alergias"
+              placeholder="Indique si tiene alergias conocidas."
+              required
+            ></textarea>
           </div>
 
           <div class="form-group">
-            <label for="condicion">Condición Médica:</label>
-            <textarea id="condicion" name="condicion" required></textarea>
-          </div>
+            <label for="vacunacion"> Vacunación: </label>
 
-          <div class="form-group">
-            <label for="alergias">Alergias:</label>
-            <textarea id="alergias" name="alergias" required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="vacunacion">Vacunación:</label>
             <select id="vacunacion" name="vacunacion" required>
               <option value="">Seleccione...</option>
               <option value="Completo">Completo</option>
@@ -48,37 +65,54 @@
           </div>
 
           <div class="form-group">
-            <label for="reactividad">Reactividad:</label>
+            <label for="reactividad"> Reactividad: </label>
+
             <select id="reactividad" name="reactividad" required>
               <option value="">Seleccione...</option>
               <option value="Tranquilo">Tranquilo</option>
+
               <option value="Reactivo a otros perros">
                 Reactivo a otros perros
               </option>
+
               <option value="Miedoso / Asustadizo">Miedoso / Asustadizo</option>
             </select>
           </div>
         </fieldset>
 
+        <!-- ===============================
+             ALERTAS
+        ================================ -->
+
         <fieldset class="alert-fieldset">
           <legend>Alertas para el Prestador</legend>
+
           <div class="form-group">
             <label for="alerta-general">
               ¿Hay alguna alerta o indicación importante que el prestador deba
               saber?
             </label>
+
             <textarea
               id="alerta-general"
               name="alerta-general"
-              placeholder="Ej: Toma medicación a las 18hs, muerde si se asusta, alergia al pollo..."
+              placeholder="Ej: Toma medicación a las 18 hs, necesita evitar ciertos alimentos, etc."
               required
             ></textarea>
           </div>
         </fieldset>
 
-        <button type="submit" class="btn-submit">
-          Guardar Ficha y Solicitar Servicio
-        </button>
+        <!-- ===============================
+             MENSAJE
+        ================================ -->
+
+        <div id="mensaje"></div>
+
+        <!-- ===============================
+             BOTÓN
+        ================================ -->
+
+        <button type="submit" class="btn-submit">Guardar Ficha de Salud</button>
       </form>
     </div>
 

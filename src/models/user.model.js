@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
 const User = sequelize.define("User", {
+
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -15,6 +16,17 @@ const User = sequelize.define("User", {
 
     apellido: {
         type: DataTypes.STRING(100),
+        allowNull: false
+    },
+
+    dni: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        unique: true
+    },
+
+    fechaNacimiento: {
+        type: DataTypes.DATEONLY,
         allowNull: false
     },
 
@@ -36,7 +48,7 @@ const User = sequelize.define("User", {
 
     zona: {
         type: DataTypes.STRING(100),
-        allowNull: false
+        allowNull: true
     },
 
     rol: {
@@ -47,6 +59,11 @@ const User = sequelize.define("User", {
 
     servicios: {
         type: DataTypes.JSON,
+        allowNull: true
+    },
+
+    vehiculo: {
+        type: DataTypes.STRING(30),
         allowNull: true
     },
 
@@ -64,6 +81,7 @@ const User = sequelize.define("User", {
         type: DataTypes.INTEGER,
         defaultValue: 0
     }
+
 });
 
 export default User;
