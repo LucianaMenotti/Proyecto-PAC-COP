@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PawCheck</title>
+    <link rel="stylesheet" href="chatApp.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="app-header">
+      <h1 class="logo">🐾 PawCheck</h1>
+      <button id="roleToggle" class="role-toggle-btn" data-role="prestador">
+        Cambiar Rol
+      </button>
+    </header>
+
+    <!-- Navegación -->
+    <nav class="app-nav">
+      <button class="nav-btn active" data-target="view-reportes">
+        Reportes
+        <span id="badgeReportes" class="badge" hidden>0</span>
+      </button>
+      <button class="nav-btn" data-target="view-chat">
+        Chat
+        <span id="badgeChat" class="badge" hidden>0</span>
+      </button>
+    </nav>
+
+    <!-- Vistas Principales -->
+    <main class="app-main">
+      <!-- Vista Reportes -->
+      <section id="view-reportes" class="view active">
+        <div id="captureCta" class="capture-card">
+          <button id="openCameraBtn" class="btn primary-btn">
+            📸 Tomar foto del servicio
+          </button>
+        </div>
+
+        <div id="reportsFeed" class="reports-feed"></div>
+
+        <div id="reportsEmpty" class="empty-state">
+          <p>No hay reportes guardados aún.</p>
+        </div>
+      </section>
+
+      <!-- Vista Chat -->
+      <section id="view-chat" class="view">
+        <div class="chat-header">
+          <div id="chatAvatar" class="chat-avatar">FP</div>
+          <div id="chatContactName" class="chat-contact-name">
+            Familia Pérez · Dueños de Toby
+          </div>
+        </div>
+
+        <div id="chatThread" class="chat-thread"></div>
+
+        <form id="chatForm" class="chat-form">
+          <textarea
+            id="chatInput"
+            placeholder="Escribe un mensaje..."
+            rows="1"
+          ></textarea>
+          <button type="submit" class="send-btn">Enviar</button>
+        </form>
+      </section>
+    </main>
+
+    <!-- Overlay Cámara en Vivo -->
+    <div id="cameraOverlay" class="overlay" hidden>
+      <div class="camera-container">
+        <video id="cameraVideo" autoplay playsinline></video>
+        <canvas id="cameraCanvas" hidden></canvas>
+
+        <div class="camera-hud">
+          <span id="cameraGps">Obteniendo ubicación GPS…</span>
+          <span id="cameraClock">00:00</span>
+        </div>
+
+        <div id="cameraError" class="camera-error" hidden>
+          <p>No se pudo acceder a la cámara.</p>
+          <label for="fallbackInput" class="btn fallback-btn"
+            >Subir / Tomar foto</label
+          >
+          <input
+            type="file"
+            id="fallbackInput"
+            accept="image/*"
+            capture="environment"
+            hidden
+          />
+        </div>
+
+        <div class="camera-controls">
+          <button id="closeCameraBtn" class="icon-btn">✕</button>
+          <button
+            id="shutterBtn"
+            class="shutter-btn"
+            aria-label="Capturar foto"
+          ></button>
+          <button id="flipCameraBtn" class="icon-btn">🔄</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay Vista Previa -->
+    <div id="previewOverlay" class="overlay" hidden>
+      <div class="preview-container">
+        <img id="previewImg" src="" alt="Vista previa de la captura" />
+        <div id="previewInfo" class="preview-info"></div>
+        <div class="preview-actions">
+          <button id="retakeBtn" class="btn secondary-btn">Reintentar</button>
+          <button id="sendReportBtn" class="btn primary-btn">
+            Enviar Reporte
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay Lightbox -->
+    <div id="lightbox" class="overlay" hidden>
+      <div class="lightbox-content">
+        <button id="lightboxClose" class="icon-btn close-lb">✕</button>
+        <img id="lightboxImg" src="" alt="Foto en tamaño completo" />
+        <div id="lightboxInfo" class="lightbox-info"></div>
+      </div>
+    </div>
+
+    <!-- Contenedor de Notificaciones Toast -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="chatApp.js"></script>
+  </body>
+</html>

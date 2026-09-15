@@ -1,0 +1,67 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+
+/* HERO */
+
+.hero {
+    /* background: linear-gradient(
+        135deg,
+        #eef5ff,
+        #ffffff
+    ); */
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+}
+
+/* CARDS */
+
+.service-card {
+    transition: transform 0.2s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+}
+
+
+/* CTA */
+
+.cta-box {
+    background-color: #eef5ff;
+    border-radius: 20px;
+}
+
+
+/* FORMULARIOS */
+
+.form-container {
+    max-width: 600px;
+    margin: 50px auto;
+}
+
+
+/* PERFIL */
+
+.profile-header {
+    background-color: #eef5ff;
+    border-radius: 20px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .hero {
+        text-align: center;
+        min-height: auto;
+    }
+
+    .hero-icon {
+        font-size: 120px;
+    }
+
+}
