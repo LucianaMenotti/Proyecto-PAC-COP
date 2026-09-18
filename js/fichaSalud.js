@@ -9,22 +9,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // COMPROBAR USUARIO
     // ===============================
 
-    const usuarioGuardado = localStorage.getItem("usuario");
+    const usuario = await window.PacCopAuth.requireSession(["dueño"]);
 
-    if (!usuarioGuardado) {
-        window.location.href = "login.html";
-        return;
-    }
-
-    let usuario;
-
-    try {
-        usuario = JSON.parse(usuarioGuardado);
-    } catch (error) {
-        console.error("Error al leer el usuario:", error);
-
-        localStorage.removeItem("usuario");
-        window.location.href = "login.html";
+    if (!usuario) {
         return;
     }
 
@@ -49,7 +36,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
 
-        const respuesta = await fetch(`/api/mascotas/${mascotaId}`);
+        const respuesta = await fetch(`/api/mascotas/${mascotaId}`, {
+            credentials: "include"
+        });
 
         const mascota = await respuesta.json();
 

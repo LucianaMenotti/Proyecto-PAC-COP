@@ -19,47 +19,10 @@ const mensaje =
 // USUARIO LOGUEADO
 // -----------------------------------------
 
-const usuarioGuardado =
-    localStorage.getItem("usuario");
+const usuario = await window.PacCopAuth.requireSession(["dueño"]);
 
-
-if (!usuarioGuardado) {
-
-    window.location.href =
-        "login.html";
-
-} else {
-
-    try {
-
-        const usuario =
-            JSON.parse(usuarioGuardado);
-
-
-        // Solo los dueños pueden acceder
-        if (usuario.rol !== "dueño") {
-
-            window.location.href =
-                "inicio.html";
-
-        } else {
-
-            cargarMascotas(usuario.id);
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Error al leer el usuario:",
-            error
-        );
-
-        localStorage.removeItem("usuario");
-
-        window.location.href =
-            "login.html";
-    }
+if (usuario) {
+    cargarMascotas(usuario.id);
 }
 
 

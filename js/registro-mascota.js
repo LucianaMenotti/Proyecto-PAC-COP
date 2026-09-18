@@ -28,44 +28,10 @@ const datosSalud =
 // USUARIO LOGUEADO
 // -----------------------------------------
 
-const usuarioGuardado =
-    localStorage.getItem("usuario");
+const usuario = await window.PacCopAuth.requireSession(["dueño"]);
 
-
-if (!usuarioGuardado) {
-
-    window.location.href = "login.html";
-
-} else {
-
-    try {
-
-        const usuario =
-            JSON.parse(usuarioGuardado);
-
-
-        // Solo los dueños pueden registrar mascotas
-        if (usuario.rol !== "dueño") {
-
-            window.location.href = "inicio.html";
-
-        } else {
-
-            inicializarFormulario(usuario);
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Error al leer el usuario:",
-            error
-        );
-
-        localStorage.removeItem("usuario");
-
-        window.location.href = "login.html";
-    }
+if (usuario) {
+    inicializarFormulario(usuario);
 }
 
 
