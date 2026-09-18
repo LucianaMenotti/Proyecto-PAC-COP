@@ -11,12 +11,13 @@ import {
     mascotaOwnerMiddleware,
     ownerOrAdminMiddleware
 } from "../middlewares/auth.middleware.js";
+import { validateMascota } from "../middlewares/validation.middleware.js";
 
 const router = express.Router();
 
 
 // Crear mascota
-router.post("/", authMiddleware, ownerOrAdminMiddleware, crearMascota);
+router.post("/", authMiddleware, validateMascota, crearMascota);
 
 
 // Obtener todas las mascotas de un usuario

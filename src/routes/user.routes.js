@@ -9,10 +9,11 @@ import {
     obtenerUsuarioPorId
 } from "../controllers/user.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { validateUser } from "../middlewares/validation.middleware.js";
 
 const router = express.Router();
 
-router.post("/", crearUsuario);
+router.post("/", validateUser, crearUsuario);
 
 router.post("/login", iniciarSesion);
 
