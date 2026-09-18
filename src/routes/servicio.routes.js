@@ -1,6 +1,7 @@
 import express from "express";
 import {
     crearServicioDemo,
+    listarServicios,
     obtenerServicio,
     iniciarServicio,
     finalizarServicio,
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.use(authMiddleware);
 router.post("/demo", crearServicioDemo);
+router.get("/", listarServicios);
 router.get("/:id", obtenerServicio);
 router.post("/:id/iniciar", iniciarServicio);
 router.post("/:id/finalizar", finalizarServicio);

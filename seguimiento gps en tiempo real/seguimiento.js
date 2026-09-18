@@ -15,6 +15,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     let ultimaPosicion = null;
     const recorridoReal = [];
     const pasos = ["programado", "en-curso", "finalizado"];
+    const botonInicio = document.getElementById("btnIniciarDemo");
+    const botonFinal = document.getElementById("btnFinalizarDemo");
+
+    botonInicio.disabled = true;
+    botonFinal.disabled = true;
 
     const mostrarTexto = (id, texto) => {
         const elemento = document.getElementById(id);
@@ -166,6 +171,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     document.getElementById("btnIniciarDemo").addEventListener("click", async () => {
+        if (!servicio) return;
+
         try {
             const respuesta = await fetch(`/api/servicios/${servicio.id}/iniciar`, {
                 method: "POST",
@@ -181,6 +188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             inicializarMapaVivo();
             iniciarCronometro();
             iniciarGeolocalizacion();
+            botonFinal.disabled = false;
             intervaloUbicacion = setInterval(consultarUbicacion, 5000);
         } catch (error) {
             mostrarError(error.message || "No se pudo iniciar el servicio");
@@ -188,6 +196,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document.getElementById("btnFinalizarDemo").addEventListener("click", async () => {
+        if (!servicio) return;
+
         try {
             const respuesta = await fetch(`/api/servicios/${servicio.id}/finalizar`, {
                 method: "POST",
@@ -198,6 +208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             servicio = resultado.servicio;
             horaFinReal = new Date(servicio.finalizadoEn);
             detenerSeguimiento();
+            botonFinal.disabled = true;
             actualizarInsignia("Finalizado", "finalizado");
             mostrarTexto("finHoraInicio", formatearHora(horaInicioReal));
             mostrarTexto("finHoraFin", formatearHora(horaFinReal));
@@ -227,7 +238,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         await cargarServicio();
+        botonInicio.disabled = !servicio.puedeGestionar || servicio.estado !== "programado";
+        if (!servicio.puedeGestionar) {
+            mostrarError("El servicio está asignado al prestador. Podés consultar el seguimiento cuando comience.");
+        }
     } catch (error) {
+        botonInicio.disabled = true;
+        botonFinal.disabled = true;
         mostrarError(error.message || "Iniciá sesión para usar el seguimiento");
     }
 });
