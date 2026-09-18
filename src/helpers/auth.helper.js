@@ -1,4 +1,4 @@
-import { createHmac, randomBytes } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const TOKEN_LIFETIME_SECONDS = 60 * 60 * 8;
 
@@ -30,7 +30,15 @@ export const createAuthToken = (user) => {
 export const verifyAuthToken = (token) => {
     const [payload, signature] = token?.split(".") ?? [];
 
-    if (!payload || !signature || sign(payload) !== signature) {
+    if (!payload || !signature) {
+        throw new Error("Token inválido");
+    }
+
+    const expectedSignature = sign(payload);
+    const signaturesMatch = signature.length === expectedSignature.length &&
+        timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+
+    if (!signaturesMatch) {
         throw new Error("Token inválido");
     }
 
@@ -61,8 +69,9 @@ export const setAuthCookie = (res, token) => {
 };
 
 export const clearAuthCookie = (res) => {
+    const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
     res.setHeader(
         "Set-Cookie",
-        "pac_cop_session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0"
+        `pac_cop_session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secure}`
     );
 };
