@@ -23,6 +23,19 @@ const PUBLIC_USER_FIELDS = [
     "resenas"
 ];
 
+const DIRECTORY_USER_FIELDS = [
+    "id",
+    "nombre",
+    "apellido",
+    "zona",
+    "rol",
+    "servicios",
+    "vehiculo",
+    "verificado",
+    "calificacion",
+    "resenas"
+];
+
 const publicUser = (user) => {
     const data = user.toJSON ? user.toJSON() : user;
     return Object.fromEntries(
@@ -190,7 +203,7 @@ export const obtenerSesion = (req, res) => res.status(200).json({ usuario: publi
 export const obtenerUsuarios = async (req, res) => {
     try {
         const users = await User.findAll({
-            attributes: PUBLIC_USER_FIELDS,
+            attributes: DIRECTORY_USER_FIELDS,
             order: [["nombre", "ASC"]]
         });
 
