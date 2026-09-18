@@ -8,25 +8,7 @@
 // USUARIO LOGUEADO
 // -----------------------------------------
 
-const usuarioGuardado = localStorage.getItem("usuario");
-
-let usuario = null;
-
-if (!usuarioGuardado) {
-
-    window.location.href = "login.html";
-
-} else {
-
-    usuario = JSON.parse(usuarioGuardado);
-
-    // Solo prestadores pueden entrar
-    if (usuario.rol !== "prestador") {
-
-        window.location.href = "inicio.html";
-
-    }
-}
+const usuario = await window.PacCopAuth.requireSession(["prestador"]);
 
 
 // -----------------------------------------

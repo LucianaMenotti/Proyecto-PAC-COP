@@ -26,7 +26,7 @@ export const authMiddleware = async (req, res, next) => {
 };
 
 export const ownerOrAdminMiddleware = (req, res, next) => {
-    const requestedUserId = Number(req.params.userId ?? req.params.id ?? req.body.userId);
+    const requestedUserId = Number(req.params.userId ?? req.params.id ?? req.body?.userId);
     const isOwner = requestedUserId === Number(req.user.id);
     const isAdmin = req.user.rol === "admin" || req.user.rol === "administrador";
 

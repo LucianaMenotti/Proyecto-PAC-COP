@@ -74,16 +74,13 @@
 
 
 
-<script>
+<script src="../js/auth.js"></script>
+<script type="module">
 
 
 // =========================================
 // USUARIO LOGUEADO
 // =========================================
-
-const usuarioGuardado =
-    localStorage.getItem("usuario");
-
 
 const contenedor =
     document.getElementById("perfil");
@@ -93,57 +90,10 @@ const contenedor =
 // COMPROBAR SESIÓN
 // -----------------------------------------
 
-if (!usuarioGuardado) {
+const usuario = await window.PacCopAuth.requireSession(["prestador"]);
 
-    window.location.href =
-        "login.html";
-
-} else {
-
-    try {
-
-        const usuario =
-            JSON.parse(usuarioGuardado);
-
-
-        // ---------------------------------
-        // COMPROBAR QUE SEA PRESTADOR
-        // ---------------------------------
-
-        if (usuario.rol !== "prestador") {
-
-            contenedor.innerHTML = `
-
-                <div class="alert alert-danger">
-
-                    Esta página es solamente
-                    para prestadores.
-
-                </div>
-
-            `;
-
-        } else {
-
-            mostrarPerfil(usuario);
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "Error al leer el usuario:",
-            error
-        );
-
-        localStorage.removeItem("usuario");
-
-        window.location.href =
-            "login.html";
-
-    }
-
+if (usuario) {
+    mostrarPerfil(usuario);
 }
 
 
