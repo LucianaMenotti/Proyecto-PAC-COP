@@ -73,7 +73,8 @@ async function cargarMascotas(userId) {
 
         const respuesta =
             await fetch(
-                `/api/mascotas/usuario/${userId}`
+                `/api/mascotas/usuario/${userId}`,
+                { credentials: "include" }
             );
 
 

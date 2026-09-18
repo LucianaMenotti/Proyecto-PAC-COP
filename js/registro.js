@@ -356,6 +356,8 @@ formulario.addEventListener("submit", async function (evento) {
                 "Content-Type": "application/json"
             },
 
+            credentials: "include",
+
             body: JSON.stringify(datosUsuario)
         });
 
@@ -393,6 +395,8 @@ formulario.addEventListener("submit", async function (evento) {
                 headers: {
                     "Content-Type": "application/json"
                 },
+
+                credentials: "include",
 
                 body: JSON.stringify(datosMascota)
             });
