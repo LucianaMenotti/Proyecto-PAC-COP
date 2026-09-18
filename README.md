@@ -43,7 +43,9 @@ npm start
 
 Abrir [http://localhost:3000](http://localhost:3000).
 
-El servidor no se inicia si no puede conectarse a MySQL. Las tablas se sincronizan sin alterar automáticamente la estructura existente.
+El servidor no se inicia si no puede conectarse a MySQL. En desarrollo crea las tablas y actualiza automáticamente las columnas faltantes con Sequelize. En producción no modifica la estructura existente.
+
+La actualización automática se controla con `DB_SYNC_ALTER`. Para desarrollo debe permanecer en `true` (o puede omitirse, porque ese es el valor predeterminado). Si se establece en `false`, el backend solo sincroniza las tablas sin alterar columnas. En producción la actualización automática se desactiva siempre.
 
 ## Autenticación
 

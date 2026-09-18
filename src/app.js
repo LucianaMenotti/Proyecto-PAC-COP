@@ -42,10 +42,16 @@ const iniciarServidor = async () => {
             "Conexión con MySQL establecida correctamente"
         );
 
-        await sequelize.sync();
+        const esProduccion = process.env.NODE_ENV === "production";
+        const actualizarEstructura =
+            !esProduccion && process.env.DB_SYNC_ALTER !== "false";
+
+        await sequelize.sync(actualizarEstructura ? { alter: true } : {});
 
         console.log(
-            "Tablas sincronizadas correctamente"
+            actualizarEstructura
+                ? "Tablas creadas o actualizadas correctamente"
+                : "Tablas sincronizadas correctamente"
         );
 
         app.listen(PORT, () => {
