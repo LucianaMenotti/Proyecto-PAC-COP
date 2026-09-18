@@ -170,6 +170,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         clearInterval(intervaloUbicacion);
     };
 
+    const mostrarServicioEnCurso = () => {
+        horaInicioReal = new Date(servicio.iniciadoEn);
+        mostrarTexto("horaInicioReal", formatearHora(horaInicioReal));
+        actualizarInsignia("En curso", "en-curso");
+        irAPaso("en-curso");
+        inicializarMapaVivo();
+        iniciarCronometro();
+        botonFinal.disabled = true;
+        consultarUbicacion();
+        intervaloUbicacion = setInterval(consultarUbicacion, 5000);
+    };
+
     document.getElementById("btnIniciarDemo").addEventListener("click", async () => {
         if (!servicio) return;
 
@@ -181,15 +193,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const resultado = await respuesta.json();
             if (!respuesta.ok) throw new Error(resultado.mensaje);
             servicio = resultado.servicio;
-            horaInicioReal = new Date(servicio.iniciadoEn);
-            mostrarTexto("horaInicioReal", formatearHora(horaInicioReal));
-            actualizarInsignia("En curso", "en-curso");
-            irAPaso("en-curso");
-            inicializarMapaVivo();
-            iniciarCronometro();
+            mostrarServicioEnCurso();
             iniciarGeolocalizacion();
             botonFinal.disabled = false;
-            intervaloUbicacion = setInterval(consultarUbicacion, 5000);
         } catch (error) {
             mostrarError(error.message || "No se pudo iniciar el servicio");
         }
@@ -241,6 +247,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         botonInicio.disabled = !servicio.puedeGestionar || servicio.estado !== "programado";
         if (!servicio.puedeGestionar) {
             mostrarError("El servicio está asignado al prestador. Podés consultar el seguimiento cuando comience.");
+        }
+        if (servicio.estado === "en-curso") {
+            mostrarServicioEnCurso();
         }
     } catch (error) {
         botonInicio.disabled = true;
