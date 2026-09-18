@@ -193,6 +193,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 {
                     method: "PUT",
 
+                    credentials: "include",
+
                     headers: {
                         "Content-Type": "application/json"
                     },

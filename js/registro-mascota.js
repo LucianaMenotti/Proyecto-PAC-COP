@@ -275,6 +275,8 @@ function inicializarFormulario(usuario) {
                                     "application/json"
                             },
 
+                            credentials: "include",
+
                             body:
                                 JSON.stringify(datos)
                         }
