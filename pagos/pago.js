@@ -2,23 +2,34 @@
    Pago del servicio
    ============================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
   /* ---------- Datos de la reserva ---------- */
-  const reserva = {
-    id: 4821,
-    prestador: 'Julieta Ramos',
-    servicio: 'Paseo · 1 hora',
-    fecha: 'Sáb 5 sep, 17:00',
-    mascota: 'Toby',
-    monto: 4500
-  };
+  let reserva;
+  let pago = null;
+
+  try {
+    const respuesta = await fetch('/api/servicios/demo', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    const resultado = await respuesta.json();
+    if (!respuesta.ok) throw new Error(resultado.mensaje || 'No se pudo cargar la reserva.');
+    reserva = resultado.servicio;
+  } catch (error) {
+    const aviso = document.createElement('div');
+    aviso.className = 'alert alert-danger m-4';
+    aviso.textContent = error.message || 'Iniciá sesión para continuar con el pago.';
+    document.body.prepend(aviso);
+    return;
+  }
 
   // Renderizar datos de la reserva
   document.getElementById('reservaId').textContent = reserva.id;
   document.getElementById('prestadorNombre').textContent = reserva.prestador;
   document.getElementById('servicioNombre').textContent = reserva.servicio;
-  document.getElementById('servicioFecha').textContent = reserva.fecha;
+  document.getElementById('servicioFecha').textContent = new Date(reserva.horaProgramada)
+    .toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
   document.getElementById('mascotaNombre').textContent = reserva.mascota;
 
   const montoFormateado = reserva.monto.toLocaleString('es-AR');
@@ -173,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return valido;
   }
 
-  document.getElementById('btnContinuarMetodo').addEventListener('click', () => {
+  document.getElementById('btnContinuarMetodo').addEventListener('click', async () => {
     if (metodoActual === 'tarjeta') {
       if (!validarTarjeta()) return;
       document.getElementById('metodoElegido').textContent =
@@ -182,8 +193,25 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('metodoElegido').textContent = 'Billetera virtual';
     }
 
-    mostrarEstado('estado-previo');
-    irAPaso('confirmar');
+    try {
+      const respuesta = await fetch('/api/pagos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          servicioId: reserva.id,
+          metodo: metodoActual,
+          ultimosDigitos: datosTarjeta?.ultimosDigitos
+        })
+      });
+      const resultado = await respuesta.json();
+      if (!respuesta.ok) throw new Error(resultado.mensaje || 'No se pudo preparar el pago.');
+      pago = resultado.pago;
+      mostrarEstado('estado-previo');
+      irAPaso('confirmar');
+    } catch (error) {
+      alert(error.message);
+    }
   });
 
   /* ---------- Paso 2: Confirmar y Escrow ---------- */
@@ -200,27 +228,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  document.getElementById('btnConfirmarPago').addEventListener('click', () => {
+  document.getElementById('btnConfirmarPago').addEventListener('click', async () => {
     document.getElementById('procesandoMetodo').textContent =
       metodoActual === 'tarjeta' ? 'tarjeta' : 'billetera virtual';
     mostrarEstado('estado-procesando');
 
-    setTimeout(() => {
+    try {
+      const respuesta = await fetch(`/api/pagos/${pago.id}/confirmar`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      const resultado = await respuesta.json();
+      if (!respuesta.ok) throw new Error(resultado.mensaje || 'No se pudo confirmar el pago.');
+      pago = resultado.pago;
       transaccion = {
-        id: 'WP-' + Math.floor(100000 + Math.random() * 900000),
-        fecha: new Date(),
-        metodo: metodoActual === 'tarjeta'
-          ? `Tarjeta terminada en ${datosTarjeta.ultimosDigitos}`
+        id: pago.transaccionId,
+        fecha: new Date(pago.confirmadoEn),
+        metodo: pago.metodo === 'tarjeta'
+          ? `Tarjeta terminada en ${pago.ultimosDigitos}`
           : 'Billetera virtual',
         estado: 'Retenido (escrow)'
       };
       mostrarEstado('estado-retenido');
-    }, 1400);
+    } catch (error) {
+      alert(error.message);
+      mostrarEstado('estado-previo');
+    }
   });
 
-  document.getElementById('btnLiberarPago').addEventListener('click', () => {
-    transaccion.estado = 'Liberado al prestador';
-    mostrarEstado('estado-liberado');
+  document.getElementById('btnLiberarPago').addEventListener('click', async () => {
+    try {
+      const respuesta = await fetch(`/api/pagos/${pago.id}/liberar`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      const resultado = await respuesta.json();
+      if (!respuesta.ok) throw new Error(resultado.mensaje || 'No se pudo liberar el pago.');
+      pago = resultado.pago;
+      transaccion.estado = 'Liberado al prestador';
+      mostrarEstado('estado-liberado');
+    } catch (error) {
+      alert(error.message);
+    }
   });
 
   document.getElementById('btnVerComprobante').addEventListener('click', () => {
@@ -236,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit'
       });
-    document.getElementById('compServicio').textContent = reserva.servicio;
+    document.getElementById('compServicio').textContent = reserva.tipo;
     document.getElementById('compPrestador').textContent = reserva.prestador;
     document.getElementById('compMetodo').textContent = transaccion.metodo;
     document.getElementById('compEstado').textContent = transaccion.estado;
@@ -277,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ['N.º de transacción', transaccion.id],
       ['Fecha de pago', document.getElementById('compFecha').textContent],
       ['Reserva', `#${reserva.id}`],
-      ['Servicio', reserva.servicio],
+      ['Servicio', reserva.tipo],
       ['Prestador', reserva.prestador],
       ['Mascota', reserva.mascota],
       ['Método de pago', transaccion.metodo],
