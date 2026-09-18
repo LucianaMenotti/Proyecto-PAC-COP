@@ -9,12 +9,16 @@ if (usuario) {
     titulo.textContent = `¡Bienvenido, ${usuario.nombre}!`;
     rolCuenta.textContent = usuario.rol === "prestador"
         ? "Cuenta de prestador"
-        : "Cuenta de dueño";
+        : usuario.rol === "admin" || usuario.rol === "administrador"
+            ? "Cuenta de administrador"
+            : "Cuenta de dueño";
 
     cerrarSesion.addEventListener("click", () => window.PacCopAuth.logout());
 
     if (usuario.rol === "prestador") {
         window.location.href = "panel-prestador.html";
+    } else if (usuario.rol === "admin" || usuario.rol === "administrador") {
+        mensaje.textContent = "Ingresaste como administrador.";
     } else {
         mensaje.textContent = "Ingresaste como dueño de mascota.";
     }
