@@ -9,9 +9,14 @@ import sequelize from "./config/database.js";
 
 import User from "./models/user.model.js";
 import Mascota from "./models/mascota.model.js";
+import Servicio from "./models/servicio.model.js";
+import Ubicacion from "./models/ubicacion.model.js";
+import Pago from "./models/pago.model.js";
 
 import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
+import servicioRoutes from "./routes/servicio.routes.js";
+import pagoRoutes from "./routes/pago.routes.js";
 
 const app = express();
 
@@ -51,6 +56,8 @@ app.use(express.static(rutaPrincipal));
 
 app.use("/api/users", userRoutes);
 app.use("/api/mascotas", mascotaRoutes);
+app.use("/api/servicios", servicioRoutes);
+app.use("/api/pagos", pagoRoutes);
 
 const PORT = process.env.PORT || 3000;
 
