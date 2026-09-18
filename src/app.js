@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
+import { DataTypes } from "sequelize";
 import "dotenv/config";
 
 import sequelize from "./config/database.js";
@@ -68,9 +69,20 @@ const iniciarServidor = async () => {
 
         await sequelize.sync(actualizarEstructura ? { alter: true } : {});
 
+        if (actualizarEstructura) {
+            await sequelize.getQueryInterface().changeColumn(
+                User.getTableName(),
+                "password",
+                {
+                    type: DataTypes.STRING(255),
+                    allowNull: false
+                }
+            );
+        }
+
         console.log(
             actualizarEstructura
-                ? "Tablas creadas o actualizadas correctamente"
+                ? "Tablas creadas o actualizadas correctamente; password admite hashes completos"
                 : "Tablas sincronizadas correctamente"
         );
 
