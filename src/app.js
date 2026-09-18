@@ -14,7 +14,10 @@ import mascotaRoutes from "./routes/mascota.routes.js";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:3000",
+    credentials: true
+}));
 app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
@@ -39,30 +42,21 @@ const iniciarServidor = async () => {
             "Conexión con MySQL establecida correctamente"
         );
 
-        await sequelize.sync({
-            alter: true
-        });
+        await sequelize.sync();
 
         console.log(
             "Tablas sincronizadas correctamente"
         );
 
+        app.listen(PORT, () => {
+            console.log(
+                `Servidor Pac-Cop ejecutándose en http://localhost:${PORT}`
+            );
+        });
     } catch (error) {
-
-        console.warn(
-            "Aviso base de datos:",
-            error.message
-        );
-
+        console.error("No se pudo iniciar la aplicación:", error.message);
+        process.exitCode = 1;
     }
-
-    app.listen(PORT, () => {
-
-        console.log(
-            `Servidor Pac-Cop ejecutándose en http://localhost:${PORT}`
-        );
-
-    });
 };
 
 iniciarServidor();
