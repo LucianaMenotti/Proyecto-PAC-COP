@@ -38,10 +38,12 @@ AUTH_SECRET=una-clave-local-de-al-menos-32-caracteres
 Iniciar MySQL y después ejecutar:
 
 ```bash
-npm start
+npm run dev
 ```
 
 Abrir [http://localhost:3000](http://localhost:3000).
+
+`npm run dev` es el comando recomendado durante el desarrollo porque reinicia el backend cuando se modifica un archivo. `npm start` también está disponible para ejecutar el servidor sin reinicio automático.
 
 El servidor no se inicia si no puede conectarse a MySQL. En desarrollo crea las tablas y actualiza automáticamente las columnas faltantes con Sequelize. En producción no modifica la estructura existente.
 
