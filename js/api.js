@@ -1,7 +1,8 @@
 (() => {
     const puertoLiveServer = window.location.port === "5500";
-    const origenBackend = puertoLiveServer
-        ? "http://localhost:3000"
+    const hostnameLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const origenBackend = puertoLiveServer && hostnameLocal
+        ? `http://${window.location.hostname}:3000`
         : "";
 
     if (!origenBackend) {
