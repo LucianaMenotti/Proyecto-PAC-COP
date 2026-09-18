@@ -23,10 +23,6 @@ formulario.addEventListener("submit", async function (event) {
             body: JSON.stringify({ email, password })
         });
 
-        if (!respuesta.ok) {
-            throw new Error("No se pudieron obtener los usuarios");
-        }
-
         const resultado = await respuesta.json();
 
         if (!respuesta.ok) {

@@ -14,8 +14,29 @@ import mascotaRoutes from "./routes/mascota.routes.js";
 
 const app = express();
 
+const esProduccion = process.env.NODE_ENV === "production";
+const origenConfigurado = process.env.FRONTEND_ORIGIN;
+const origenesPermitidos = new Set([
+    origenConfigurado,
+    ...(esProduccion
+        ? []
+        : [
+            "http://localhost:3000",
+            "http://localhost:5500",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5500"
+        ])
+].filter(Boolean));
+
 app.use(cors({
-    origin: process.env.FRONTEND_ORIGIN || "http://localhost:3000",
+    origin: (origen, callback) => {
+        if (!origen || origenesPermitidos.has(origen)) {
+            callback(null, true);
+            return;
+        }
+
+        callback(new Error(`Origen no permitido: ${origen}`));
+    },
     credentials: true
 }));
 app.use(express.json());
@@ -42,7 +63,6 @@ const iniciarServidor = async () => {
             "Conexión con MySQL establecida correctamente"
         );
 
-        const esProduccion = process.env.NODE_ENV === "production";
         const actualizarEstructura =
             !esProduccion && process.env.DB_SYNC_ALTER !== "false";
 
