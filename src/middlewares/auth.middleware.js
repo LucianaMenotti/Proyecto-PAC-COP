@@ -38,19 +38,24 @@ export const ownerOrAdminMiddleware = (req, res, next) => {
 };
 
 export const mascotaOwnerMiddleware = async (req, res, next) => {
-    const mascota = await Mascota.findByPk(req.params.id);
+    try {
+        const mascota = await Mascota.findByPk(req.params.id);
 
-    if (!mascota) {
-        return res.status(404).json({ mensaje: "Mascota no encontrada" });
+        if (!mascota) {
+            return res.status(404).json({ mensaje: "Mascota no encontrada" });
+        }
+
+        const isOwner = Number(mascota.userId) === Number(req.user.id);
+        const isAdmin = req.user.rol === "admin" || req.user.rol === "administrador";
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ mensaje: "No tenés permisos para esta mascota" });
+        }
+
+        req.mascota = mascota;
+        next();
+    } catch (error) {
+        console.error("Error al verificar la mascota:", error);
+        return res.status(500).json({ mensaje: "Error al verificar la mascota" });
     }
-
-    const isOwner = Number(mascota.userId) === Number(req.user.id);
-    const isAdmin = req.user.rol === "admin" || req.user.rol === "administrador";
-
-    if (!isOwner && !isAdmin) {
-        return res.status(403).json({ mensaje: "No tenés permisos para esta mascota" });
-    }
-
-    req.mascota = mascota;
-    next();
 };
