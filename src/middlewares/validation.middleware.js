@@ -20,7 +20,7 @@ export const validateMascota = (req, res, next) => {
 };
 
 export const validateUser = (req, res, next) => {
-    const { nombre, apellido, email, password, telefono, dni, fechaNacimiento } = req.body;
+    const { nombre, apellido, email, password, telefono, dni, fechaNacimiento, rol } = req.body;
 
     if ([nombre, apellido, email, password, telefono, dni, fechaNacimiento].some((value) => !String(value ?? "").trim())) {
         return res.status(400).json({ mensaje: "Completá todos los datos obligatorios" });
@@ -36,6 +36,10 @@ export const validateUser = (req, res, next) => {
 
     if (!isValidDate(fechaNacimiento)) {
         return res.status(400).json({ mensaje: "La fecha de nacimiento no es válida" });
+    }
+
+    if (rol !== undefined && !["dueño", "prestador"].includes(rol)) {
+        return res.status(400).json({ mensaje: "El rol seleccionado no es válido" });
     }
 
     next();

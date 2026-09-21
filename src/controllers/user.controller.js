@@ -45,27 +45,6 @@ const publicUser = (user) => {
     );
 };
 
-const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-const validateUserInput = ({ nombre, apellido, email, password, telefono, rol }) => {
-    if (!nombre || !apellido || !email || !password || !telefono) {
-        return "Completá todos los datos obligatorios";
-    }
-
-    if (!isValidEmail(email)) {
-        return "El correo electrónico no es válido";
-    }
-
-    if (password.length < 8) {
-        return "La contraseña debe tener al menos 8 caracteres";
-    }
-
-    if (rol !== undefined && !["dueño", "prestador"].includes(rol)) {
-        return "El rol seleccionado no es válido";
-    }
-
-    return null;
-};
 
 export const crearUsuario = async (req, res) => {
     try {
@@ -83,25 +62,7 @@ export const crearUsuario = async (req, res) => {
             vehiculo
         } = req.body;
 
-        const validationError = validateUserInput({
-            nombre,
-            apellido,
-            email,
-            password,
-            telefono,
-            rol
-        });
-
-        if (validationError) {
-            return res.status(400).json({ mensaje: validationError });
-        }
-
-        if (!dni || !fechaNacimiento) {
-            return res.status(400).json({
-                mensaje: "El DNI y la fecha de nacimiento son obligatorios"
-            });
-        }
-
+        
         if (rol === "prestador" && (!zona || !Array.isArray(servicios) || servicios.length === 0)) {
             return res.status(400).json({
                 mensaje: "El prestador debe indicar zona y al menos un servicio"
