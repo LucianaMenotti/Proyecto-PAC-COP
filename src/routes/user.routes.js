@@ -23,6 +23,6 @@ router.get("/me", authMiddleware, obtenerSesion);
 
 router.get("/", obtenerUsuarios);
 
-router.get("/:id", obtenerUsuarioPorId);
+router.get("/:id", authMiddleware, obtenerUsuarioPorId);
 
 export default router;

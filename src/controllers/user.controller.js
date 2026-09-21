@@ -216,8 +216,12 @@ export const obtenerUsuarios = async (req, res) => {
 
 export const obtenerUsuarioPorId = async (req, res) => {
     try {
+        const esPropioOAdmin =
+            Number(req.params.id) === Number(req.user.id) ||
+            ["admin", "administrador"].includes(req.user.rol);
+
         const user = await User.findByPk(req.params.id, {
-            attributes: PUBLIC_USER_FIELDS
+            attributes: esPropioOAdmin ? PUBLIC_USER_FIELDS : DIRECTORY_USER_FIELDS
         });
 
         if (!user) {
