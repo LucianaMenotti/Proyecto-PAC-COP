@@ -53,18 +53,19 @@ formulario.addEventListener("submit", async function (event) {
         `;
 
 
-        // Redirigir según el tipo de usuario
-        setTimeout(function () {
+                setTimeout(function () {
 
             if (usuario.rol === "prestador") {
 
-                window.location.href =
-                    "panel-prestador.html";
+                window.location.replace(
+                    "panel-prestador.html"
+                );
 
             } else {
 
-                window.location.href =
-                    "inicio.html";
+                window.location.replace(
+                    "inicio.html"
+                );
 
             }
 
