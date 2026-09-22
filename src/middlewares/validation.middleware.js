@@ -44,3 +44,30 @@ export const validateUser = (req, res, next) => {
 
     next();
 };
+
+const SERVICIOS_VALIDOS = ["Paseo", "Guarderia", "Traslado"];
+
+export const validateActualizarServicios = (req, res, next) => {
+    const { servicios, preciosServicios } = req.body;
+
+    if (!Array.isArray(servicios) || servicios.length === 0) {
+        return res.status(400).json({ mensaje: "Elegí al menos un servicio para ofrecer" });
+    }
+
+    if (servicios.some((servicio) => !SERVICIOS_VALIDOS.includes(servicio))) {
+        return res.status(400).json({ mensaje: "Hay un servicio no reconocido en la lista" });
+    }
+
+    if (typeof preciosServicios !== "object" || preciosServicios === null) {
+        return res.status(400).json({ mensaje: "Faltan los precios de los servicios" });
+    }
+
+    for (const servicio of servicios) {
+        const precio = Number(preciosServicios[servicio]);
+        if (!Number.isFinite(precio) || precio <= 0) {
+            return res.status(400).json({ mensaje: `Indicá un precio válido para ${servicio}` });
+        }
+    }
+
+    next();
+};

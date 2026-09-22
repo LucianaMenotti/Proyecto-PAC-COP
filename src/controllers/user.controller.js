@@ -195,3 +195,28 @@ export const obtenerUsuarioPorId = async (req, res) => {
         return res.status(500).json({ mensaje: "Error al obtener el usuario" });
     }
 };
+export const actualizarMisServicios = async (req, res) => {
+    try {
+        if (req.user.rol !== "prestador") {
+            return res.status(403).json({ mensaje: "Solo un prestador puede publicar servicios" });
+        }
+
+        const { servicios, preciosServicios } = req.body;
+
+        if (servicios.includes("Traslado") && !req.user.vehiculo) {
+            return res.status(400).json({
+                mensaje: "Necesitás cargar un vehículo en tu perfil para ofrecer Traslado"
+            });
+        }
+
+        await req.user.update({ servicios, preciosServicios });
+
+        return res.status(200).json({
+            mensaje: "Servicios actualizados correctamente",
+            usuario: publicUser(req.user)
+        });
+    } catch (error) {
+        console.error("Error al actualizar servicios:", error);
+        return res.status(500).json({ mensaje: "No se pudieron actualizar los servicios" });
+    }
+};
