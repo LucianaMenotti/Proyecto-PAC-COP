@@ -78,261 +78,168 @@ if (usuario) {
 
 
     // -------------------------------------
-    // SERVICIOS DEL PRESTADOR
-    // -------------------------------------
-
-    const serviciosPrestador =
-        document.getElementById("serviciosPrestador");
-
-    if (serviciosPrestador && usuario.servicios) {
-
-        try {
-
-            const servicios =
-                typeof usuario.servicios === "string"
-                    ? JSON.parse(usuario.servicios)
-                    : usuario.servicios;
-
-
-            if (Array.isArray(servicios)) {
-
-                serviciosPrestador.innerHTML =
-                    servicios
-                        .map(function (servicio) {
-
-                            return `
-                                <span class="badge bg-light text-dark border">
-                                    ${servicio}
-                                </span>
-                            `;
-
-                        })
-                        .join("");
-
-            }
-
-        } catch (error) {
-
-            console.error(
-                "No se pudieron cargar los servicios:",
-                error
-            );
-
-        }
-
-    }
-
-
-    // -------------------------------------
-    // AVATAR → PERFIL
-    // -------------------------------------
-
-    if (avatar) {
-
-        avatar.style.cursor = "pointer";
-
-        avatar.addEventListener(
-            "click",
-            function () {
-
-                window.location.href =
-                    "perfil-prestador.html";
-
-            }
-        );
-
-    }
-
-}
-
-
-// -----------------------------------------
-// PRECIOS MÍNIMOS
-// -----------------------------------------
+// SERVICIOS DEL PRESTADOR (reales)
+// -------------------------------------
 
 const precios = {
-
-    paseo: {
-        nombre: "Paseo",
-        nuevo: 4000,
-        establecido: 5000,
-        top: 7000
-    },
-
-    guarderia: {
-        nombre: "Guardería",
-        nuevo: 7000,
-        establecido: 9000,
-        top: 12000
-    },
-
-    traslado: {
-        nombre: "Traslado",
-        nuevo: 5000,
-        establecido: 7000,
-        top: 10000
-    }
-
+    Paseo: { nombre: "Paseo", nuevo: 4000, establecido: 5000, top: 7000 },
+    Guarderia: { nombre: "Guardería", nuevo: 7000, establecido: 9000, top: 12000 },
+    Traslado: { nombre: "Traslado", nuevo: 5000, establecido: 7000, top: 10000 }
 };
 
+let misServicios = [];
+let misPrecios = {};
 
-const tabla =
-    document.getElementById("tablaPrecios");
+if (usuario) {
+    misServicios = Array.isArray(usuario.servicios) ? [...usuario.servicios] : [];
+    misPrecios = { ...(usuario.preciosServicios || {}) };
+}
 
-
+const tabla = document.getElementById("tablaPrecios");
 if (tabla) {
-
     tabla.innerHTML = "";
-
-    Object.values(precios).forEach(function (servicio) {
-
+    Object.values(precios).forEach((servicio) => {
         tabla.innerHTML += `
-
             <tr>
+                <td class="fw-semibold">${servicio.nombre}</td>
+                <td>$${servicio.nuevo}</td>
+                <td class="fw-bold text-success">$${servicio.establecido}</td>
+                <td>$${servicio.top}</td>
+            </tr>`;
+    });
+}
 
-                <td class="fw-semibold">
-                    ${servicio.nombre}
-                </td>
-
-                <td>
-                    $${servicio.nuevo}
-                </td>
-
-                <td class="fw-bold text-success">
-                    $${servicio.establecido}
-                </td>
-
-                <td>
-                    $${servicio.top}
-                </td>
-
-            </tr>
-
-        `;
-
+async function guardarServicios() {
+    const respuesta = await fetch("/api/users/me/servicios", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ servicios: misServicios, preciosServicios: misPrecios })
     });
 
+    const resultado = await respuesta.json();
+    if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo guardar");
+
+    misServicios = resultado.usuario.servicios || [];
+    misPrecios = resultado.usuario.preciosServicios || {};
+    renderizarServicios();
 }
 
+function renderizarServicios() {
+    const contenedor = document.getElementById("serviciosPrestador");
+    if (!contenedor) return;
 
-// -----------------------------------------
-// FORMULARIO DE PUBLICACIÓN
-// -----------------------------------------
+    if (misServicios.length === 0) {
+        contenedor.innerHTML = `<span class="text-secondary small">Todavía no publicaste servicios.</span>`;
+        return;
+    }
 
-const formulario =
-    document.getElementById("publishForm");
+    contenedor.innerHTML = misServicios.map((servicio) => `
+        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-2 me-1 mb-1">
+            ${servicio} · $${misPrecios[servicio] ?? "-"}
+            <button type="button" class="btn-close btn-close-sm" style="font-size:0.55rem"
+                aria-label="Quitar" data-quitar="${servicio}"></button>
+        </span>
+    `).join("");
 
-const servicioSelect =
-    document.getElementById("servicioSelect");
+    contenedor.querySelectorAll("[data-quitar]").forEach((boton) => {
+        boton.addEventListener("click", async () => {
+            const servicio = boton.dataset.quitar;
+            misServicios = misServicios.filter((s) => s !== servicio);
+            delete misPrecios[servicio];
+            try {
+                await guardarServicios();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    });
+}
 
-const precioInput =
-    document.getElementById("precioInput");
+renderizarServicios();
 
-const precioError =
-    document.getElementById("precioError");
+// -------------------------------------
+// FORMULARIO DE PUBLICACIÓN (agregar servicio)
+// -------------------------------------
 
-const useSuggested =
-    document.getElementById("useSuggested");
-
+const formulario = document.getElementById("publishForm");
+const servicioSelect = document.getElementById("servicioSelect");
+const precioInput = document.getElementById("precioInput");
+const precioError = document.getElementById("precioError");
+const useSuggested = document.getElementById("useSuggested");
 
 function obtenerPrecioMinimo() {
-
-    const servicio =
-        servicioSelect.value;
-
-    return precios[servicio].establecido;
-
+    return precios[servicioSelect.value]?.establecido ?? 0;
 }
-
-
-// -----------------------------------------
-// CAMBIO DE SERVICIO
-// -----------------------------------------
 
 if (servicioSelect) {
-
-    servicioSelect.addEventListener(
-        "change",
-        function () {
-
-            const minimo =
-                obtenerPrecioMinimo();
-
-            precioInput.placeholder =
-                minimo;
-
-            precioError.classList.add("d-none");
-
-        }
-    );
-
+    servicioSelect.addEventListener("change", () => {
+        precioInput.placeholder = obtenerPrecioMinimo();
+        precioError.classList.add("d-none");
+    });
 }
-
-
-// -----------------------------------------
-// USAR PRECIO SUGERIDO
-// -----------------------------------------
 
 if (useSuggested) {
-
-    useSuggested.addEventListener(
-        "click",
-        function () {
-
-            const minimo =
-                obtenerPrecioMinimo();
-
-            precioInput.value =
-                minimo;
-
-            precioError.classList.add("d-none");
-
-        }
-    );
-
+    useSuggested.addEventListener("click", () => {
+        precioInput.value = obtenerPrecioMinimo();
+        precioError.classList.add("d-none");
+    });
 }
-
-
-// -----------------------------------------
-// PUBLICAR
-// -----------------------------------------
 
 if (formulario) {
+    formulario.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-    formulario.addEventListener(
-        "submit",
-        function (event) {
+        const servicio = servicioSelect.value;
+        const precio = Number(precioInput.value);
+        const minimo = obtenerPrecioMinimo();
 
-            event.preventDefault();
-
-            const precio =
-                Number(precioInput.value);
-
-            const minimo =
-                obtenerPrecioMinimo();
-
-
-            if (!precio || precio < minimo) {
-
-                precioError.classList.remove("d-none");
-
-                return;
-
-            }
-
-
-            precioError.classList.add("d-none");
-
-
-            alert(
-                "Servicio publicado correctamente."
-            );
-
-
-            formulario.reset();
-
+        if (!precio || precio < minimo) {
+            precioError.classList.remove("d-none");
+            return;
         }
-    );
+        precioError.classList.add("d-none");
 
+        if (!misServicios.includes(servicio)) {
+            misServicios.push(servicio);
+        }
+        misPrecios[servicio] = precio;
+
+        try {
+            await guardarServicios();
+            formulario.reset();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
 }
 
+// -------------------------------------
+// RENDIMIENTO REAL (reemplaza los números fijos)
+// -------------------------------------
+
+(async () => {
+    if (!usuario) return;
+
+    let completados = 0;
+    try {
+        const respuesta = await fetch("/api/servicios", { credentials: "include" });
+        const { servicios } = await respuesta.json();
+        completados = (servicios || []).filter((s) => s.estado === "finalizado").length;
+    } catch {
+        completados = 0;
+    }
+
+    const nivel = completados >= 50 ? "top" : completados >= 10 ? "establecido" : "nuevo";
+    const progreso = Math.min(100, Math.round((completados / 50) * 100));
+
+    document.getElementById("barraProgresoNivel").style.width = `${progreso}%`;
+    ["nuevo", "establecido", "top"].forEach((n) => {
+        document.getElementById(`col-nivel-${n}`).classList.toggle("nivel-actual", n === nivel);
+    });
+
+    const faltanParaTop = Math.max(0, 50 - completados);
+    document.getElementById("textoResumenNivel").innerHTML =
+        `Llevás <strong>${completados} servicios</strong> con <strong>${usuario.calificacion ?? 0}★</strong> de promedio.` +
+        (faltanParaTop > 0 ? ` Te faltan <strong>${faltanParaTop} servicios</strong> para alcanzar Top.` : " Ya estás en el nivel Top.");
+})();
