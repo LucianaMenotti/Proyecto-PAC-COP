@@ -16,7 +16,7 @@ if (usuario) {
     cerrarSesion.addEventListener("click", () => window.PacCopAuth.logout());
 
     if (usuario.rol === "prestador") {
-        window.location.href = "panel-prestador.html";
+        window.location.replace("panel-prestador.html");
     } else if (usuario.rol === "admin" || usuario.rol === "administrador") {
         mensaje.textContent = "Ingresaste como administrador.";
     } else {
