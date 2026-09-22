@@ -17,14 +17,14 @@ const requireSession = async (roles = []) => {
         const usuario = await getCurrentSession();
 
         if (roles.length > 0 && !roles.includes(usuario.rol)) {
-            window.location.href = "inicio.html";
+            window.location.replace("inicio.html");
             return null;
         }
 
         return usuario;
     } catch {
         localStorage.removeItem("usuario");
-        window.location.href = "login.html";
+        window.location.replace("login.html");
         return null;
     }
 };
@@ -36,7 +36,7 @@ const logout = async () => {
     });
 
     localStorage.removeItem("usuario");
-    window.location.href = "login.html";
+    window.location.replace("login.html");
 };
 
 window.PacCopAuth = {
