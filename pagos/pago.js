@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Renderizar datos de la reserva
   document.getElementById('reservaId').textContent = reserva.id;
   document.getElementById('prestadorNombre').textContent = reserva.prestador;
-  document.getElementById('servicioNombre').textContent = reserva.servicio;
+  document.getElementById('servicioNombre').textContent = reserva.tipo;
   document.getElementById('servicioFecha').textContent = new Date(reserva.horaProgramada)
     .toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
   document.getElementById('mascotaNombre').textContent = reserva.mascota;
