@@ -40,6 +40,24 @@ const obtenerServicioAutorizado = async (id, user) => {
     return { servicio };
 };
 
+const obtenerPrestadorDisponible = async () => {
+    const ocupados = await Servicio.findAll({
+        where: { estado: { [Op.in]: ["programado", "en-curso"] } },
+        attributes: ["providerId"]
+    });
+    const idsOcupados = ocupados.map((servicio) => servicio.providerId).filter(Boolean);
+
+    const disponible = await User.findOne({
+        where: {
+            rol: "prestador",
+            ...(idsOcupados.length > 0 ? { id: { [Op.notIn]: idsOcupados } } : {})
+        },
+        order: [["id", "ASC"]]
+    });
+
+    return disponible ?? User.findOne({ where: { rol: "prestador" }, order: [["id", "ASC"]] });
+};
+
 export const crearServicioDemo = async (req, res) => {
     if (esAdministrador(req.user)) {
         const servicioAdmin = await Servicio.findOne({
@@ -64,7 +82,7 @@ export const crearServicioDemo = async (req, res) => {
         });
 
         if (!servicioPrestador) {
-            return res.status(404).json({ mensaje: "No tenés servicios asignados" });
+                        return res.status(404).json({ mensaje: "Todavía no tenés servicios asignados. Pedile a un dueño que reserve un servicio primero." });
         }
 
         return res.json({ servicio: presentarServicio(servicioPrestador, null, req.user) });
@@ -80,7 +98,7 @@ export const crearServicioDemo = async (req, res) => {
 
     if (servicioExistente) {
         if (!servicioExistente.providerId) {
-            const prestador = await User.findOne({ where: { rol: "prestador" }, order: [["id", "ASC"]] });
+    const prestador = await obtenerPrestadorDisponible();
             if (prestador) {
                 await servicioExistente.update({
                     providerId: prestador.id,
@@ -92,7 +110,7 @@ export const crearServicioDemo = async (req, res) => {
         return res.json({ servicio: presentarServicio(servicioExistente, null, req.user) });
     }
 
-    const prestador = await User.findOne({ where: { rol: "prestador" }, order: [["id", "ASC"]] });
+        const prestador = await obtenerPrestadorDisponible();
 
     const servicio = await Servicio.create({
         ownerId: req.user.id,
