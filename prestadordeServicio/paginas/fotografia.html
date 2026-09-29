@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>PetCare Pro - Registro Fotográfico</title>
+    <!-- Fuentes e Íconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/fotografia.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- HEADER -->
+      <header class="app-header">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="bi bi-shield-fill-check"></i>
+          </div>
+          <div>
+            <h1 class="brand-title">
+              PetCare <span class="brand-accent">Pro</span>
+            </h1>
+            <p class="brand-subtitle">Módulo de Monitoreo</p>
+          </div>
+        </div>
+        <div class="live-pill">
+          <span class="live-dot"></span>
+          <span>EN VIVO</span>
+        </div>
+      </header>
+
+      <!-- VISTAS DE LA APP -->
+      <main class="app-body">
+        <!-- VISTA 1: CÁMARA DE SERVICIO -->
+        <section id="viewCamera" class="app-view active">
+          <div class="camera-container">
+            <video
+              id="videoStream"
+              autoplay
+              playsinline
+              class="camera-stream"
+            ></video>
+            <canvas id="photoCanvas" class="d-none"></canvas>
+            <img
+              id="capturedPreview"
+              class="camera-preview d-none"
+              alt="Vista previa"
+            />
+
+            <!-- Overlays de Estado (GPS y Hora) -->
+            <div class="camera-header-tags">
+              <div class="glass-tag">
+                <i class="bi bi-geo-alt-fill text-danger"></i>
+                <span id="gpsStatus">GPS: Obteniendo...</span>
+              </div>
+              <div class="glass-tag">
+                <i class="bi bi-clock-fill text-warning"></i>
+                <span id="timestampStatus">--:--</span>
+              </div>
+            </div>
+
+            <!-- Panel de Notas (Flotante al tomar foto) -->
+            <div id="notesOverlay" class="notes-panel d-none">
+              <label
+                for="observations"
+                class="form-label small fw-semibold text-white-50 mb-1"
+              >
+                <i class="bi bi-pencil-square me-1"></i> Observación del
+                servicio
+              </label>
+              <textarea
+                id="observations"
+                class="form-control custom-textarea"
+                rows="2"
+                placeholder="Ej: Paseo finalizado, la mascota tomó agua..."
+              ></textarea>
+            </div>
+
+            <!-- Barra de Controles de Captura -->
+            <div class="camera-action-bar">
+              <!-- Contenedor del disparador y botón de giro -->
+              <div
+                id="shutterContainer"
+                class="d-flex align-items-center justify-content-center position-relative w-100 px-4"
+              >
+                <!-- Botón Disparador Principal (Centrado) -->
+                <button
+                  type="button"
+                  id="btnCapture"
+                  class="shutter-btn"
+                  aria-label="Tomar foto"
+                >
+                  <div class="shutter-inner"></div>
+                </button>
+
+                <!-- Botón Girar Cámara (Posicionado a la derecha) -->
+                <button
+                  type="button"
+                  id="btnToggleCamera"
+                  class="btn-flip-camera"
+                  title="Cambiar cámara"
+                >
+                  <i class="bi bi-camera-reverse"></i>
+                </button>
+              </div>
+
+              <!-- Botones Post-Captura -->
+              <div
+                id="actionControls"
+                class="d-flex align-items-center justify-content-center gap-3 w-100 d-none"
+              >
+                <button
+                  type="button"
+                  id="btnRetake"
+                  class="btn-app btn-app-secondary"
+                >
+                  <i class="bi bi-arrow-counterclockwise"></i> Repetir
+                </button>
+                <button
+                  type="button"
+                  id="btnSubmit"
+                  class="btn-app btn-app-primary"
+                >
+                  <i class="bi bi-send-check-fill"></i> Guardar Reporte
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISTA 2: HISTORIAL Y REPORTES -->
+        <section id="viewFeed" class="app-view d-none">
+          <div class="feed-wrapper p-3">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <h2 class="h6 fw-bold mb-0 text-dark">Reportes del Día</h2>
+                <small class="text-muted"
+                  >Registro fotográfico en tiempo real</small
+                >
+              </div>
+              <span
+                class="badge rounded-pill bg-primary-subtle text-primary fw-semibold px-3 py-2"
+              >
+                Hoy
+              </span>
+            </div>
+
+            <!-- Estado Vacío -->
+            <div id="emptyFeed" class="empty-state">
+              <div class="empty-icon">
+                <i class="bi bi-camera2"></i>
+              </div>
+              <h3 class="h6 fw-bold text-dark mt-3 mb-1">
+                Sin capturas registradas
+              </h3>
+              <p class="text-muted extra-small mb-0">
+                Usa la cámara para capturar y enviar las actividades de la
+                mascota.
+              </p>
+            </div>
+
+            <!-- Feed con las tarjetas enviadas -->
+            <div id="reportsFeed" class="d-flex flex-column gap-2"></div>
+          </div>
+        </section>
+      </main>
+
+      <!-- TABS NAVEGACIÓN -->
+      <nav class="app-nav">
+        <button
+          type="button"
+          class="nav-button active"
+          data-target="viewCamera"
+        >
+          <i class="bi bi-camera"></i>
+          <span>Cámara</span>
+        </button>
+        <button type="button" class="nav-button" data-target="viewFeed">
+          <div class="icon-wrapper">
+            <i class="bi bi-journal-text"></i>
+            <span id="feedBadge" class="notification-badge d-none"></span>
+          </div>
+          <span>Reportes</span>
+        </button>
+      </nav>
+
+      <!-- TOAST DE NOTIFICACIÓN -->
+      <div id="ownerToast" class="custom-toast">
+        <div class="d-flex align-items-center gap-3">
+          <div class="toast-icon">
+            <i class="bi bi-check-lg"></i>
+          </div>
+          <div>
+            <strong class="d-block text-white small"
+              >¡Reporte registrado!</strong
+            >
+            <span class="text-white-50 extra-small"
+              >Notificación enviada al dueño.</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/fotografia.js"></script>
+  </body>
+</html>

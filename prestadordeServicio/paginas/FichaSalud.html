@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ficha de Salud - Dueño</title>
+    <link rel="stylesheet" href="../css/fichaSalud.css" />
+  </head>
+  <body>
+    <!-- FORMULARIO PRINCIPAL -->
+    <div id="vista-dueno" class="dashboard-form">
+      <header class="form-header">
+        <h1>Ficha de Salud</h1>
+        <p>Completa esta ficha obligatoria antes de solicitar un servicio.</p>
+      </header>
+
+      <form id="health-form">
+        <fieldset class="normal-fieldset">
+          <legend>Datos Obligatorios</legend>
+
+          <div class="form-group">
+            <label for="raza">Nombre:</label>
+            <input type="text" id="raza" name="raza" required />
+          </div>
+
+          <div class="form-group">
+            <label for="edad">Edad (años):</label>
+            <input type="number" id="edad" name="edad" required min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="condicion">Condición Médica:</label>
+            <textarea id="condicion" name="condicion" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="alergias">Alergias:</label>
+            <textarea id="alergias" name="alergias" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="vacunacion">Vacunación:</label>
+            <select id="vacunacion" name="vacunacion" required>
+              <option value="">Seleccione...</option>
+              <option value="Completo">Completo</option>
+              <option value="Incompleto">Incompleto</option>
+              <option value="No vacunado">No vacunado</option>
+            </select>
+            <textarea
+              name="vacunacion-detalle"
+              style="margin-top: 10px"
+              placeholder="En caso de vacunacion faltante, indique cual."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="reactividad">Comportamiento:</label>
+            <select id="reactividad" name="reactividad" required>
+              <option value="">Seleccione...</option>
+              <option value="Tranquilo">Tranquilo</option>
+              <option value="Reactivo a otros perros">Reactivo</option>
+              <option value="Miedoso / Asustadizo">Miedoso / Asustadizo</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset class="alert-fieldset">
+          <legend>Indicaciones para el Prestador</legend>
+          <div class="form-group">
+            <label for="alerta-general">
+              ¿Hay alguna indicación importante que el prestador deba saber?
+              (Opcional)
+            </label>
+            <textarea
+              id="alerta-general"
+              name="alerta-general"
+              placeholder="Ej: Toma medicación a las 18hs, muerde si se asusta, alergia al pollo..."
+            ></textarea>
+          </div>
+        </fieldset>
+
+        <button type="submit" id="btn-submit-form" class="btn-submit">
+          Guardar Ficha
+        </button>
+      </form>
+    </div>
+
+    <!-- PANTALLA DE RESUMEN -->
+    <div id="resumen-pantalla" class="hidden">
+      <header class="form-header">
+        <h1 id="titulo-resumen">Ficha de Salud</h1>
+        <p id="subtitulo-resumen">Revisa que todo esté correcto.</p>
+      </header>
+
+      <div id="resumen-contenido">
+        <!-- Los datos se inyectarán aquí mediante JS -->
+      </div>
+
+      <!-- Botones de acción: Editar oculto por defecto -->
+      <div class="botones-acciones">
+        <button id="btn-finalizar" class="btn-submit">
+          Aceptar y Finalizar
+        </button>
+        <button id="btn-editar" class="btn-secondary hidden">
+          Editar Ficha
+        </button>
+      </div>
+    </div>
+
+    <script src="../js/fichaSalud.js"></script>
+  </body>
+</html>
+
+
