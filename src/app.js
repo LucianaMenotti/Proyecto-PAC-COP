@@ -6,11 +6,14 @@ import "dotenv/config";
 
 import sequelize from "./config/database.js";
 
+import Reserva from "./models/reserva.model.js";
+
 import User from "./models/user.model.js";
 import Mascota from "./models/mascota.model.js";
 
 import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
+import reservaRoutes from "./routes/reserva.routes.js";
 
 const app = express();
 
@@ -26,6 +29,7 @@ app.use(express.static(rutaPrincipal));
 
 app.use("/api/users", userRoutes);
 app.use("/api/mascotas", mascotaRoutes);
+app.use("/api/reservas", reservaRoutes);
 
 const PORT = process.env.PORT || 3000;
 
@@ -49,10 +53,8 @@ const iniciarServidor = async () => {
 
     } catch (error) {
 
-        console.warn(
-            "Aviso base de datos:",
-            error.message
-        );
+        console.error("ERROR COMPLETO DE BASE DE DATOS:");
+        console.error(error);
 
     }
 
