@@ -243,3 +243,4 @@ if (formulario) {
         `Llevás <strong>${completados} servicios</strong> con <strong>${usuario.calificacion ?? 0}★</strong> de promedio.` +
         (faltanParaTop > 0 ? ` Te faltan <strong>${faltanParaTop} servicios</strong> para alcanzar Top.` : " Ya estás en el nivel Top.");
 })();
+}
