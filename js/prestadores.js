@@ -7,84 +7,68 @@ const btnBuscar = document.getElementById("btnBuscar");
 let prestadores = [];
 
 function obtenerServicios(servicios) {
+  if (Array.isArray(servicios)) {
+    return servicios;
+  }
 
-    if (Array.isArray(servicios)) {
-        return servicios;
+  if (typeof servicios === "string") {
+    try {
+      const resultado = JSON.parse(servicios);
+
+      return Array.isArray(resultado) ? resultado : [];
+    } catch (error) {
+      return [];
     }
+  }
 
-    if (typeof servicios === "string") {
-
-        try {
-            const resultado = JSON.parse(servicios);
-
-            return Array.isArray(resultado)
-                ? resultado
-                : [];
-
-        } catch (error) {
-            return [];
-        }
-    }
-
-    return [];
+  return [];
 }
 
 async function cargarPrestadores() {
+  try {
+    const respuesta = await fetch("/api/users");
 
-    try {
+    if (!respuesta.ok) {
+      throw new Error("Error al obtener los usuarios");
+    }
 
-        const respuesta = await fetch("/api/users");
+    const usuarios = await respuesta.json();
 
-        if (!respuesta.ok) {
-            throw new Error("Error al obtener los usuarios");
-        }
+    prestadores = usuarios.filter((usuario) => usuario.rol === "prestador");
 
-        const usuarios = await respuesta.json();
+    mostrarPrestadores(prestadores);
+  } catch (error) {
+    console.error("Error al cargar prestadores:", error);
 
-        prestadores = usuarios.filter(
-            usuario => usuario.rol === "prestador"
-        );
-
-        mostrarPrestadores(prestadores);
-
-    } catch (error) {
-
-        console.error("Error al cargar prestadores:", error);
-
-        contenedor.innerHTML = `
+    contenedor.innerHTML = `
             <div class="alert alert-danger">
                 No se pudieron cargar los prestadores.
             </div>
         `;
-    }
+  }
 }
 
 function mostrarPrestadores(lista) {
+  contenedor.innerHTML = "";
 
-    contenedor.innerHTML = "";
-
-    if (lista.length === 0) {
-
-        contenedor.innerHTML = `
+  if (lista.length === 0) {
+    contenedor.innerHTML = `
             <div class="alert alert-info">
                 No se encontraron prestadores.
             </div>
         `;
 
-        return;
-    }
+    return;
+  }
 
-    lista.forEach(prestador => {
+  lista.forEach((prestador) => {
+    const servicios = obtenerServicios(prestador.servicios);
 
-        const servicios = obtenerServicios(
-            prestador.servicios
-        );
+    const tarjeta = document.createElement("div");
 
-        const tarjeta = document.createElement("div");
+    tarjeta.className = "col-md-6 col-lg-4";
 
-        tarjeta.className = "col-md-6 col-lg-4";
-
-        tarjeta.innerHTML = `
+    tarjeta.innerHTML = `
             <div class="card h-100 shadow-sm border-0">
 
                 <div class="card-body">
@@ -102,9 +86,15 @@ function mostrarPrestadores(lista) {
                     <p class="card-text">
                         <strong>Servicios:</strong>
                         ${
-                            servicios.length > 0
-                                ? servicios.join(", ")
-                                : "Sin servicios registrados"
+                          servicios.length > 0
+                            ? servicios
+                                .map((s) =>
+                                  prestador.preciosServicios?.[s]
+                                    ? `${s} ($${prestador.preciosServicios[s]})`
+                                    : s,
+                                )
+                                .join(", ")
+                            : "Sin servicios registrados"
                         }
                     </p>
 
@@ -113,11 +103,11 @@ function mostrarPrestadores(lista) {
                         ${prestador.calificacion || 0}
                     </p>
 
-                    <button
+                        <button
                         class="btn btn-primary w-100"
-                        onclick="verPerfil(${prestador.id})"
+                        onclick="abrirReserva(${prestador.id})"
                     >
-                        Ver perfil
+                        Reservar
                     </button>
 
                 </div>
@@ -125,54 +115,149 @@ function mostrarPrestadores(lista) {
             </div>
         `;
 
-        contenedor.appendChild(tarjeta);
-    });
+    contenedor.appendChild(tarjeta);
+  });
 }
 
 function buscarPrestadores() {
+  const servicio = filtroServicio.value.trim().toLowerCase();
 
-    const servicio = filtroServicio.value
-        .trim()
-        .toLowerCase();
+  const zona = filtroZona.value.trim().toLowerCase();
 
-    const zona = filtroZona.value
-        .trim()
-        .toLowerCase();
+  const resultados = prestadores.filter((prestador) => {
+    const servicios = obtenerServicios(prestador.servicios);
 
-    const resultados = prestadores.filter(prestador => {
+    const coincideServicio =
+      servicio === "" ||
+      servicios.some((item) => item.toLowerCase() === servicio);
 
-        const servicios = obtenerServicios(
-            prestador.servicios
-        );
+    const coincideZona =
+      zona === "" || prestador.zona.toLowerCase().includes(zona);
 
-        const coincideServicio =
-            servicio === "" ||
-            servicios.some(
-                item =>
-                    item.toLowerCase() === servicio
-            );
+    return coincideServicio && coincideZona;
+  });
 
-        const coincideZona =
-            zona === "" ||
-            prestador.zona
-                .toLowerCase()
-                .includes(zona);
-
-        return coincideServicio && coincideZona;
-    });
-
-    mostrarPrestadores(resultados);
+  mostrarPrestadores(resultados);
 }
 
-function verPerfil(id) {
-
-    window.location.href =
-        `/paginas/perfil-prestador.html?id=${id}`;
-}
-
-btnBuscar.addEventListener(
-    "click",
-    buscarPrestadores
-);
+btnBuscar.addEventListener("click", buscarPrestadores);
 
 cargarPrestadores();
+
+// =========================================
+// RESERVA REAL
+// =========================================
+
+let prestadorElegido = null;
+let modalReserva = null;
+
+const formReserva = document.getElementById("formReserva");
+const reservaServicio = document.getElementById("reservaServicio");
+const reservaMascota = document.getElementById("reservaMascota");
+const reservaFecha = document.getElementById("reservaFecha");
+const reservaPrecio = document.getElementById("reservaPrecio");
+const reservaError = document.getElementById("reservaError");
+const tituloReserva = document.getElementById("tituloReserva");
+
+function precioDe(prestador, tipo) {
+  return Number(prestador.preciosServicios?.[tipo]) || 0;
+}
+
+function actualizarPrecioReserva() {
+  const precio = precioDe(prestadorElegido, reservaServicio.value);
+  reservaPrecio.textContent = precio > 0 ? `$${precio}` : "Sin precio cargado";
+}
+
+async function abrirReserva(id) {
+  reservaError.classList.add("d-none");
+
+  let usuario;
+
+  try {
+    usuario = await window.PacCopAuth.getCurrentSession();
+  } catch {
+    window.location.href = "/paginas/login.html";
+    return;
+  }
+
+  if (usuario.rol !== "dueño") {
+    alert("Solo los dueños de mascota pueden reservar servicios.");
+    return;
+  }
+
+  prestadorElegido = prestadores.find((prestador) => prestador.id === id);
+
+  const serviciosConPrecio = obtenerServicios(
+    prestadorElegido.servicios,
+  ).filter((servicio) => precioDe(prestadorElegido, servicio) > 0);
+
+  if (serviciosConPrecio.length === 0) {
+    alert("Este prestador todavía no cargó precios para sus servicios.");
+    return;
+  }
+
+  const respuesta = await fetch(`/api/mascotas/usuario/${usuario.id}`, {
+    credentials: "include",
+  });
+
+  const mascotas = respuesta.ok ? await respuesta.json() : [];
+
+  if (mascotas.length === 0) {
+    alert("Primero tenés que registrar una mascota para poder reservar.");
+    return;
+  }
+
+  tituloReserva.textContent = `Reservar con ${prestadorElegido.nombre} ${prestadorElegido.apellido}`;
+
+  reservaServicio.innerHTML = serviciosConPrecio
+    .map((servicio) => `<option value="${servicio}">${servicio}</option>`)
+    .join("");
+
+  reservaMascota.innerHTML = mascotas
+    .map(
+      (mascota) => `<option value="${mascota.id}">${mascota.nombre}</option>`,
+    )
+    .join("");
+
+  reservaFecha.value = "";
+  actualizarPrecioReserva();
+
+  if (!modalReserva) {
+    modalReserva = new bootstrap.Modal(document.getElementById("modalReserva"));
+  }
+
+  modalReserva.show();
+}
+
+reservaServicio.addEventListener("change", actualizarPrecioReserva);
+
+formReserva.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  reservaError.classList.add("d-none");
+
+  const respuesta = await fetch("/api/servicios", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      providerId: prestadorElegido.id,
+      tipo: reservaServicio.value,
+      mascotaId: Number(reservaMascota.value),
+      horaProgramada: new Date(reservaFecha.value).toISOString(),
+    }),
+  });
+
+  const resultado = await respuesta.json();
+
+  if (!respuesta.ok) {
+    reservaError.textContent =
+      resultado.mensaje || "No se pudo crear la reserva";
+    reservaError.classList.remove("d-none");
+    return;
+  }
+
+  modalReserva.hide();
+  alert(
+    "Reserva creada correctamente. Ya podés pagarla desde la pantalla de pago.",
+  );
+});
