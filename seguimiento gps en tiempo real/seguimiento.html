@@ -161,6 +161,43 @@
             ></div>
 
             <dl class="resumen-final">
+              <section
+                id="panel-calificacion"
+                class="panel-calificacion"
+                hidden
+              >
+                <h2>Calificá el servicio</h2>
+
+                <p>Contanos cómo fue la experiencia con el prestador.</p>
+
+                <form id="form-calificacion">
+                  <label for="puntuacion">Puntuación</label>
+
+                  <select id="puntuacion" required>
+                    <option value="">Seleccionar</option>
+                    <option value="1">1 estrella</option>
+                    <option value="2">2 estrellas</option>
+                    <option value="3">3 estrellas</option>
+                    <option value="4">4 estrellas</option>
+                    <option value="5">5 estrellas</option>
+                  </select>
+
+                  <label for="comentario">Comentario</label>
+
+                  <textarea
+                    id="comentario"
+                    rows="4"
+                    maxlength="500"
+                    placeholder="Escribí un comentario opcional"
+                  ></textarea>
+
+                  <button type="submit" class="boton-primario">
+                    Enviar calificación
+                  </button>
+
+                  <p id="mensaje-calificacion"></p>
+                </form>
+              </section>
               <div>
                 <dt>Hora de inicio</dt>
                 <dd id="finHoraInicio">—</dd>
