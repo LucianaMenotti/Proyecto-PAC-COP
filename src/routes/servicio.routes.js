@@ -1,14 +1,13 @@
 import express from "express";
 import {
   crearServicioDemo,
-  crearServicio,
   listarServicios,
   obtenerServicio,
   iniciarServicio,
   finalizarServicio,
   guardarUbicacion,
   obtenerUbicacion,
-  calificarServicio,
+  crearCalificacion,
 } from "../controllers/servicio.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
@@ -24,5 +23,6 @@ router.post("/:id/finalizar", finalizarServicio);
 router.post("/:id/calificar", calificarServicio);
 router.post("/:id/ubicacion", guardarUbicacion);
 router.get("/:id/ubicacion", obtenerUbicacion);
+router.post("/:id/calificacion", crearCalificacion);
 
 export default router;

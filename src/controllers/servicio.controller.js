@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import Servicio from "../models/servicio.model.js";
 import Ubicacion from "../models/ubicacion.model.js";
+import Calificacion from "../models/calificacion.model.js";
 import User from "../models/user.model.js";
 import Mascota from "../models/mascota.model.js";
 
@@ -386,6 +387,103 @@ export const obtenerUbicacion = async (req, res) => {
   return res.json({ ubicacion });
 };
 
+export const crearCalificacion = async (req, res) => {
+  try {
+    const servicio = await Servicio.findByPk(req.params.id);
+
+    if (!servicio) {
+      return res.status(404).json({
+        mensaje: "Servicio no encontrado",
+      });
+    }
+
+    if (Number(servicio.ownerId) !== Number(req.user.id)) {
+      return res.status(403).json({
+        mensaje: "Solo el dueño puede calificar este servicio",
+      });
+    }
+
+    if (servicio.estado !== "finalizado") {
+      return res.status(409).json({
+        mensaje: "El servicio todavía no finalizó",
+      });
+    }
+
+    if (!servicio.providerId) {
+      return res.status(409).json({
+        mensaje: "El servicio no tiene prestador asignado",
+      });
+    }
+
+    const puntuacion = Number(req.body.puntuacion);
+    const comentario = String(req.body.comentario || "").trim();
+
+    if (!Number.isInteger(puntuacion) || puntuacion < 1 || puntuacion > 5) {
+      return res.status(400).json({
+        mensaje: "La puntuación debe ser un número entre 1 y 5",
+      });
+    }
+
+    const calificacionExistente = await Calificacion.findOne({
+      where: {
+        servicioId: servicio.id,
+        ownerId: req.user.id,
+      },
+    });
+
+    if (calificacionExistente) {
+      return res.status(409).json({
+        mensaje: "Este servicio ya fue calificado",
+      });
+    }
+
+    const calificacion = await Calificacion.create({
+      servicioId: servicio.id,
+      ownerId: servicio.ownerId,
+      providerId: servicio.providerId,
+      puntuacion,
+      comentario: comentario || null,
+    });
+
+    const calificaciones = await Calificacion.findAll({
+      where: {
+        providerId: servicio.providerId,
+      },
+      attributes: ["puntuacion"],
+    });
+
+    const cantidad = calificaciones.length;
+    const promedio =
+      calificaciones.reduce(
+        (total, item) => total + Number(item.puntuacion),
+        0,
+      ) / cantidad;
+
+    await User.update(
+      {
+        calificacion: Number(promedio.toFixed(2)),
+        resenas: cantidad,
+      },
+      {
+        where: {
+          id: servicio.providerId,
+        },
+      },
+    );
+
+    return res.status(201).json({
+      mensaje: "Calificación guardada correctamente",
+      calificacion,
+    });
+  } catch (error) {
+    console.error("Error al crear calificación:", error);
+
+    return res.status(500).json({
+      mensaje: "No se pudo guardar la calificación",
+    });
+  }
+};
+
 export const calificarServicio = async (req, res) => {
   try {
     const { nota, comentario } = req.body;
@@ -408,20 +506,16 @@ export const calificarServicio = async (req, res) => {
 
     // Solo el dueño que reservó puede calificar
     if (Number(servicio.ownerId) !== Number(req.user.id)) {
-      return res
-        .status(403)
-        .json({
-          mensaje: "Solo el dueño de la mascota puede calificar este servicio.",
-        });
+      return res.status(403).json({
+        mensaje: "Solo el dueño de la mascota puede calificar este servicio.",
+      });
     }
 
     // El servicio debe estar terminado
     if (servicio.estado !== "finalizado") {
-      return res
-        .status(400)
-        .json({
-          mensaje: "Solo podés calificar un servicio cuando haya finalizado.",
-        });
+      return res.status(400).json({
+        mensaje: "Solo podés calificar un servicio cuando haya finalizado.",
+      });
     }
 
     // No permitir calificar dos veces el mismo servicio
