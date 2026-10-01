@@ -12,6 +12,7 @@ import Mascota from "./models/mascota.model.js";
 import Servicio from "./models/servicio.model.js";
 import Ubicacion from "./models/ubicacion.model.js";
 import Pago from "./models/pago.model.js";
+import Calificacion from "./models/calificacion.model.js";
 
 import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
