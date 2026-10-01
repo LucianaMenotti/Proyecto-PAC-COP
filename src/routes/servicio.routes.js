@@ -8,6 +8,7 @@ import {
   finalizarServicio,
   guardarUbicacion,
   obtenerUbicacion,
+  calificarServicio,
 } from "../controllers/servicio.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
@@ -20,6 +21,7 @@ router.get("/", listarServicios);
 router.get("/:id", obtenerServicio);
 router.post("/:id/iniciar", iniciarServicio);
 router.post("/:id/finalizar", finalizarServicio);
+router.post("/:id/calificar", calificarServicio);
 router.post("/:id/ubicacion", guardarUbicacion);
 router.get("/:id/ubicacion", obtenerUbicacion);
 

@@ -22,29 +22,33 @@ const app = express();
 
 const esProduccion = process.env.NODE_ENV === "production";
 const origenConfigurado = process.env.FRONTEND_ORIGIN;
-const origenesPermitidos = new Set([
+const origenesPermitidos = new Set(
+  [
     origenConfigurado,
     ...(esProduccion
-        ? []
-        : [
-            "http://localhost:3000",
-            "http://localhost:5500",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:5500"
-        ])
-].filter(Boolean));
+      ? []
+      : [
+          "http://localhost:3000",
+          "http://localhost:5500",
+          "http://127.0.0.1:3000",
+          "http://127.0.0.1:5500",
+        ]),
+  ].filter(Boolean),
+);
 
-app.use(cors({
+app.use(
+  cors({
     origin: (origen, callback) => {
-        if (!origen || origenesPermitidos.has(origen)) {
-            callback(null, true);
-            return;
-        }
+      if (!origen || origenesPermitidos.has(origen)) {
+        callback(null, true);
+        return;
+      }
 
-        callback(new Error(`Origen no permitido: ${origen}`));
+      callback(new Error(`Origen no permitido: ${origen}`));
     },
-    credentials: true
-}));
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
@@ -62,46 +66,59 @@ app.use("/api/pagos", pagoRoutes);
 const PORT = process.env.PORT || 3000;
 
 const iniciarServidor = async () => {
+  try {
+    await sequelize.authenticate();
 
-    try {
+    console.log("Conexión con MySQL establecida correctamente");
+    const queryInterface = sequelize.getQueryInterface();
+    const columnasServicios = await queryInterface.describeTable(
+      Servicio.getTableName(),
+    );
 
-        await sequelize.authenticate();
-
-        console.log(
-            "Conexión con MySQL establecida correctamente"
-        );
-
-        const actualizarEstructura =
-            !esProduccion && process.env.DB_SYNC_ALTER !== "false";
-
-        await sequelize.sync(actualizarEstructura ? { alter: true } : {});
-
-        if (actualizarEstructura) {
-            await sequelize.getQueryInterface().changeColumn(
-                User.getTableName(),
-                "password",
-                {
-                    type: DataTypes.STRING(255),
-                    allowNull: false
-                }
-            );
-        }
-
-        console.log(
-            actualizarEstructura
-                ? "Tablas creadas o actualizadas correctamente; password admite hashes completos"
-                : "Tablas sincronizadas correctamente"
-        );
-
-        app.listen(PORT, () => {
-            console.log(
-                `Servidor Pac-Cop ejecutándose en http://localhost:${PORT}`
-            );
-        });
-    } catch (error) {
-        console.error("No se pudo iniciar la aplicación:", error.message);
-        process.exitCode = 1;
+    if (!columnasServicios.calificacion) {
+      await queryInterface.addColumn(Servicio.getTableName(), "calificacion", {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      });
     }
+
+    if (!columnasServicios.comentarioCalificacion) {
+      await queryInterface.addColumn(
+        Servicio.getTableName(),
+        "comentarioCalificacion",
+        {
+          type: DataTypes.STRING(255),
+          allowNull: true,
+        },
+      );
+    }
+    const actualizarEstructura =
+      !esProduccion && process.env.DB_SYNC_ALTER !== "false";
+
+    await sequelize.sync(actualizarEstructura ? { alter: true } : {});
+
+    if (actualizarEstructura) {
+      await sequelize
+        .getQueryInterface()
+        .changeColumn(User.getTableName(), "password", {
+          type: DataTypes.STRING(255),
+          allowNull: false,
+        });
+    }
+
+    console.log(
+      actualizarEstructura
+        ? "Tablas creadas o actualizadas correctamente; password admite hashes completos"
+        : "Tablas sincronizadas correctamente",
+    );
+
+    app.listen(PORT, () => {
+      console.log(`Servidor Pac-Cop ejecutándose en http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("No se pudo iniciar la aplicación:", error.message);
+    process.exitCode = 1;
+  }
 };
 
 iniciarServidor();
