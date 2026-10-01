@@ -13,21 +13,22 @@ const puedeAcceder = (servicio, user) =>
   Number(servicio.providerId) === Number(user.id);
 
 const presentarServicio = (servicio, ubicacion = null, user = null) => ({
-  id: servicio.id,
-  prestador: servicio.prestadorNombre,
-  tipo: servicio.tipo,
-  mascota: servicio.mascotaNombre,
-  monto: Number(servicio.monto),
-  estado: servicio.estado,
-  horaProgramada: servicio.horaProgramada,
-  iniciadoEn: servicio.iniciadoEn,
-  finalizadoEn: servicio.finalizadoEn,
-  ultimaUbicacion: ubicacion,
-  calificacion: servicio.calificacion ?? null, // <-- AGREGAR ESTA LÍNEA
-  puedeGestionar: Boolean(
-    user &&
-    (esAdministrador(user) || Number(servicio.providerId) === Number(user.id)),
-  ),
+    id: servicio.id,
+    ownerId: servicio.ownerId,
+    providerId: servicio.providerId,
+    prestador: servicio.prestadorNombre,
+    tipo: servicio.tipo,
+    mascota: servicio.mascotaNombre,
+    monto: Number(servicio.monto),
+    estado: servicio.estado,
+    horaProgramada: servicio.horaProgramada,
+    iniciadoEn: servicio.iniciadoEn,
+    finalizadoEn: servicio.finalizadoEn,
+    ultimaUbicacion: ubicacion,
+    puedeGestionar: Boolean(user && (
+        esAdministrador(user) ||
+        Number(servicio.providerId) === Number(user.id)
+    ))
 });
 
 const obtenerServicioAutorizado = async (id, user) => {
@@ -270,11 +271,23 @@ export const obtenerServicio = async (req, res) => {
     order: [["registradoEn", "DESC"]],
   });
 
-  return res.json({
-    servicio: presentarServicio(resultado.servicio, ubicacion, req.user),
-  });
-};
+  const calificacion = await Calificacion.findOne({
+    where: {
+        servicioId: resultado.servicio.id,
+        ownerId: req.user.id
+    }
+});
 
+  return res.json({
+    servicio: {
+        ...presentarServicio(resultado.servicio, ubicacion, req.user),
+        calificado: Boolean(calificacion),
+        puedeCalificar:
+            resultado.servicio.estado === "finalizado" &&
+            Number(resultado.servicio.ownerId) === Number(req.user.id) &&
+            !calificacion
+    }
+});
 export const iniciarServicio = async (req, res) => {
   const resultado = await obtenerServicioAutorizado(req.params.id, req.user);
   if (resultado.error)
