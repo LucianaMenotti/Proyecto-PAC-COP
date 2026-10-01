@@ -22,6 +22,7 @@ const presentarServicio = (servicio, ubicacion = null, user = null) => ({
   iniciadoEn: servicio.iniciadoEn,
   finalizadoEn: servicio.finalizadoEn,
   ultimaUbicacion: ubicacion,
+  calificacion: servicio.calificacion ?? null, // <-- AGREGAR ESTA LÍNEA
   puedeGestionar: Boolean(
     user &&
     (esAdministrador(user) || Number(servicio.providerId) === Number(user.id)),
@@ -383,4 +384,86 @@ export const obtenerUbicacion = async (req, res) => {
   });
 
   return res.json({ ubicacion });
+};
+
+export const calificarServicio = async (req, res) => {
+  try {
+    const { nota, comentario } = req.body;
+    const valorNota = Number(nota);
+
+    if (!valorNota || valorNota < 1 || valorNota > 5) {
+      return res
+        .status(400)
+        .json({ mensaje: "La calificación debe ser un número del 1 al 5." });
+    }
+
+    const resultado = await obtenerServicioAutorizado(req.params.id, req.user);
+    if (resultado.error) {
+      return res
+        .status(resultado.error.status)
+        .json({ mensaje: resultado.error.mensaje });
+    }
+
+    const servicio = resultado.servicio;
+
+    // Solo el dueño que reservó puede calificar
+    if (Number(servicio.ownerId) !== Number(req.user.id)) {
+      return res
+        .status(403)
+        .json({
+          mensaje: "Solo el dueño de la mascota puede calificar este servicio.",
+        });
+    }
+
+    // El servicio debe estar terminado
+    if (servicio.estado !== "finalizado") {
+      return res
+        .status(400)
+        .json({
+          mensaje: "Solo podés calificar un servicio cuando haya finalizado.",
+        });
+    }
+
+    // No permitir calificar dos veces el mismo servicio
+    if (servicio.calificacion !== null) {
+      return res
+        .status(409)
+        .json({ mensaje: "Este servicio ya fue calificado." });
+    }
+
+    // Guardar calificación en el servicio
+    await servicio.update({
+      calificacion: valorNota,
+      comentarioCalificacion: comentario ? String(comentario).trim() : null,
+    });
+
+    // Actualizar promedio y total de reseñas del prestador en la tabla User
+    if (servicio.providerId) {
+      const prestador = await User.findByPk(servicio.providerId);
+      if (prestador) {
+        const resenasPrevias = Number(prestador.resenas) || 0;
+        const califPrevia = Number(prestador.calificacion) || 0;
+
+        const nuevoTotal = resenasPrevias + 1;
+        const nuevoPromedio = Number(
+          ((califPrevia * resenasPrevias + valorNota) / nuevoTotal).toFixed(1),
+        );
+
+        await prestador.update({
+          calificacion: nuevoPromedio,
+          resenas: nuevoTotal,
+        });
+      }
+    }
+
+    return res.json({
+      mensaje: "¡Gracias por calificar el servicio!",
+      servicio: presentarServicio(servicio, null, req.user),
+    });
+  } catch (error) {
+    console.error("Error al calificar servicio:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo registrar la calificación." });
+  }
 };
