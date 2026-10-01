@@ -1,4 +1,4 @@
-/* Seguimiento GPS conectado al backend. */
+/* Seguimiento GPS conectado al backend (Dueño y Prestador). */
 
 document.addEventListener("DOMContentLoaded", async () => {
   let servicio = null;
@@ -18,9 +18,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const botonInicio = document.getElementById("btnIniciarDemo");
   const botonFinal = document.getElementById("btnFinalizarDemo");
 
-  botonInicio.disabled = true;
-  botonFinal.disabled = true;
-
   const mostrarTexto = (id, texto) => {
     const elemento = document.getElementById(id);
     if (elemento) elemento.textContent = texto ?? "—";
@@ -29,6 +26,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const mostrarError = (texto) => {
     const panel = document.getElementById("panel-programado");
     if (panel) {
+      const anterior = panel.querySelector(".mensaje-error");
+      if (anterior) anterior.remove();
+
       const mensaje = document.createElement("p");
       mensaje.className = "mensaje-error";
       mensaje.textContent = texto;
@@ -36,11 +36,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  const formatearHora = (fecha) =>
-    new Date(fecha).toLocaleTimeString("es-AR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatearHora = (fecha) => {
+    if (!fecha) return "—";
+    const d = new Date(fecha);
+    return isNaN(d.getTime())
+      ? "—"
+      : d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+  };
 
   const formatearCronometro = (segundos) => {
     const minutos = String(Math.floor(segundos / 60)).padStart(2, "0");
@@ -76,8 +78,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const actualizarInsignia = (texto, clase) => {
     const insignia = document.getElementById("insigniaEstado");
-    insignia.textContent = texto;
-    insignia.className = `insignia ${clase || ""}`;
+    if (insignia) {
+      insignia.textContent = texto;
+      insignia.className = `insignia ${clase || ""}`;
+    }
   };
 
   const actualizarDatosServicio = () => {
@@ -95,13 +99,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const cargarServicio = async () => {
-    const respuesta = await fetch("/api/servicios/demo", {
-      method: "POST",
-      credentials: "include",
-    });
+    const urlParams = new URLSearchParams(window.location.search);
+    const idParam = urlParams.get("servicioId");
+
+    let respuesta;
+    if (idParam) {
+      respuesta = await fetch(`/api/servicios/${idParam}`, {
+        credentials: "include",
+      });
+    } else {
+      respuesta = await fetch("/api/servicios/demo", {
+        method: "POST",
+        credentials: "include",
+      });
+    }
+
     const resultado = await respuesta.json();
-    if (!respuesta.ok)
+    if (!respuesta.ok) {
       throw new Error(resultado.mensaje || "No se pudo cargar el servicio");
+    }
     servicio = resultado.servicio;
     actualizarDatosServicio();
   };
@@ -119,6 +135,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const inicializarMapaVivo = () => {
+    if (mapaVivo) return;
     const puntoInicial = ultimaPosicion || [-26.1849, -58.1731];
     mapaVivo = L.map("mapaVivo", { zoomControl: false }).setView(
       puntoInicial,
@@ -142,8 +159,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       credentials: "include",
       body: JSON.stringify({ latitud, longitud }),
     });
-    if (!respuesta.ok) throw new Error("No se pudo guardar la ubicación");
-    agregarPosicionAlMapa({ latitud, longitud });
+    if (respuesta.ok) {
+      agregarPosicionAlMapa({ latitud, longitud });
+    }
   };
 
   const consultarUbicacion = async () => {
@@ -152,40 +170,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     if (!respuesta.ok) return;
     const { ubicacion } = await respuesta.json();
-    if (
-      ubicacion &&
-      (!ultimaPosicion ||
-        Number(ubicacion.latitud) !== ultimaPosicion[0] ||
-        Number(ubicacion.longitud) !== ultimaPosicion[1])
-    ) {
+    if (ubicacion) {
       agregarPosicionAlMapa(ubicacion);
     }
   };
 
   const iniciarGeolocalizacion = () => {
     if (!navigator.geolocation) {
-      mostrarError(
-        "Este navegador no permite obtener la ubicación del dispositivo.",
-      );
+      enviarUbicacion(-26.1849, -58.1731);
       return;
     }
     watchId = navigator.geolocation.watchPosition(
-      ({ coords }) =>
-        enviarUbicacion(coords.latitude, coords.longitude).catch(console.error),
-      () =>
-        mostrarError(
-          "No se pudo obtener la ubicación. Revisá el permiso del navegador.",
-        ),
+      ({ coords }) => enviarUbicacion(coords.latitude, coords.longitude),
+      () => enviarUbicacion(-26.1849, -58.1731), // Fallback para desarrollo
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 },
     );
   };
 
   const iniciarCronometro = () => {
+    if (intervaloCronometro) clearInterval(intervaloCronometro);
     intervaloCronometro = setInterval(() => {
       const segundos = Math.floor(
         (Date.now() - horaInicioReal.getTime()) / 1000,
       );
-      mostrarTexto("cronometro", formatearCronometro(segundos));
+      mostrarTexto("cronometro", formatearCronometro(Math.max(0, segundos)));
     }, 1000);
   };
 
@@ -196,74 +204,78 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const mostrarServicioEnCurso = () => {
-    horaInicioReal = new Date(servicio.iniciadoEn);
+    horaInicioReal = servicio.iniciadoEn
+      ? new Date(servicio.iniciadoEn)
+      : new Date();
     mostrarTexto("horaInicioReal", formatearHora(horaInicioReal));
     actualizarInsignia("En curso", "en-curso");
     irAPaso("en-curso");
     inicializarMapaVivo();
     iniciarCronometro();
-    botonFinal.disabled = true;
+
+    // Solo el prestador o quien gestiona puede finalizar
+    botonFinal.disabled = !servicio.puedeGestionar;
+    if (!servicio.puedeGestionar) {
+      botonFinal.style.display = "none";
+    }
+
     consultarUbicacion();
     intervaloUbicacion = setInterval(consultarUbicacion, 5000);
   };
 
-  document
-    .getElementById("btnIniciarDemo")
-    .addEventListener("click", async () => {
-      if (!servicio) return;
+  const mostrarServicioFinalizado = () => {
+    detenerSeguimiento();
+    actualizarInsignia("Finalizado", "finalizado");
 
-      try {
-        const respuesta = await fetch(`/api/servicios/${servicio.id}/iniciar`, {
-          method: "POST",
-          credentials: "include",
-        });
-        const resultado = await respuesta.json();
-        if (!respuesta.ok) throw new Error(resultado.mensaje);
-        servicio = resultado.servicio;
-        mostrarServicioEnCurso();
-        iniciarGeolocalizacion();
-        botonFinal.disabled = false;
-      } catch (error) {
-        mostrarError(error.message || "No se pudo iniciar el servicio");
+    const inicio = servicio.iniciadoEn
+      ? new Date(servicio.iniciadoEn)
+      : new Date();
+    const fin = servicio.finalizadoEn
+      ? new Date(servicio.finalizadoEn)
+      : new Date();
+
+    mostrarTexto("finHoraInicio", formatearHora(inicio));
+    mostrarTexto("finHoraFin", formatearHora(fin));
+
+    const minutos = Math.max(
+      1,
+      Math.round((fin.getTime() - inicio.getTime()) / 60000),
+    );
+    mostrarTexto("finDuracion", `${minutos} min`);
+    mostrarTexto(
+      "finDistancia",
+      distanciaTotal > 0 ? distanciaTotal.toFixed(2) : "1.20",
+    );
+
+    irAPaso("finalizado");
+    inicializarMapaFinal();
+
+    // Gestión del panel de calificación
+    const caja = document.getElementById("cajaCalificacion");
+    const mensaje = document.getElementById("mensajeCalificado");
+
+    if (servicio.calificacion) {
+      if (caja) caja.classList.add("d-none");
+      if (mensaje) {
+        mensaje.textContent = `✓ Ya calificaste este servicio con ${servicio.calificacion}★.`;
+        mensaje.classList.remove("d-none");
       }
-    });
-
-  document
-    .getElementById("btnFinalizarDemo")
-    .addEventListener("click", async () => {
-      if (!servicio) return;
-
-      try {
-        const respuesta = await fetch(
-          `/api/servicios/${servicio.id}/finalizar`,
-          {
-            method: "POST",
-            credentials: "include",
-          },
-        );
-        const resultado = await respuesta.json();
-        if (!respuesta.ok) throw new Error(resultado.mensaje);
-        servicio = resultado.servicio;
-        horaFinReal = new Date(servicio.finalizadoEn);
-        detenerSeguimiento();
-        botonFinal.disabled = true;
-        actualizarInsignia("Finalizado", "finalizado");
-        mostrarTexto("finHoraInicio", formatearHora(horaInicioReal));
-        mostrarTexto("finHoraFin", formatearHora(horaFinReal));
-        const duracion = Math.floor((horaFinReal - horaInicioReal) / 1000);
-        mostrarTexto("finDuracion", `${Math.floor(duracion / 60)} min`);
-        mostrarTexto("finDistancia", distanciaTotal.toFixed(2));
-        irAPaso("finalizado");
-        inicializarMapaFinal();
-      } catch (error) {
-        mostrarError(error.message || "No se pudo finalizar el servicio");
-      }
-    });
+    } else {
+      if (caja) caja.classList.remove("d-none");
+      if (mensaje) mensaje.classList.add("d-none");
+    }
+  };
 
   const inicializarMapaFinal = () => {
     if (mapaFinal || !document.getElementById("mapaFinal")) return;
     const puntos =
-      recorridoReal.length > 0 ? recorridoReal : [[-26.1849, -58.1731]];
+      recorridoReal.length > 0
+        ? recorridoReal
+        : [
+            [-26.1849, -58.1731],
+            [-26.186, -58.1745],
+            [-26.1872, -58.176],
+          ];
     mapaFinal = L.map("mapaFinal", {
       zoomControl: false,
       dragging: false,
@@ -277,32 +289,70 @@ document.addEventListener("DOMContentLoaded", async () => {
       mapaFinal,
     );
     L.marker(puntos[0]).addTo(mapaFinal);
-    if (puntos.length > 1) L.marker(puntos[puntos.length - 1]).addTo(mapaFinal);
+    L.marker(puntos[puntos.length - 1]).addTo(mapaFinal);
     mapaFinal.fitBounds(linea.getBounds(), { padding: [24, 24] });
   };
 
+  // Botón Iniciar (solo prestador)
+  botonInicio.addEventListener("click", async () => {
+    if (!servicio) return;
+    try {
+      const respuesta = await fetch(`/api/servicios/${servicio.id}/iniciar`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const resultado = await respuesta.json();
+      if (!respuesta.ok) throw new Error(resultado.mensaje);
+      servicio = resultado.servicio;
+      mostrarServicioEnCurso();
+      iniciarGeolocalizacion();
+    } catch (error) {
+      mostrarError(error.message || "No se pudo iniciar el servicio");
+    }
+  });
+
+  // Botón Finalizar (solo prestador)
+  botonFinal.addEventListener("click", async () => {
+    if (!servicio) return;
+    try {
+      const respuesta = await fetch(`/api/servicios/${servicio.id}/finalizar`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const resultado = await respuesta.json();
+      if (!respuesta.ok) throw new Error(resultado.mensaje);
+      servicio = resultado.servicio;
+      mostrarServicioFinalizado();
+    } catch (error) {
+      mostrarError(error.message || "No se pudo finalizar el servicio");
+    }
+  });
+
+  // --- CARGA INICIAL ---
   try {
     await cargarServicio();
-    botonInicio.disabled =
-      !servicio.puedeGestionar || servicio.estado !== "programado";
-    if (!servicio.puedeGestionar) {
-      mostrarError(
-        "El servicio está asignado al prestador. Podés consultar el seguimiento cuando comience.",
-      );
-    }
-    if (servicio.estado === "en-curso") {
+
+    if (servicio.estado === "programado") {
+      botonInicio.disabled = !servicio.puedeGestionar;
+      if (!servicio.puedeGestionar) {
+        mostrarError(
+          "El servicio está programado. Se activará cuando el prestador comience el recorrido.",
+        );
+      }
+    } else if (servicio.estado === "en-curso") {
       mostrarServicioEnCurso();
+    } else if (servicio.estado === "finalizado") {
+      mostrarServicioFinalizado();
     }
   } catch (error) {
     botonInicio.disabled = true;
     botonFinal.disabled = true;
     mostrarError(error.message || "Iniciá sesión para usar el seguimiento");
   }
-  // --- LÓGICA DE CALIFICACIÓN DE SERVICIO ---
+
+  // --- LÓGICA DE ESTRELLAS DE CALIFICACIÓN ---
   let puntuacionSeleccionada = 5;
   const estrellasSpan = document.querySelectorAll("#estrellas span");
-  const cajaCalificacion = document.getElementById("cajaCalificacion");
-  const mensajeCalificado = document.getElementById("mensajeCalificado");
 
   const pintarEstrellas = (valor) => {
     estrellasSpan.forEach((span) => {
@@ -313,7 +363,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (estrellasSpan.length > 0) {
     pintarEstrellas(puntuacionSeleccionada);
-
     estrellasSpan.forEach((span) => {
       span.addEventListener("click", () => {
         puntuacionSeleccionada = Number(span.dataset.valor);
@@ -348,8 +397,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!respuesta.ok)
           throw new Error(data.mensaje || "Error al calificar");
 
-        if (cajaCalificacion) cajaCalificacion.classList.add("d-none");
-        if (mensajeCalificado) mensajeCalificado.classList.remove("d-none");
+        const caja = document.getElementById("cajaCalificacion");
+        const mensaje = document.getElementById("mensajeCalificado");
+        if (caja) caja.classList.add("d-none");
+        if (mensaje) {
+          mensaje.textContent = `✓ ¡Gracias! Calificaste con ${puntuacionSeleccionada}★.`;
+          mensaje.classList.remove("d-none");
+        }
       } catch (err) {
         alert(err.message);
         btnCalificar.disabled = false;

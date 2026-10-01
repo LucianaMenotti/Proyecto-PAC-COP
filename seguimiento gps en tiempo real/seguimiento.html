@@ -161,51 +161,6 @@
             ></div>
 
             <dl class="resumen-final">
-              <!-- TARJETA PARA CALIFICAR EL SERVICIO -->
-              <div
-                id="cajaCalificacion"
-                class="tarjeta-calificacion mt-4 p-3 bg-white rounded-3 shadow-sm text-center"
-              >
-                <h5 class="fw-bold mb-1">¿Cómo fue tu experiencia?</h5>
-                <p class="text-secondary small mb-3">
-                  Calificá a tu prestador para ayudar a otros dueños.
-                </p>
-
-                <div
-                  id="estrellas"
-                  class="fs-2 mb-2"
-                  style="cursor: pointer; color: #ffc107"
-                >
-                  <span data-valor="1">★</span>
-                  <span data-valor="2">★</span>
-                  <span data-valor="3">★</span>
-                  <span data-valor="4">★</span>
-                  <span data-valor="5">★</span>
-                </div>
-
-                <input
-                  type="text"
-                  id="comentarioCalificacion"
-                  class="form-control form-control-sm mb-3 mx-auto"
-                  style="max-width: 320px"
-                  placeholder="Dejá un comentario opcional..."
-                />
-
-                <button
-                  type="button"
-                  class="btn btn-primary btn-sm rounded-pill px-4"
-                  id="btnEnviarCalificacion"
-                >
-                  Enviar calificación
-                </button>
-              </div>
-
-              <div
-                id="mensajeCalificado"
-                class="alert alert-success mt-3 d-none text-center"
-              >
-                ✓ ¡Gracias! Tu calificación fue enviada con éxito.
-              </div>
               <div>
                 <dt>Hora de inicio</dt>
                 <dd id="finHoraInicio">—</dd>
@@ -223,6 +178,52 @@
                 <dd><span id="finDistancia">—</span> km</dd>
               </div>
             </dl>
+
+            <!-- TARJETA PARA CALIFICAR EL SERVICIO -->
+            <div
+              id="cajaCalificacion"
+              class="tarjeta-calificacion mt-4 p-4 bg-white rounded-4 shadow-sm text-center border"
+            >
+              <h5 class="fw-bold mb-1">¿Cómo fue tu experiencia?</h5>
+              <p class="text-secondary small mb-3">
+                Calificá a tu prestador para ayudar a otros dueños.
+              </p>
+
+              <div
+                id="estrellas"
+                class="fs-2 mb-2"
+                style="cursor: pointer; color: #ffc107"
+              >
+                <span data-valor="1">★</span>
+                <span data-valor="2">★</span>
+                <span data-valor="3">★</span>
+                <span data-valor="4">★</span>
+                <span data-valor="5">★</span>
+              </div>
+
+              <input
+                type="text"
+                id="comentarioCalificacion"
+                class="form-control form-control-sm mb-3 mx-auto text-center"
+                style="max-width: 320px"
+                placeholder="Dejá un comentario opcional..."
+              />
+
+              <button
+                type="button"
+                class="btn btn-primary btn-sm rounded-pill px-4"
+                id="btnEnviarCalificacion"
+              >
+                Enviar calificación
+              </button>
+            </div>
+
+            <div
+              id="mensajeCalificado"
+              class="alert alert-success mt-3 d-none text-center rounded-pill"
+            >
+              ✓ ¡Gracias! Tu calificación fue enviada con éxito.
+            </div>
           </section>
         </div>
       </div>
