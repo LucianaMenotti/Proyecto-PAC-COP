@@ -1,247 +1,238 @@
 import User from "../models/user.model.js";
+import { hashPassword, verifyPassword } from "../helpers/password.helper.js";
+import {
+  clearAuthCookie,
+  createAuthToken,
+  setAuthCookie,
+} from "../helpers/auth.helper.js";
+
+const PUBLIC_USER_FIELDS = [
+  "id",
+  "nombre",
+  "apellido",
+  "dni",
+  "fechaNacimiento",
+  "email",
+  "telefono",
+  "zona",
+  "rol",
+  "servicios",
+  "vehiculo",
+  "verificado",
+  "calificacion",
+  "resenas",
+];
+
+const DIRECTORY_USER_FIELDS = [
+  "id",
+  "nombre",
+  "apellido",
+  "zona",
+  "rol",
+  "servicios",
+  "preciosServicios",
+  "vehiculo",
+  "verificado",
+  "calificacion",
+  "resenas",
+];
+
+const publicUser = (user) => {
+  const data = user.toJSON ? user.toJSON() : user;
+  return Object.fromEntries(
+    PUBLIC_USER_FIELDS.filter((field) => data[field] !== undefined).map(
+      (field) => [field, data[field]],
+    ),
+  );
+};
 
 export const crearUsuario = async (req, res) => {
-    try {
+  try {
+    const {
+      nombre,
+      apellido,
+      dni,
+      fechaNacimiento,
+      email,
+      password,
+      telefono,
+      zona,
+      rol = "dueño",
+      servicios,
+      vehiculo,
+    } = req.body;
 
-        const {
-            nombre,
-            apellido,
-            dni,
-            fechaNacimiento,
-            email,
-            password,
-            telefono,
-            zona,
-            rol,
-            servicios,
-            vehiculo
-        } = req.body;
-
-
-        // ===============================
-        // VALIDACIONES GENERALES
-        // ===============================
-
-        if (
-            !nombre ||
-            !apellido ||
-            !dni ||
-            !fechaNacimiento ||
-            !email ||
-            !password ||
-            !telefono
-        ) {
-            return res.status(400).json({
-                mensaje: "Completá todos los datos obligatorios"
-            });
-        }
-
-
-        if (!["dueño", "prestador"].includes(rol)) {
-            return res.status(400).json({
-                mensaje: "El rol seleccionado no es válido"
-            });
-        }
-
-
-        // ===============================
-        // COMPROBAR EMAIL
-        // ===============================
-
-        const usuarioExistente = await User.findOne({
-            where: { email }
-        });
-
-        if (usuarioExistente) {
-            return res.status(400).json({
-                mensaje: "El correo ya está registrado"
-            });
-        }
-
-
-        // ===============================
-        // COMPROBAR DNI
-        // ===============================
-
-        const dniExistente = await User.findOne({
-            where: { dni }
-        });
-
-        if (dniExistente) {
-            return res.status(400).json({
-                mensaje: "El DNI ya está registrado"
-            });
-        }
-
-
-        // ===============================
-        // DATOS DEL PRESTADOR
-        // ===============================
-
-        let zonaUsuario = null;
-        let serviciosUsuario = null;
-        let vehiculoUsuario = null;
-
-
-        if (rol === "prestador") {
-
-            if (!zona) {
-                return res.status(400).json({
-                    mensaje: "El prestador debe indicar su zona de trabajo"
-                });
-            }
-
-
-            if (!Array.isArray(servicios) || servicios.length === 0) {
-                return res.status(400).json({
-                    mensaje: "El prestador debe seleccionar al menos un servicio"
-                });
-            }
-
-
-            zonaUsuario = zona;
-            serviciosUsuario = servicios;
-
-
-            // El vehículo solamente es necesario para traslado
-            if (servicios.includes("Traslado")) {
-
-                if (!vehiculo) {
-                    return res.status(400).json({
-                        mensaje: "Debés seleccionar un vehículo para realizar traslados"
-                    });
-                }
-
-                vehiculoUsuario = vehiculo;
-            }
-        }
-
-
-        // ===============================
-        // CREAR USUARIO
-        // ===============================
-
-        const nuevoUsuario = await User.create({
-            nombre,
-            apellido,
-            dni,
-            fechaNacimiento,
-            email,
-            password,
-            telefono,
-            zona: zonaUsuario,
-            rol,
-            servicios: serviciosUsuario,
-            vehiculo: vehiculoUsuario
-        });
-
-
-        res.status(201).json({
-            mensaje: "Usuario registrado correctamente",
-            usuario: nuevoUsuario
-        });
-
-
-    } catch (error) {
-
-        console.error("Error al crear usuario:", error);
-
-        res.status(500).json({
-            mensaje: "Error al registrar el usuario"
-        });
+    if (
+      rol === "prestador" &&
+      (!zona || !Array.isArray(servicios) || servicios.length === 0)
+    ) {
+      return res.status(400).json({
+        mensaje: "El prestador debe indicar zona y al menos un servicio",
+      });
     }
+
+    if (rol === "prestador" && servicios.includes("Traslado") && !vehiculo) {
+      return res.status(400).json({
+        mensaje: "Debés seleccionar un vehículo para realizar traslados",
+      });
+    }
+
+    const existingUser = await User.findOne({ where: { email } });
+
+    if (existingUser) {
+      return res.status(409).json({ mensaje: "El correo ya está registrado" });
+    }
+
+    const existingDni = await User.findOne({ where: { dni } });
+
+    if (existingDni) {
+      return res.status(409).json({ mensaje: "El DNI ya está registrado" });
+    }
+
+    const user = await User.create({
+      nombre,
+      apellido,
+      dni,
+      fechaNacimiento,
+      email,
+      password: await hashPassword(password),
+      telefono,
+      zona: rol === "prestador" ? zona : null,
+      rol,
+      servicios: rol === "prestador" ? servicios : null,
+      vehiculo: rol === "prestador" ? (vehiculo ?? null) : null,
+    });
+
+    setAuthCookie(res, createAuthToken(user));
+
+    return res.status(201).json({
+      mensaje: "Usuario registrado correctamente",
+      usuario: publicUser(user),
+    });
+  } catch (error) {
+    console.error("Error al crear usuario:", error);
+
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res
+        .status(409)
+        .json({ mensaje: "El email o DNI ya está registrado" });
+    }
+
+    return res.status(500).json({ mensaje: "Error al registrar el usuario" });
+  }
 };
-
-
-// ===============================
-// INICIAR SESIÓN
-// ===============================
 
 export const iniciarSesion = async (req, res) => {
-    try {
+  try {
+    const { email, password } = req.body;
 
-        const { email, password } = req.body;
-
-        const usuario = await User.findOne({
-            where: { email }
-        });
-
-
-        if (!usuario || usuario.password !== password) {
-
-            return res.status(401).json({
-                mensaje: "Correo o contraseña incorrectos"
-            });
-        }
-
-
-        res.status(200).json({
-            mensaje: "Inicio de sesión correcto",
-            usuario
-        });
-
-
-    } catch (error) {
-
-        console.error("Error al iniciar sesión:", error);
-
-        res.status(500).json({
-            mensaje: "Error al iniciar sesión"
-        });
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ mensaje: "El correo y la contraseña son obligatorios" });
     }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ mensaje: "Correo o contraseña incorrectos" });
+    }
+
+    const passwordResult = await verifyPassword(password, user.password);
+
+    if (!passwordResult.valid) {
+      return res
+        .status(401)
+        .json({ mensaje: "Correo o contraseña incorrectos" });
+    }
+
+    if (passwordResult.needsUpgrade) {
+      await user.update({ password: await hashPassword(password) });
+    }
+
+    setAuthCookie(res, createAuthToken(user));
+
+    return res.status(200).json({
+      mensaje: "Inicio de sesión correcto",
+      usuario: publicUser(user),
+    });
+  } catch (error) {
+    console.error("Error al iniciar sesión:", error);
+    return res.status(500).json({ mensaje: "Error al iniciar sesión" });
+  }
 };
 
+export const cerrarSesion = (req, res) => {
+  clearAuthCookie(res);
+  return res.status(200).json({ mensaje: "Sesión cerrada correctamente" });
+};
 
-// ===============================
-// OBTENER TODOS LOS USUARIOS
-// ===============================
+export const obtenerSesion = (req, res) =>
+  res.status(200).json({ usuario: publicUser(req.user) });
 
 export const obtenerUsuarios = async (req, res) => {
-    try {
+  try {
+    const users = await User.findAll({
+      attributes: DIRECTORY_USER_FIELDS,
+      order: [["nombre", "ASC"]],
+    });
 
-        const usuarios = await User.findAll();
-
-        res.status(200).json(usuarios);
-
-
-    } catch (error) {
-
-        console.error("Error al obtener usuarios:", error);
-
-        res.status(500).json({
-            mensaje: "Error al obtener los usuarios"
-        });
-    }
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error("Error al obtener usuarios:", error);
+    return res.status(500).json({ mensaje: "Error al obtener los usuarios" });
+  }
 };
 
-
-// ===============================
-// OBTENER USUARIO POR ID
-// ===============================
-
 export const obtenerUsuarioPorId = async (req, res) => {
-    try {
+  try {
+    const esPropioOAdmin =
+      Number(req.params.id) === Number(req.user.id) ||
+      ["admin", "administrador"].includes(req.user.rol);
 
-        const usuario = await User.findByPk(req.params.id);
+    const user = await User.findByPk(req.params.id, {
+      attributes: esPropioOAdmin ? PUBLIC_USER_FIELDS : DIRECTORY_USER_FIELDS,
+    });
 
-
-        if (!usuario) {
-
-            return res.status(404).json({
-                mensaje: "Usuario no encontrado"
-            });
-        }
-
-
-        res.status(200).json(usuario);
-
-
-    } catch (error) {
-
-        console.error("Error al obtener usuario:", error);
-
-        res.status(500).json({
-            mensaje: "Error al obtener el usuario"
-        });
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
+
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    return res.status(500).json({ mensaje: "Error al obtener el usuario" });
+  }
+};
+export const actualizarMisServicios = async (req, res) => {
+  try {
+    if (req.user.rol !== "prestador") {
+      return res
+        .status(403)
+        .json({ mensaje: "Solo un prestador puede publicar servicios" });
+    }
+
+    const { servicios, preciosServicios } = req.body;
+
+    if (servicios.includes("Traslado") && !req.user.vehiculo) {
+      return res.status(400).json({
+        mensaje:
+          "Necesitás cargar un vehículo en tu perfil para ofrecer Traslado",
+      });
+    }
+
+    await req.user.update({ servicios, preciosServicios });
+
+    return res.status(200).json({
+      mensaje: "Servicios actualizados correctamente",
+      usuario: publicUser(req.user),
+    });
+  } catch (error) {
+    console.error("Error al actualizar servicios:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudieron actualizar los servicios" });
+  }
 };

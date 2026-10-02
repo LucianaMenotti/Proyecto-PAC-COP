@@ -1,9 +1,11 @@
 <!doctype html>
+
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    ```
     <title>Pac-Cop - Servicios para mascotas</title>
 
     <!-- Bootstrap -->
@@ -20,6 +22,7 @@
 
     <!-- Estilos propios -->
     <link rel="stylesheet" href="css/styles.css" />
+    ```
   </head>
 
   <body>
@@ -31,6 +34,7 @@
           Pac-Cop
         </a>
 
+        ```
         <button
           class="navbar-toggler"
           type="button"
@@ -54,8 +58,19 @@
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="paginas/buscar-prestadores.html">
-                Buscar prestadores
+              <a class="nav-link fw-medium" href="paginas/panel-prestador.html">
+                <i class="bi bi-speedometer2 me-1"></i>
+                Panel Prestador
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link fw-medium"
+                href="paginas/buscar-prestadores.html"
+              >
+                <i class="bi bi-search me-1"></i>
+                Buscar
               </a>
             </li>
           </ul>
@@ -110,13 +125,36 @@
             </div>
           </div>
 
-          <div class="col-lg-6 text-center mt-5 mt-lg-0">
-            <img
-              src="assets/img/descarga (58).png"
-              alt="Mascota de Pac-Cop"
-              class="img-fluid rounded-4 shadow"
-              style="max-height: 420px"
-            />
+          <div class="col-lg-5 text-center mt-5 mt-lg-0">
+            <div class="position-relative d-inline-block">
+              <img
+                src="assets/img/descarga (58).png"
+                alt="Mascota feliz con Pac-Cop"
+                class="img-fluid rounded-4 shadow-lg"
+                style="max-height: 420px; object-fit: cover"
+              />
+
+              <div
+                id="tarjetaPaseoActivo"
+                class="d-none position-absolute bottom-0 start-0 translate-middle-y bg-white p-3 rounded-4 shadow border text-start"
+                style="max-width: 220px"
+              >
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span
+                    class="spinner-grow spinner-grow-sm text-danger"
+                    role="status"
+                  ></span>
+
+                  <span class="badge bg-danger-subtle text-danger fw-bold">
+                    En paseo
+                  </span>
+                </div>
+
+                <p class="small fw-bold mb-0" id="paseoActivoTitulo"></p>
+
+                <small class="text-secondary" id="paseoActivoDetalle"></small>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -332,7 +370,10 @@
                   Información de salud y datos importantes de tu mascota.
                 </p>
 
-                <a href="FichaSalud.html" class="btn btn-outline-primary">
+                <a
+                  href="paginas/FichaSalud.html"
+                  class="btn btn-outline-primary"
+                >
                   Ver ficha
                 </a>
               </div>
@@ -417,6 +458,15 @@
                   Registrarse
                 </a>
               </li>
+
+              <li>
+                <a
+                  href="paginas/panel-prestador.html"
+                  class="text-white-50 text-decoration-none"
+                >
+                  Panel del Prestador
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -444,7 +494,7 @@
 
               <li>
                 <a
-                  href="FichaSalud.html"
+                  href="paginas/FichaSalud.html"
                   class="text-white-50 text-decoration-none"
                 >
                   Ficha de Salud
@@ -464,5 +514,37 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Paseo activo -->
+    <script>
+      (async () => {
+        try {
+          const respuesta = await fetch("/api/servicios", {
+            credentials: "include",
+          });
+
+          if (!respuesta.ok) return;
+
+          const { servicios } = await respuesta.json();
+
+          const activo = (servicios || []).find((s) => s.estado === "en-curso");
+
+          if (!activo) return;
+
+          document.getElementById("paseoActivoTitulo").textContent =
+            `${activo.mascota} · ${activo.prestador}`;
+
+          document.getElementById("paseoActivoDetalle").textContent =
+            `${activo.tipo} en curso`;
+
+          document
+            .getElementById("tarjetaPaseoActivo")
+            .classList.remove("d-none");
+        } catch {
+          /* sin sesión o sin paseo activo: la tarjeta queda oculta */
+        }
+      })();
+    </script>
+    ```
   </body>
 </html>

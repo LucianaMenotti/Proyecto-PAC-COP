@@ -18,9 +18,10 @@ export const crearMascota = async (req, res) => {
             alergias,
             vacunacion,
             reactividad,
-            alertaDueno,
-            userId
+            alertaDueno
         } = req.body;
+
+        const userId = req.user.id;
 
 
         const mascota = await Mascota.create({
@@ -65,7 +66,8 @@ export const obtenerMascotasPorUsuario = async (req, res) => {
         const mascotas = await Mascota.findAll({
             where: {
                 userId: req.params.userId
-            }
+            },
+            order: [["nombre", "ASC"]]
         });
 
 
@@ -90,7 +92,7 @@ export const obtenerMascotasPorUsuario = async (req, res) => {
 export const obtenerMascotaPorId = async (req, res) => {
     try {
 
-        const mascota = await Mascota.findByPk(req.params.id);
+        const mascota = req.mascota ?? await Mascota.findByPk(req.params.id);
 
 
         if (!mascota) {
@@ -131,7 +133,7 @@ export const actualizarMascota = async (req, res) => {
         } = req.body;
 
 
-        const mascota = await Mascota.findByPk(req.params.id);
+        const mascota = req.mascota ?? await Mascota.findByPk(req.params.id);
 
 
         if (!mascota) {

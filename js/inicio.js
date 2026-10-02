@@ -1,65 +1,25 @@
-const usuarioGuardado =
-    localStorage.getItem("usuario");
+const usuario = await window.PacCopAuth.requireSession();
 
-if (!usuarioGuardado) {
+if (usuario) {
+    const titulo = document.getElementById("titulo");
+    const mensaje = document.getElementById("mensaje");
+    const rolCuenta = document.getElementById("rolCuenta");
+    const cerrarSesion = document.getElementById("cerrarSesion");
 
-    window.location.href =
-        "login.html";
+    titulo.textContent = `¡Bienvenido, ${usuario.nombre}!`;
+    rolCuenta.textContent = usuario.rol === "prestador"
+        ? "Cuenta de prestador"
+        : usuario.rol === "admin" || usuario.rol === "administrador"
+            ? "Cuenta de administrador"
+            : "Cuenta de dueño";
 
-} else {
-
-    const usuario =
-        JSON.parse(usuarioGuardado);
-
-    const titulo =
-        document.getElementById("titulo");
-
-    const mensaje =
-        document.getElementById("mensaje");
-
-    const acciones =
-        document.getElementById("acciones");
-
-
-    titulo.textContent =
-        `¡Bienvenido, ${usuario.nombre}!`;
-
+    cerrarSesion.addEventListener("click", () => window.PacCopAuth.logout());
 
     if (usuario.rol === "prestador") {
-
-        mensaje.textContent =
-            "Ingresaste como prestador de servicios.";
-
-        acciones.innerHTML = `
-
-            <div class="alert alert-info">
-                La página de gestión de prestadores
-                estará disponible próximamente.
-            </div>
-
-        `;
-
+        window.location.replace("panel-prestador.html");
+    } else if (usuario.rol === "admin" || usuario.rol === "administrador") {
+        mensaje.textContent = "Ingresaste como administrador.";
     } else {
-
-        mensaje.textContent =
-            "Ingresaste como dueño de mascota.";
-
-        acciones.innerHTML = `
-
-            <a
-                href="buscar-prestadores.html"
-                class="btn btn-primary me-2"
-            >
-                Buscar prestadores
-            </a>
-
-            <a
-                href="mis-mascotas.html"
-                class="btn btn-outline-primary"
-            >
-                Mis mascotas
-            </a>
-
-        `;
+        mensaje.textContent = "Ingresaste como dueño de mascota.";
     }
 }
