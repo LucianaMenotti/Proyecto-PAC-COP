@@ -20,6 +20,9 @@ import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
 import reservaRoutes from "./routes/reserva.routes.js";
 import servicioRoutes from "./routes/servicio.routes.js";
+
+import mensajeRoutes from "./routes/mensaje.routes.js";
+
 import pagoRoutes from "./routes/pago.routes.js";
 
 const app = express();
@@ -66,6 +69,7 @@ app.use("/api/mascotas", mascotaRoutes);
 app.use("/api/reservas", reservaRoutes);
 app.use("/api/servicios", servicioRoutes);
 app.use("/api/pagos", pagoRoutes);
+app.use("/api/mensajes", mensajeRoutes);
 
 const PORT = process.env.PORT || 3000;
 
