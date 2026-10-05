@@ -1,0 +1,170 @@
+
+const contenedor = document.getElementById("perfil");
+
+const usuario = await window.PacCopAuth.requireSession(["prestador"]);
+
+const NOMBRES = { Paseo: "Paseo", Guarderia: "Guardería", Traslado: "Traslado" };
+
+let servicios = [];
+let precios = {};
+
+function leerLista(valor) {
+    if (Array.isArray(valor)) return valor;
+
+    if (typeof valor === "string") {
+        try {
+            const resultado = JSON.parse(valor);
+            return Array.isArray(resultado) ? resultado : [];
+        } catch {
+            return [];
+        }
+    }
+
+    return [];
+}
+
+function leerPrecios(valor) {
+    if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        return valor;
+    }
+
+    if (typeof valor === "string") {
+        try {
+            const resultado = JSON.parse(valor);
+
+            if (resultado && typeof resultado === "object" && !Array.isArray(resultado)) {
+                return resultado;
+            }
+        } catch {
+            return {};
+        }
+    }
+
+    return {};
+}
+
+function escapar(texto) {
+    const div = document.createElement("div");
+    div.textContent = texto ?? "";
+    return div.innerHTML;
+}
+
+async function guardar() {
+    const respuesta = await fetch("/api/users/me/servicios", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ servicios, preciosServicios: precios })
+    });
+
+    const resultado = await respuesta.json();
+
+    if (!respuesta.ok) {
+        throw new Error(resultado.mensaje || "No se pudo guardar");
+    }
+
+    servicios = leerLista(resultado.usuario.servicios);
+    precios = leerPrecios(resultado.usuario.preciosServicios);
+    mostrarPerfil();
+}
+
+function mostrarPerfil() {
+    const nombreCompleto = `${usuario.nombre || ""} ${usuario.apellido || ""}`.trim();
+    const inicial = usuario.nombre ? usuario.nombre.charAt(0).toUpperCase() : "P";
+
+    const serviciosHTML = servicios.length > 0
+        ? `<ul class="list-group list-group-flush">
+            ${servicios.map((servicio) => `
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span>
+                        <strong>${escapar(NOMBRES[servicio] || servicio)}</strong>
+                        <span class="text-secondary ms-2">
+                            ${precios[servicio] ? "$" + precios[servicio] : "Sin precio cargado"}
+                        </span>
+                    </span>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-quitar="${escapar(servicio)}">
+                        Eliminar
+                    </button>
+                </li>
+            `).join("")}
+           </ul>`
+        : `<p class="text-secondary mb-0">Todavía no ofrecés ningún servicio. Agregalos desde el panel.</p>`;
+
+    contenedor.innerHTML = `
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <div class="row align-items-center g-4">
+                    <div class="col-md-3 text-center">
+                        <div class="avatar mx-auto" style="width: 90px; height: 90px; font-size: 2rem;">${inicial}</div>
+                    </div>
+                    <div class="col-md-9">
+                        <h1 class="fw-bold mb-2">${escapar(nombreCompleto)}</h1>
+                        ${usuario.verificado
+                            ? `<span class="badge text-bg-success">✓ Identidad verificada</span>`
+                            : `<span class="badge text-bg-secondary">Identidad no verificada</span>`}
+                        <p class="mt-3 mb-1">
+                            <strong>${usuario.calificacion || 0}</strong> ★
+                            <span class="text-secondary">(${usuario.resenas || 0} reseñas)</span>
+                        </p>
+                        <p class="text-secondary mb-0">📍 ${escapar(usuario.zona || "Zona no especificada")}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="fw-bold mb-0">Mis servicios</h3>
+                            <a href="panel-prestador.html" class="btn btn-primary btn-sm">Agregar o cambiar precios</a>
+                        </div>
+                        ${serviciosHTML}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold">Mi cuenta</h4>
+                        <hr>
+                        <p class="mb-2"><strong>Correo</strong></p>
+                        <p class="text-secondary">${escapar(usuario.email)}</p>
+                        <p class="mb-2"><strong>Teléfono</strong></p>
+                        <p class="text-secondary">${escapar(usuario.telefono || "No especificado")}</p>
+                        <p class="mb-2"><strong>Zona</strong></p>
+                        <p class="text-secondary mb-0">${escapar(usuario.zona || "No especificada")}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    contenedor.querySelectorAll("[data-quitar]").forEach((boton) => {
+        boton.addEventListener("click", async () => {
+            const servicio = boton.dataset.quitar;
+
+            if (!confirm(`¿Eliminar el servicio "${NOMBRES[servicio] || servicio}"?`)) return;
+
+            servicios = servicios.filter((s) => s !== servicio);
+            delete precios[servicio];
+
+            try {
+                await guardar();
+            } catch (error) {
+                alert(error.message);
+                servicios = leerLista(usuario.servicios);
+                precios = leerPrecios(usuario.preciosServicios);
+                mostrarPerfil();
+            }
+        });
+    });
+}
+
+if (usuario) {
+    servicios = leerLista(usuario.servicios);
+    precios = leerPrecios(usuario.preciosServicios);
+    mostrarPerfil();
+}

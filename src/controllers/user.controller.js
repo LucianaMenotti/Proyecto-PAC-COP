@@ -17,6 +17,7 @@ const PUBLIC_USER_FIELDS = [
   "zona",
   "rol",
   "servicios",
+  "preciosServicios",
   "vehiculo",
   "verificado",
   "calificacion",

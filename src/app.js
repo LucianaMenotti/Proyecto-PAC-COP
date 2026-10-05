@@ -9,6 +9,7 @@ import sequelize from "./config/database.js";
 
 import Reserva from "./models/reserva.model.js";
 
+import Mensaje from "./models/mensaje.model.js";
 import User from "./models/user.model.js";
 import Mascota from "./models/mascota.model.js";
 import Servicio from "./models/servicio.model.js";
@@ -106,10 +107,11 @@ const iniciarServidor = async () => {
             );
         });
 
-    } catch (error) {
-        console.error("No se pudo iniciar la aplicación:", error.message);
-        process.exitCode = 1;
-    }
+        } catch (error) {
+            console.error("No se pudo iniciar la aplicación:");
+            console.error(error);
+            process.exitCode = 1;
+        }
 };
 
 iniciarServidor();

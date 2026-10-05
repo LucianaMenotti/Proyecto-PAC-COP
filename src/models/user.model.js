@@ -62,6 +62,11 @@ const User = sequelize.define("User", {
         allowNull: true
     },
 
+    preciosServicios: {
+        type: DataTypes.JSON,
+        allowNull: true
+    },
+
     vehiculo: {
         type: DataTypes.STRING(30),
         allowNull: true

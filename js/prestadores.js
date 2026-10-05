@@ -26,7 +26,9 @@ function obtenerServicios(servicios) {
 
 async function cargarPrestadores() {
   try {
-    const respuesta = await fetch("/api/users");
+    const respuesta = await fetch("/api/users", {
+      credentials: "include",
+    });
 
     if (!respuesta.ok) {
       throw new Error("Error al obtener los usuarios");
@@ -41,10 +43,10 @@ async function cargarPrestadores() {
     console.error("Error al cargar prestadores:", error);
 
     contenedor.innerHTML = `
-            <div class="alert alert-danger">
-                No se pudieron cargar los prestadores.
-            </div>
-        `;
+      <div class="alert alert-danger">
+        No se pudieron cargar los prestadores.
+      </div>
+    `;
   }
 }
 
@@ -160,7 +162,17 @@ const reservaError = document.getElementById("reservaError");
 const tituloReserva = document.getElementById("tituloReserva");
 
 function precioDe(prestador, tipo) {
-  return Number(prestador.preciosServicios?.[tipo]) || 0;
+    let precios = prestador.preciosServicios;
+
+    if (typeof precios === "string") {
+        try {
+            precios = JSON.parse(precios);
+        } catch {
+            precios = {};
+        }
+    }
+
+    return Number(precios?.[tipo]) || 0;
 }
 
 function actualizarPrecioReserva() {

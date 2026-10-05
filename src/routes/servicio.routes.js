@@ -8,6 +8,8 @@ import {
   finalizarServicio,
   guardarUbicacion,
   obtenerUbicacion,
+  aceptarServicio,
+  rechazarServicio,
 } from "../controllers/servicio.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
@@ -16,6 +18,10 @@ const router = express.Router();
 router.use(authMiddleware);
 router.post("/", crearServicio);
 router.post("/demo", crearServicioDemo);
+
+router.post("/:id/aceptar", aceptarServicio);
+router.post("/:id/rechazar", rechazarServicio);
+
 router.get("/", listarServicios);
 router.get("/:id", obtenerServicio);
 router.post("/:id/iniciar", iniciarServicio);

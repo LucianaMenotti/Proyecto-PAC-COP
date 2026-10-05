@@ -1,3 +1,4 @@
+
 // =========================================
 // PAC-COP - PANEL DEL PRESTADOR
 // =========================================
@@ -51,6 +52,23 @@ function leerLista(valor) {
   return [];
 }
 
+function leerPrecios(valor) {
+  if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+    return valor;
+  }
+
+  if (typeof valor === "string") {
+    try {
+      const resultado = JSON.parse(valor);
+      return resultado && typeof resultado === "object" ? resultado : {};
+    } catch {
+      return {};
+    }
+  }
+
+  return {};
+}
+
 function escribir(id, texto) {
   const elemento = document.getElementById(id);
   if (elemento) elemento.textContent = texto;
@@ -83,7 +101,8 @@ async function guardarServicios() {
   }
 
   misServicios = leerLista(resultado.usuario.servicios);
-  misPrecios = resultado.usuario.preciosServicios || {};
+  misPrecios = leerPrecios(resultado.usuario.preciosServicios);
+
   renderizarServicios();
 }
 
@@ -100,7 +119,11 @@ function renderizarServicios() {
     .map(
       (servicio) => `
         <span class="badge bg-light text-dark border me-1 mb-1">
-            ${servicio} · ${misPrecios[servicio] ? "$" + misPrecios[servicio] : "sin precio"}
+            ${servicio} · ${
+              misPrecios[servicio]
+                ? "$" + misPrecios[servicio]
+                : "sin precio"
+            }
         </span>
     `,
     )
@@ -113,7 +136,7 @@ function renderizarServicios() {
 
 if (usuario) {
   misServicios = leerLista(usuario.servicios);
-  misPrecios = { ...(usuario.preciosServicios || {}) };
+  misPrecios = leerPrecios(usuario.preciosServicios);
 
   // Encabezado
   const avatar = document.getElementById("avatarUsuario");
@@ -121,6 +144,7 @@ if (usuario) {
   if (avatar) {
     avatar.textContent = (usuario.nombre || "P").charAt(0).toUpperCase();
     avatar.style.cursor = "pointer";
+
     avatar.addEventListener("click", () => {
       window.location.href = "perfil-prestador.html";
     });
@@ -133,7 +157,10 @@ if (usuario) {
 
   renderizarServicios();
 
-  // Tabla de precios mínimos
+  // -----------------------------------------
+  // TABLA DE PRECIOS MÍNIMOS
+  // -----------------------------------------
+
   const tabla = document.getElementById("tablaPrecios");
 
   if (tabla) {
@@ -151,7 +178,10 @@ if (usuario) {
       .join("");
   }
 
-  // Formulario de publicación
+  // -----------------------------------------
+  // FORMULARIO DE PUBLICACIÓN
+  // -----------------------------------------
+
   if (servicioSelect && precioInput) {
     precioInput.placeholder = obtenerPrecioMinimo();
 
@@ -190,8 +220,10 @@ if (usuario) {
 
       try {
         await guardarServicios();
+
         formulario.reset();
         precioInput.placeholder = obtenerPrecioMinimo();
+
         alert("Servicio publicado correctamente.");
       } catch (error) {
         alert(error.message);
@@ -199,7 +231,10 @@ if (usuario) {
     });
   }
 
-  // Rendimiento real: servicios finalizados y nivel
+  // -----------------------------------------
+  // RENDIMIENTO REAL: SERVICIOS FINALIZADOS
+  // -----------------------------------------
+
   (async () => {
     let completados = 0;
 
@@ -207,7 +242,9 @@ if (usuario) {
       const respuesta = await fetch("/api/servicios", {
         credentials: "include",
       });
+
       const { servicios } = await respuesta.json();
+
       completados = (servicios || []).filter(
         (s) => s.estado === "finalizado",
       ).length;
@@ -216,13 +253,24 @@ if (usuario) {
     }
 
     nivelActual =
-      completados >= 50 ? "top" : completados >= 10 ? "establecido" : "nuevo";
+      completados >= 50
+        ? "top"
+        : completados >= 10
+          ? "establecido"
+          : "nuevo";
 
-    if (precioInput) precioInput.placeholder = obtenerPrecioMinimo();
+    if (precioInput) {
+      precioInput.placeholder = obtenerPrecioMinimo();
+    }
 
     const barra = document.getElementById("barraProgresoNivel");
-    if (barra)
-      barra.style.width = `${Math.min(100, Math.round((completados / 50) * 100))}%`;
+
+    if (barra) {
+      barra.style.width = `${Math.min(
+        100,
+        Math.round((completados / 50) * 100),
+      )}%`;
+    }
 
     ["nuevo", "establecido", "top"].forEach((nivel) => {
       document
@@ -234,6 +282,7 @@ if (usuario) {
 
     if (resumen) {
       const faltan = Math.max(0, 50 - completados);
+
       resumen.innerHTML =
         `Llevás <strong>${completados} servicios</strong> con <strong>${usuario.calificacion ?? 0}★</strong> de promedio.` +
         (faltan > 0
@@ -242,3 +291,232 @@ if (usuario) {
     }
   })();
 }
+
+// -----------------------------------------
+// SOLICITUDES DE RESERVA
+// -----------------------------------------
+
+async function cargarSolicitudes() {
+    try {
+        const respuesta = await fetch("/api/servicios", {
+            credentials: "include",
+        });
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron cargar las solicitudes");
+        }
+
+        const resultado = await respuesta.json();
+        const servicios = resultado.servicios || [];
+
+        const solicitudes = servicios.filter(
+            (servicio) =>
+                servicio.estado === "programado" &&
+                servicio.puedeGestionar === true
+        );
+
+        mostrarSolicitudes(solicitudes);
+    } catch (error) {
+        console.error("Error al cargar solicitudes:", error);
+    }
+}
+
+function mostrarSolicitudes(solicitudes) {
+    let contenedor = document.getElementById("solicitudesPrestador");
+
+    if (!contenedor) {
+        const main = document.querySelector("main");
+        if (!main) return;
+
+        contenedor = document.createElement("div");
+        contenedor.id = "solicitudesPrestador";
+
+        main.prepend(contenedor);
+    }
+
+    contenedor.innerHTML = `
+        <div class="container mb-4">
+            <div class="card border-0 shadow-sm">
+
+                <button
+                    type="button"
+                    class="btn btn-light w-100 text-start border-0 p-4"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#listaSolicitudes"
+                    aria-expanded="false"
+                    aria-controls="listaSolicitudes"
+                >
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <h4 class="fw-bold mb-1">
+                                Solicitudes (${solicitudes.length})
+                            </h4>
+
+                            <small class="text-secondary">
+                                Reservas pendientes para aceptar o rechazar
+                            </small>
+                        </div>
+
+                        <span class="fs-4">
+                            ▾
+                        </span>
+
+                    </div>
+                </button>
+
+                <div id="listaSolicitudes" class="collapse">
+                    <div class="card-body pt-0">
+
+                        ${
+                            solicitudes.length === 0
+                                ? `
+                                    <div class="text-center py-4 text-secondary">
+                                        <p class="mb-0">
+                                            No hay solicitudes pendientes.
+                                        </p>
+                                    </div>
+                                `
+                                : solicitudes
+                                      .map(
+                                          (servicio) => `
+                                    <div
+                                        class="border rounded p-3 mb-3"
+                                        data-solicitud="${servicio.id}"
+                                    >
+                                        <div class="row g-3 align-items-center">
+
+                                            <div class="col-md-8">
+
+                                                <h5 class="fw-bold mb-2">
+                                                    Nueva reserva
+                                                </h5>
+
+                                                <p class="mb-1">
+                                                    <strong>${servicio.tipo}</strong>
+                                                    para ${servicio.mascota}
+                                                </p>
+
+                                                <p class="mb-1 text-secondary">
+                                                    ${servicio.prestador}
+                                                </p>
+
+                                                <p class="mb-1">
+                                                    <strong>Precio:</strong>
+                                                    $${servicio.monto}
+                                                </p>
+
+                                                <p class="mb-0 text-secondary">
+                                                    ${formatearFecha(
+                                                        servicio.horaProgramada
+                                                    )}
+                                                </p>
+
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="d-flex gap-2 justify-content-md-end">
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-outline-danger"
+                                                        data-rechazar="${servicio.id}"
+                                                    >
+                                                        Rechazar
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-success"
+                                                        data-aceptar="${servicio.id}"
+                                                    >
+                                                        Aceptar
+                                                    </button>
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                `
+                                      )
+                                      .join("")
+                        }
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    `;
+
+    contenedor
+        .querySelectorAll("[data-aceptar]")
+        .forEach((boton) => {
+            boton.addEventListener("click", () => {
+                gestionarSolicitud(
+                    boton.dataset.aceptar,
+                    "aceptar"
+                );
+            });
+        });
+
+    contenedor
+        .querySelectorAll("[data-rechazar]")
+        .forEach((boton) => {
+            boton.addEventListener("click", () => {
+                gestionarSolicitud(
+                    boton.dataset.rechazar,
+                    "rechazar"
+                );
+            });
+        });
+}
+
+function formatearFecha(fecha) {
+    if (!fecha) return "Fecha no disponible";
+
+    return new Date(fecha).toLocaleString("es-AR", {
+        dateStyle: "short",
+        timeStyle: "short",
+    });
+}
+
+async function gestionarSolicitud(id, accion) {
+    const accionTexto =
+        accion === "aceptar" ? "aceptar" : "rechazar";
+
+    const confirmar = confirm(
+        `¿Seguro que querés ${accionTexto} esta reserva?`
+    );
+
+    if (!confirmar) return;
+
+    try {
+        const respuesta = await fetch(
+            `/api/servicios/${id}/${accion}`,
+            {
+                method: "POST",
+                credentials: "include",
+            }
+        );
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(
+                resultado.mensaje ||
+                "No se pudo gestionar la reserva"
+            );
+        }
+
+        alert(resultado.mensaje);
+
+        await cargarSolicitudes();
+
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+cargarSolicitudes();

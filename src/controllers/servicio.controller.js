@@ -122,7 +122,17 @@ export const crearServicio = async (req, res) => {
         .json({ mensaje: "Ese prestador no ofrece el servicio elegido" });
     }
 
-    const monto = Number(prestador.preciosServicios?.[tipo]);
+    let precios = prestador.preciosServicios;
+
+    if (typeof precios === "string") {
+      try {
+        precios = JSON.parse(precios);
+      } catch {
+        precios = {};
+      }
+    }
+
+    const monto = Number(precios?.[tipo]);
 
     if (!Number.isFinite(monto) || monto <= 0) {
       return res.status(400).json({
@@ -274,11 +284,16 @@ export const obtenerServicio = async (req, res) => {
 };
 
 export const iniciarServicio = async (req, res) => {
-  const resultado = await obtenerServicioAutorizado(req.params.id, req.user);
-  if (resultado.error)
+  const resultado = await obtenerServicioAutorizado(
+    req.params.id,
+    req.user
+  );
+
+  if (resultado.error) {
     return res
       .status(resultado.error.status)
       .json({ mensaje: resultado.error.mensaje });
+  }
 
   if (
     !esAdministrador(req.user) &&
@@ -289,14 +304,17 @@ export const iniciarServicio = async (req, res) => {
     });
   }
 
-  if (resultado.servicio.estado !== "programado") {
-    return res.status(409).json({ mensaje: "El servicio no está programado" });
+  if (resultado.servicio.estado !== "aceptado") {
+    return res.status(409).json({
+      mensaje: "El servicio debe estar aceptado antes de iniciarlo",
+    });
   }
 
   await resultado.servicio.update({
     estado: "en-curso",
     iniciadoEn: new Date(),
   });
+
   return res.json({
     servicio: presentarServicio(resultado.servicio, null, req.user),
   });
@@ -383,4 +401,84 @@ export const obtenerUbicacion = async (req, res) => {
   });
 
   return res.json({ ubicacion });
+};
+
+export const aceptarServicio = async (req, res) => {
+  try {
+    const { servicio, error } = await obtenerServicioAutorizado(
+      req.params.id,
+      req.user
+    );
+
+    if (error) {
+      return res.status(error.status).json({ mensaje: error.mensaje });
+    }
+
+    if (Number(servicio.providerId) !== Number(req.user.id)) {
+      return res.status(403).json({
+        mensaje: "Solo el prestador asignado puede aceptar esta reserva",
+      });
+    }
+
+    if (servicio.estado !== "programado") {
+      return res.status(400).json({
+        mensaje: "Esta reserva ya fue gestionada",
+      });
+    }
+
+    await servicio.update({
+      estado: "aceptado",
+    });
+
+    return res.status(200).json({
+      mensaje: "Reserva aceptada correctamente",
+      servicio: presentarServicio(servicio, null, req.user),
+    });
+  } catch (error) {
+    console.error("Error al aceptar la reserva:", error);
+
+    return res.status(500).json({
+      mensaje: "No se pudo aceptar la reserva",
+    });
+  }
+};
+
+export const rechazarServicio = async (req, res) => {
+  try {
+    const { servicio, error } = await obtenerServicioAutorizado(
+      req.params.id,
+      req.user
+    );
+
+    if (error) {
+      return res.status(error.status).json({ mensaje: error.mensaje });
+    }
+
+    if (Number(servicio.providerId) !== Number(req.user.id)) {
+      return res.status(403).json({
+        mensaje: "Solo el prestador asignado puede rechazar esta reserva",
+      });
+    }
+
+    if (servicio.estado !== "programado") {
+      return res.status(400).json({
+        mensaje: "Esta reserva ya fue gestionada",
+      });
+    }
+
+    await servicio.update({
+      estado: "rechazado",
+    });
+
+    return res.status(200).json({
+      mensaje: "Reserva rechazada correctamente",
+      servicio: presentarServicio(servicio, null, req.user),
+    });
+  } catch (error) {
+    console.error("Error al rechazar la reserva:", error);
+
+    return res.status(500).json({
+      mensaje: "No se pudo rechazar la reserva",
+    });
+  }
 };
