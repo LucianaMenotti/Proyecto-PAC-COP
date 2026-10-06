@@ -8,7 +8,9 @@ const getCurrentSession = async () => {
     }
 
     const { usuario } = await response.json();
+
     localStorage.setItem("usuario", JSON.stringify(usuario));
+
     return usuario;
 };
 
@@ -30,13 +32,18 @@ const requireSession = async (roles = []) => {
 };
 
 const logout = async () => {
-    await fetch("/api/users/logout", {
-        method: "POST",
-        credentials: "include"
-    });
+    try {
+        await fetch("/api/users/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+    } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+    }
 
     localStorage.removeItem("usuario");
-    window.location.replace("login.html");
+
+    window.location.replace("/index.html");
 };
 
 window.PacCopAuth = {
