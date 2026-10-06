@@ -53,7 +53,7 @@ const Calificacion = sequelize.define(
 
 Servicio.hasOne(Calificacion, {
   foreignKey: "servicioId",
-  as: "calificacion",
+  as: "resena",
 });
 
 Calificacion.belongsTo(Servicio, {
