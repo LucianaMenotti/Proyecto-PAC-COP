@@ -10,9 +10,12 @@
     <!-- Header -->
     <header class="app-header">
       <h1 class="logo">Pac-Cop</h1>
-      <button id="roleToggle" class="role-toggle-btn" data-role="prestador">
-        Cambiar Rol
-      </button>
+      <a
+          href="../paginas/panel-prestador.html"
+          class="btn btn-light"
+      >
+          Volver
+      </a>
     </header>
 
     <!-- Navegación -->
@@ -33,7 +36,7 @@
       <section id="view-reportes" class="view active">
         <div id="captureCta" class="capture-card">
           <button id="openCameraBtn" class="btn primary-btn">
-            📸 Tomar foto del servicio
+            Tomar foto del servicio
           </button>
         </div>
 
@@ -49,7 +52,7 @@
         <div class="chat-header">
           <div id="chatAvatar" class="chat-avatar">FP</div>
           <div id="chatContactName" class="chat-contact-name">
-            Familia Pérez · Dueños de Toby
+              Cargando...
           </div>
         </div>
 
@@ -129,6 +132,11 @@
     <!-- Contenedor de Notificaciones Toast -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="chatApp.js"></script>
+    <script src="../js/auth.js"></script>
+
+    <script type="module" src="chatApp.js"></script>
+    <script type="module" src="camara.js"></script>
+    <script type="module" src="reportes.js"></script>
+    <script type="module" src="chat.js"></script>
   </body>
 </html>
