@@ -1,0 +1,22 @@
+{
+  "folders": [
+	{
+		"path": "../../vite-project"
+	},
+	{
+		"path": "../../../OneDrive/Documentos/Default Project"
+	},
+	{
+		"path": "../../frontend-migrado"
+	},
+	{
+		"path": ".."
+	},
+	{
+		"path": "../../material-unidad-2-2do-cuatrimestre-2026"
+	}
+],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "Proyecto-PAC-COP"
+  }
+}
