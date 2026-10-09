@@ -17,10 +17,15 @@ const PUBLIC_USER_FIELDS = [
   "zona",
   "rol",
   "servicios",
+  "preciosServicios",
   "vehiculo",
   "verificado",
   "calificacion",
   "resenas",
+  "disponibilidad",
+  "tamanosAceptados",
+  "restricciones",
+  "cuentaCobro",
 ];
 
 const DIRECTORY_USER_FIELDS = [
@@ -35,6 +40,8 @@ const DIRECTORY_USER_FIELDS = [
   "verificado",
   "calificacion",
   "resenas",
+  "tamanosAceptados",
+  "restricciones",
 ];
 
 const publicUser = (user) => {
@@ -234,5 +241,138 @@ export const actualizarMisServicios = async (req, res) => {
     return res
       .status(500)
       .json({ mensaje: "No se pudieron actualizar los servicios" });
+  }
+};
+
+const requierePrestador = (req, res) => {
+  if (req.user.rol !== "prestador") {
+    res
+      .status(403)
+      .json({ mensaje: "Solo un prestador puede modificar este dato" });
+    return false;
+  }
+  return true;
+};
+
+export const actualizarDisponibilidad = async (req, res) => {
+  if (!requierePrestador(req, res)) return;
+
+  try {
+    const { disponibilidad } = req.body;
+
+    if (typeof disponibilidad !== "object" || disponibilidad === null) {
+      return res
+        .status(400)
+        .json({ mensaje: "La disponibilidad no es válida" });
+    }
+
+    const diasValidos = [
+      "lunes",
+      "martes",
+      "miercoles",
+      "jueves",
+      "viernes",
+      "sabado",
+      "domingo",
+    ];
+
+    for (const [dia, valor] of Object.entries(disponibilidad)) {
+      if (!diasValidos.includes(dia)) continue;
+
+      if (
+        valor &&
+        (!Array.isArray(valor.horas) ||
+          valor.horas.some((hora) => !/^\d{2}:\d{2}$/.test(hora)))
+      ) {
+        return res.status(400).json({
+          mensaje: `Los horarios de ${dia} no son válidos`,
+        });
+      }
+    }
+
+    await req.user.update({ disponibilidad });
+
+    return res.status(200).json({
+      mensaje: "Disponibilidad actualizada correctamente",
+      disponibilidad: req.user.disponibilidad,
+    });
+  } catch (error) {
+    console.error("Error al actualizar disponibilidad:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo actualizar la disponibilidad" });
+  }
+};
+
+export const actualizarRestricciones = async (req, res) => {
+  if (!requierePrestador(req, res)) return;
+
+  try {
+    const { tamanosAceptados, restricciones } = req.body;
+    const TAMANOS = ["pequeño", "mediano", "grande"];
+
+    if (
+      !Array.isArray(tamanosAceptados) ||
+      tamanosAceptados.some((tamano) => !TAMANOS.includes(tamano))
+    ) {
+      return res
+        .status(400)
+        .json({ mensaje: "Los tamaños aceptados no son válidos" });
+    }
+
+    await req.user.update({
+      tamanosAceptados,
+      restricciones: Array.isArray(restricciones) ? restricciones : [],
+    });
+
+    return res.status(200).json({
+      mensaje: "Restricciones actualizadas correctamente",
+      usuario: publicUser(req.user),
+    });
+  } catch (error) {
+    console.error("Error al actualizar restricciones:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudieron actualizar las restricciones" });
+  }
+};
+
+export const actualizarCuentaCobro = async (req, res) => {
+  if (!requierePrestador(req, res)) return;
+
+  try {
+    const { tipo, titular, cbu, alias } = req.body;
+    const TIPOS = ["banco", "billetera"];
+
+    if (typeof req.body !== "object" || !TIPOS.includes(tipo)) {
+      return res
+        .status(400)
+        .json({ mensaje: "Elegí un tipo de cuenta válido" });
+    }
+
+    if (!String(titular ?? "").trim() || (!cbu && !alias)) {
+      return res.status(400).json({
+        mensaje: "Completá el titular y el CBU o alias de la cuenta",
+      });
+    }
+
+    await req.user.update({
+      cuentaCobro: {
+        tipo,
+        titular: String(titular).trim(),
+        cbu: cbu ? String(cbu).replace(/\D/g, "") : null,
+        alias: alias ? String(alias).trim() : null,
+      },
+    });
+
+    return res.status(200).json({
+      mensaje: "Cuenta de cobro actualizada correctamente",
+      cuentaCobro: req.user.cuentaCobro,
+    });
+  } catch (error) {
+    console.error("Error al actualizar cuenta de cobro:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo actualizar la cuenta de cobro" });
   }
 };
