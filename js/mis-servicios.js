@@ -62,6 +62,14 @@ function accionesDe(reserva) {
       </button>`);
   }
 
+  if (["aceptado", "en-curso"].includes(reserva.estado)) {
+    botones.push(`
+      <a class="btn btn-outline-success btn-sm rounded-pill"
+         href="../prestadordeServicio/chatApp.html?servicioId=${reserva.id}">
+        <i class="bi bi-chat-dots me-1"></i> Chat
+      </a>`);
+  }
+
   if (reserva.estado === "en-curso") {
     botones.push(`
       <a class="btn btn-outline-primary btn-sm rounded-pill"

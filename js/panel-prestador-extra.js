@@ -50,8 +50,8 @@ function crearTab(id, numero, titulo) {
 const paneSolicitudes = crearTab("solicitudes", "05", "Solicitudes");
 paneSolicitudes.innerHTML = `
   <div class="panel-section-header mb-4">
-    <h2 class="fw-bold">Reservas por confirmar</h2>
-    <p class="text-secondary mb-0">Aceptá o rechazá las reservas que te llegaron.</p>
+    <h2 class="fw-bold">Reservas y servicios activos</h2>
+    <p class="text-secondary mb-0">Aceptá o rechazá las reservas pendientes y accedé al chat de cada servicio activo.</p>
   </div>
   <div id="listaSolicitudes" class="d-grid gap-3"></div>`;
 
@@ -66,16 +66,19 @@ async function cargarSolicitudes() {
 
     const { servicios } = await respuesta.json();
     const pendientes = (servicios || []).filter((s) => s.estado === "programado");
+    const activos = (servicios || []).filter((s) => ["aceptado", "en-curso"].includes(s.estado));
+
+    const secciones = [];
 
     if (pendientes.length === 0) {
-      listaSolicitudes.innerHTML = `
-        <div class="alert alert-info mb-0">No tenés solicitudes pendientes.</div>`;
-      return;
-    }
-
-    listaSolicitudes.innerHTML = pendientes
-      .map(
-        (s) => `
+      secciones.push(
+        `<div class="alert alert-info mb-0">No tenés solicitudes pendientes.</div>`,
+      );
+    } else {
+      secciones.push(
+        pendientes
+          .map(
+            (s) => `
       <div class="card panel-card">
         <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
           <div>
@@ -91,8 +94,39 @@ async function cargarSolicitudes() {
           </div>
         </div>
       </div>`,
-      )
-      .join("");
+          )
+          .join(""),
+      );
+    }
+
+    if (activos.length > 0) {
+      secciones.push(
+        `<h3 class="h6 fw-bold mt-4 mb-2"><i class="bi bi-truck me-1"></i>Servicios activos y su chat</h3>`,
+        activos
+          .map(
+            (s) => `
+      <div class="card panel-card">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h3 class="h6 fw-bold mb-1">${escapar(s.tipo)} · ${escapar(s.mascota)}</h3>
+            <p class="text-secondary small mb-0">
+              <span class="badge ${s.estado === "aceptado" ? "text-bg-info" : "text-bg-primary"}">${s.estado === "aceptado" ? "Aceptada" : "En curso"}</span>
+              <i class="bi bi-calendar-event ms-2 me-1"></i>${formatearFecha(s.horaProgramada)}
+            </p>
+          </div>
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-success btn-sm" href="../prestadordeServicio/chatApp.html?servicioId=${s.id}">
+              <i class="bi bi-chat-dots me-1"></i> Chat
+            </a>
+          </div>
+        </div>
+      </div>`,
+          )
+          .join(""),
+      );
+    }
+
+    listaSolicitudes.innerHTML = secciones.join("");
   } catch (error) {
     listaSolicitudes.innerHTML = `<div class="alert alert-danger mb-0">${escapar(error.message)}</div>`;
   }
