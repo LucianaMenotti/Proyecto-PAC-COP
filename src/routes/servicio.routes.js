@@ -12,6 +12,8 @@ import {
   cancelarServicio,
   precioSugerido,
   listarResenasPrestador,
+  marcarCheckIn,
+  marcarCheckOut,
   guardarUbicacion,
   obtenerUbicacion,
   crearCalificacion,
@@ -43,6 +45,10 @@ router.post("/:id/rechazar", rechazarServicio);
 
 // Cancelación (dueño o prestador)
 router.post("/:id/cancelar", cancelarServicio);
+
+// Guardería: check-in y check-out
+router.post("/:id/check-in", marcarCheckIn);
+router.post("/:id/check-out", marcarCheckOut);
 
 // Estados del servicio
 router.post("/:id/iniciar", iniciarServicio);

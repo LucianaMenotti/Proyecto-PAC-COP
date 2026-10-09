@@ -849,6 +849,89 @@ export const precioSugerido = async (req, res) => {
   }
 };
 
+const obtenerServicioParaGestor = async (id, user) => {
+  const resultado = await obtenerServicioAutorizado(id, user);
+  if (resultado.error) return resultado;
+
+  if (
+    !esAdministrador(user) &&
+    Number(resultado.servicio.providerId) !== Number(user.id)
+  ) {
+    return {
+      error: { status: 403, mensaje: "Solo el prestador asignado puede gestionar esto" },
+    };
+  }
+
+  return resultado;
+};
+
+export const marcarCheckIn = async (req, res) => {
+  try {
+    const resultado = await obtenerServicioParaGestor(req.params.id, req.user);
+    if (resultado.error)
+      return res
+        .status(resultado.error.status)
+        .json({ mensaje: resultado.error.mensaje });
+
+    const servicio = resultado.servicio;
+
+    if (servicio.tipo !== "Guarderia") {
+      return res.status(400).json({ mensaje: "Solo las guarderías usan check-in" });
+    }
+
+    if (!["aceptado", "en-curso"].includes(servicio.estado)) {
+      return res.status(409).json({ mensaje: "La reserva no está lista para el ingreso" });
+    }
+
+    await servicio.update({
+      checkIn: new Date(),
+      ...(servicio.estado === "aceptado" ? { estado: "en-curso" } : {}),
+    });
+
+    return res.json({
+      mensaje: "Ingreso registrado correctamente",
+      servicio: presentarServicio(servicio, null, req.user),
+    });
+  } catch (error) {
+    console.error("Error al registrar el check-in:", error);
+    return res.status(500).json({ mensaje: "No se pudo registrar el ingreso" });
+  }
+};
+
+export const marcarCheckOut = async (req, res) => {
+  try {
+    const resultado = await obtenerServicioParaGestor(req.params.id, req.user);
+    if (resultado.error)
+      return res
+        .status(resultado.error.status)
+        .json({ mensaje: resultado.error.mensaje });
+
+    const servicio = resultado.servicio;
+
+    if (servicio.tipo !== "Guarderia") {
+      return res.status(400).json({ mensaje: "Solo las guarderías usan check-out" });
+    }
+
+    if (!servicio.checkIn) {
+      return res.status(409).json({ mensaje: "Todavía no se registró el ingreso" });
+    }
+
+    if (servicio.checkOut) {
+      return res.status(409).json({ mensaje: "El check-out ya fue registrado" });
+    }
+
+    await servicio.update({ checkOut: new Date() });
+
+    return res.json({
+      mensaje: "Egreso registrado correctamente",
+      servicio: presentarServicio(servicio, null, req.user),
+    });
+  } catch (error) {
+    console.error("Error al registrar el check-out:", error);
+    return res.status(500).json({ mensaje: "No se pudo registrar el egreso" });
+  }
+};
+
 export const listarResenasPrestador = async (req, res) => {
   const providerId = Number(req.params.id);
 

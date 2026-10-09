@@ -419,6 +419,83 @@ async function cargarLiquidaciones() {
 paneCuenta.querySelector("#guardarCuenta").addEventListener("click", guardarCuenta);
 
 /* ---------------------------------------------------------- */
+/* Guardería: check-in y check-out                             */
+/* ---------------------------------------------------------- */
+
+const paneGuarderia = crearTab("guarderia", "09", "Guardería");
+paneGuarderia.innerHTML = `
+  <div class="panel-section-header mb-4">
+    <h2 class="fw-bold">Check-in y check-out</h2>
+    <p class="text-secondary mb-0">Registrá el ingreso y el egreso de cada mascota.</p>
+  </div>
+  <div id="listaGuarderia" class="d-grid gap-3"></div>`;
+
+const listaGuarderia = paneGuarderia.querySelector("#listaGuarderia");
+
+async function cargarGuarderia() {
+  listaGuarderia.innerHTML = `<p class="text-secondary">Cargando guarderías...</p>`;
+
+  try {
+    const respuesta = await fetch("/api/servicios", { credentials: "include" });
+    const { servicios } = await respuesta.json();
+    const activas = (servicios || []).filter(
+      (s) => s.tipo === "Guarderia" && ["aceptado", "en-curso"].includes(s.estado),
+    );
+
+    if (activas.length === 0) {
+      listaGuarderia.innerHTML = `<div class="alert alert-info mb-0">No tenés guarderías activas.</div>`;
+      return;
+    }
+
+    listaGuarderia.innerHTML = activas
+      .map((s) => {
+        const puedeCheckIn = !s.checkIn;
+        const puedeCheckOut = s.checkIn && !s.checkOut;
+
+        return `
+      <div class="card panel-card">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h3 class="h6 fw-bold mb-1">${escapar(s.mascota)}</h3>
+            <p class="text-secondary small mb-2">Programado · ${formatearFecha(s.horaProgramada)}</p>
+            ${s.checkIn ? `<span class="badge text-bg-success me-1"><i class="bi bi-box-arrow-in-down"></i> Ingreso ${formatearFecha(s.checkIn)}</span>` : ""}
+            ${s.checkOut ? `<span class="badge text-bg-secondary"><i class="bi bi-box-arrow-up"></i> Egreso ${formatearFecha(s.checkOut)}</span>` : ""}
+          </div>
+          <div class="d-flex gap-2">
+            ${puedeCheckIn ? `<button class="btn btn-pac btn-sm" data-guarderia="check-in" data-id="${s.id}">Registrar ingreso</button>` : ""}
+            ${puedeCheckOut ? `<button class="btn btn-outline-primary btn-sm" data-guarderia="check-out" data-id="${s.id}">Registrar egreso</button>` : ""}
+            ${!puedeCheckIn && !puedeCheckOut ? `<span class="text-secondary small">Completo</span>` : ""}
+          </div>
+        </div>
+      </div>`;
+      })
+      .join("");
+  } catch (error) {
+    listaGuarderia.innerHTML = `<div class="alert alert-danger mb-0">${escapar(error.message)}</div>`;
+  }
+}
+
+listaGuarderia.addEventListener("click", async (event) => {
+  const boton = event.target.closest("[data-guarderia]");
+  if (!boton) return;
+
+  boton.disabled = true;
+
+  try {
+    const respuesta = await fetch(`/api/servicios/${boton.dataset.id}/${boton.dataset.guarderia}`, {
+      method: "POST",
+      credentials: "include",
+    });
+    const resultado = await respuesta.json();
+    if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo registrar");
+    await cargarGuarderia();
+  } catch (error) {
+    alert(error.message);
+    boton.disabled = false;
+  }
+});
+
+/* ---------------------------------------------------------- */
 /* Inicialización                                              */
 /* ---------------------------------------------------------- */
 
@@ -435,5 +512,6 @@ if (sesion) {
 }
 
 cargarLiquidaciones();
+cargarGuarderia();
 
 cargarSolicitudes();
