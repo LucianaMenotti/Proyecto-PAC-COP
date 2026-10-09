@@ -98,6 +98,40 @@ export const liberarPago = async (req, res) => {
     return res.json({ pago });
 };
 
+export const listarLiquidaciones = async (req, res) => {
+    if (req.user.rol !== "prestador") {
+        return res.status(403).json({ mensaje: "Solo los prestadores ven liquidaciones" });
+    }
+
+    try {
+        const pagos = await Pago.findAll({
+            where: { providerId: req.user.id, estado: "liberado" },
+            order: [["liberadoEn", "DESC"]],
+            limit: 200,
+        });
+
+        const total = pagos.reduce(
+            (acumulador, pago) => acumulador + Number(pago.monto),
+            0,
+        );
+
+        return res.json({
+            pagos: pagos.map((pago) => ({
+                id: pago.id,
+                servicioId: pago.servicioId,
+                monto: Number(pago.monto),
+                transaccionId: pago.transaccionId,
+                liberadoEn: pago.liberadoEn,
+            })),
+            total,
+            cuenta: req.user.cuentaCobro || null,
+        });
+    } catch (error) {
+        console.error("Error al listar liquidaciones:", error);
+        return res.status(500).json({ mensaje: "No se pudieron cargar las liquidaciones" });
+    }
+};
+
 export const obtenerPago = async (req, res) => {
     const pago = await Pago.findOne({
         where: esAdministrador(req.user)
