@@ -623,6 +623,22 @@ document.addEventListener("DOMContentLoaded", async () => {
           "El servicio está programado. El prestador debe iniciarlo.",
         );
       }
+
+      // Mientras esté programado, seguimos consultando por si el
+      // prestador lo acepta e inicia (transición a "en-curso").
+      if (!intervaloEstado) {
+        intervaloEstado = setInterval(consultarEstadoServicio, 5000);
+      }
+    }
+
+    if (servicio.estado === "aceptado") {
+      if (botonInicio) {
+        botonInicio.disabled = !servicio.puedeGestionar;
+      }
+
+      if (!intervaloEstado) {
+        intervaloEstado = setInterval(consultarEstadoServicio, 5000);
+      }
     }
 
     if (servicio.estado === "en-curso") {
