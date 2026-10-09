@@ -496,6 +496,58 @@ listaGuarderia.addEventListener("click", async (event) => {
 });
 
 /* ---------------------------------------------------------- */
+/* Ruta de hoy                                                 */
+/* ---------------------------------------------------------- */
+
+async function cargarRutaHoy() {
+  const contenedor = document.getElementById("listaRuta");
+  if (!contenedor) return;
+
+  try {
+    const respuesta = await fetch("/api/servicios/prestador/ruta", { credentials: "include" });
+    const datos = await respuesta.json();
+    if (!respuesta.ok) throw new Error(datos.mensaje || "No se pudo calcular la ruta");
+
+    const recorridos = datos.recorridos || [];
+
+    if (recorridos.length === 0) {
+      contenedor.innerHTML = `<p class="text-secondary mb-0">No tenés servicios para hoy.</p>`;
+      return;
+    }
+
+    const ahora = new Date();
+
+    contenedor.innerHTML = recorridos
+      .map((ruta, indice) => {
+        const salida = new Date(ruta.salidaSugerida);
+        const urgente = salida.getTime() - ahora.getTime() < 30 * 60 * 1000;
+
+        return `
+        <div class="route-card ${urgente ? "route-alert" : ""}">
+          <span class="route-number">${indice + 1}</span>
+          <div>
+            <strong>${escapar(ruta.mascota)} · ${escapar(ruta.tipo)}</strong>
+            <p class="text-secondary mb-1">${
+              ruta.origen
+                ? `${escapar(ruta.origen)} → ${escapar(ruta.destino)}`
+                : "Domicilio a confirmar"
+            }</p>
+            <small>
+              Salida sugerida:
+              <strong>${salida.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}</strong>
+              — Servicio ${formatearFecha(ruta.horaProgramada)}
+            </small>
+            ${urgente ? `<p class="text-danger small fw-semibold mb-0 mt-2">Salí ya para llegar a tiempo.</p>` : ""}
+          </div>
+        </div>`;
+      })
+      .join("");
+  } catch (error) {
+    contenedor.innerHTML = `<p class="text-danger mb-0">${escapar(error.message)}</p>`;
+  }
+}
+
+/* ---------------------------------------------------------- */
 /* Inicialización                                              */
 /* ---------------------------------------------------------- */
 
@@ -513,5 +565,6 @@ if (sesion) {
 
 cargarLiquidaciones();
 cargarGuarderia();
+cargarRutaHoy();
 
 cargarSolicitudes();

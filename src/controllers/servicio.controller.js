@@ -932,6 +932,46 @@ export const marcarCheckOut = async (req, res) => {
   }
 };
 
+const MINUTOS_ANTELACION_SALIDA = 25;
+
+export const rutaDeHoy = async (req, res) => {
+  try {
+    if (req.user.rol !== "prestador" && !esAdministrador(req.user)) {
+      return res.status(403).json({
+        mensaje: "Solo los prestadores consultan su recorrido",
+      });
+    }
+
+    const inicioDia = new Date();
+    inicioDia.setHours(0, 0, 0, 0);
+
+    const finDia = new Date();
+    finDia.setHours(23, 59, 59, 999);
+
+    const servicios = await Servicio.findAll({
+      where: {
+        providerId: req.user.id,
+        estado: { [Op.in]: ["programado", "aceptado", "en-curso"] },
+        horaProgramada: { [Op.between]: [inicioDia, finDia] },
+      },
+      order: [["horaProgramada", "ASC"]],
+    });
+
+    const recorridos = servicios.map((servicio) => ({
+      ...presentarServicio(servicio, null, req.user),
+      salidaSugerida: new Date(
+        new Date(servicio.horaProgramada).getTime() -
+          MINUTOS_ANTELACION_SALIDA * 60 * 1000,
+      ),
+    }));
+
+    return res.json({ recorridos });
+  } catch (error) {
+    console.error("Error al calcular la ruta de hoy:", error);
+    return res.status(500).json({ mensaje: "No se pudo calcular la ruta de hoy" });
+  }
+};
+
 export const listarResenasPrestador = async (req, res) => {
   const providerId = Number(req.params.id);
 
