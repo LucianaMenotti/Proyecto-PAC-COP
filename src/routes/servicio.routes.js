@@ -11,6 +11,7 @@ import {
   rechazarServicio,
   cancelarServicio,
   precioSugerido,
+  rutaDeHoy,
   listarResenasPrestador,
   marcarCheckIn,
   marcarCheckOut,
@@ -33,6 +34,9 @@ router.get("/", listarServicios);
 
 // Rango de precio sugerido por servicio y zona
 router.get("/precios/sugerido", precioSugerido);
+
+// Ruta del día del prestador (orden sugerido de salidas)
+router.get("/prestador/ruta", rutaDeHoy);
 
 // Reseñas públicas de un prestador (antes de /:id)
 router.get("/prestador/:id/resenas", listarResenasPrestador);
