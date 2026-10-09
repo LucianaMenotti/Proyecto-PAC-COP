@@ -152,8 +152,17 @@ export const crearServicio = async (req, res) => {
         .json({ mensaje: "Solo un dueño de mascota puede reservar servicios" });
     }
 
-    const { providerId, mascotaId, tipo, horaProgramada, origen, destino, motivoTraslado } =
-      req.body;
+    const {
+      providerId,
+      mascotaId,
+      tipo,
+      horaProgramada,
+      origen,
+      destino,
+      motivoTraslado,
+      solicitarVuelta,
+      horaRegreso,
+    } = req.body;
 
     if (!SERVICIOS_RESERVABLES.includes(tipo)) {
       return res.status(400).json({ mensaje: "Elegí un servicio válido" });
@@ -228,9 +237,56 @@ export const crearServicio = async (req, res) => {
           : null,
     });
 
+    const esIdaVuelta =
+      tipo === "Traslado" &&
+      String(motivoTraslado ?? "").trim() === "queda" &&
+      solicitarVuelta === true;
+
+    let servicioVuelta = null;
+
+    if (esIdaVuelta) {
+      const regreso = new Date(horaRegreso);
+
+      if (Number.isNaN(regreso.getTime()) || regreso <= fecha) {
+        return res.status(400).json({
+          mensaje: "La hora de regreso debe ser posterior a la salida",
+        });
+      }
+
+      const disponibilidadVuelta = validarDisponibilidad(prestador, regreso);
+
+      if (!disponibilidadVuelta.ok) {
+        return res.status(409).json({
+          mensaje: `La vuelta no se puede programar: ${disponibilidadVuelta.mensaje}`,
+        });
+      }
+
+      servicioVuelta = await Servicio.create({
+        ownerId: req.user.id,
+        providerId: prestador.id,
+        mascotaId: mascota.id,
+        prestadorNombre: `${prestador.nombre} ${prestador.apellido}`,
+        tipo,
+        mascotaNombre: mascota.nombre,
+        monto,
+        horaProgramada: regreso,
+        origen: String(destino).trim(),
+        destino: String(origen).trim(),
+        motivoTraslado: "vuelta",
+      });
+
+      await servicio.update({ servicioVueltaId: servicioVuelta.id });
+      await servicioVuelta.update({ servicioVueltaId: servicio.id });
+    }
+
     return res.status(201).json({
-      mensaje: "Reserva creada correctamente",
+      mensaje: esIdaVuelta
+        ? "Reserva de traslado y vuelta creadas correctamente"
+        : "Reserva creada correctamente",
       servicio: presentarServicio(servicio, null, req.user),
+      servicioVuelta: servicioVuelta
+        ? presentarServicio(servicioVuelta, null, req.user)
+        : null,
     });
   } catch (error) {
     console.error("Error al crear la reserva:", error);

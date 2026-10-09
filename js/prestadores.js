@@ -179,6 +179,10 @@ const trasladoOrigen = document.getElementById("trasladoOrigen");
 const trasladoDestino = document.getElementById("trasladoDestino");
 const trasladoMotivo = document.getElementById("trasladoMotivo");
 
+const vueltaDatos = document.getElementById("vueltaDatos");
+const solicitarVuelta = document.getElementById("solicitarVuelta");
+const horaRegreso = document.getElementById("horaRegreso");
+
 function mostrarCamposTraslado() {
   const esTraslado = reservaServicio.value === "Traslado";
   trasladoDatos.classList.toggle("d-none", !esTraslado);
@@ -187,10 +191,18 @@ function mostrarCamposTraslado() {
     campo.required = esTraslado && campo !== trasladoMotivo;
   });
 
+  const esGuarden = esTraslado && trasladoMotivo.value === "queda";
+  vueltaDatos.classList.toggle("d-none", !esGuarden);
+
   if (!esTraslado) {
     trasladoOrigen.value = "";
     trasladoDestino.value = "";
     trasladoMotivo.value = "";
+  }
+
+  if (!esGuarden) {
+    solicitarVuelta.checked = false;
+    horaRegreso.value = "";
   }
 }
 
@@ -267,6 +279,7 @@ async function abrirReserva(id) {
 
 reservaServicio.addEventListener("change", actualizarPrecioReserva);
 reservaServicio.addEventListener("change", mostrarCamposTraslado);
+trasladoMotivo.addEventListener("change", mostrarCamposTraslado);
 
 formReserva.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -289,6 +302,17 @@ formReserva.addEventListener("submit", async (event) => {
     datos.origen = trasladoOrigen.value.trim();
     datos.destino = trasladoDestino.value.trim();
     datos.motivoTraslado = trasladoMotivo.value || "";
+
+    if (solicitarVuelta.checked) {
+      if (!horaRegreso.value) {
+        reservaError.textContent = "Indicá la fecha y hora de regreso.";
+        reservaError.classList.remove("d-none");
+        return;
+      }
+
+      datos.solicitarVuelta = true;
+      datos.horaRegreso = new Date(horaRegreso.value).toISOString();
+    }
   }
 
   const respuesta = await fetch("/api/servicios", {
