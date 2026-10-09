@@ -1,8 +1,29 @@
+import { Op } from "sequelize";
 import Pago from "../models/pago.model.js";
 import Servicio from "../models/servicio.model.js";
 
 const generarTransaccion = () => `PC-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`;
 const esAdministrador = (user) => ["admin", "administrador"].includes(user.rol);
+
+export const liberarPagoDelServicio = async (servicioId) => {
+    const pago = await Pago.findOne({
+        where: { servicioId, estado: "retenido" }
+    });
+    if (!pago) return null;
+
+    await pago.update({ estado: "liberado", liberadoEn: new Date() });
+    return pago;
+};
+
+export const reembolsarPagoDelServicio = async (servicioId) => {
+    const pago = await Pago.findOne({
+        where: { servicioId, estado: { [Op.in]: ["pendiente", "retenido"] } }
+    });
+    if (!pago) return null;
+
+    await pago.update({ estado: "reembolsado", reembolsadoEn: new Date() });
+    return pago;
+};
 
 const obtenerServicioAutorizado = async (id, user) =>
     Servicio.findOne({
