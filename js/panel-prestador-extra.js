@@ -200,6 +200,94 @@ async function guardarDisponibilidad() {
 paneDisponibilidad.querySelector("#guardarDisponibilidad").addEventListener("click", guardarDisponibilidad);
 
 /* ---------------------------------------------------------- */
+/* Restricciones                                               */
+/* ---------------------------------------------------------- */
+
+const TAMANOS_MASCOTA = ["pequeño", "mediano", "grande"];
+
+const paneRestricciones = crearTab("restricciones", "07", "Restricciones");
+paneRestricciones.innerHTML = `
+  <div class="panel-section-header mb-4">
+    <h2 class="fw-bold">Qué mascotas aceptás</h2>
+    <p class="text-secondary mb-0">
+      Si no marcás tamaños, aceptás mascotas de cualquier tamaño.
+    </p>
+  </div>
+  <div class="card panel-card">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-3">Tamaños aceptados</h5>
+      <div class="d-flex flex-wrap gap-3 mb-4" id="tamanosChecks"></div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="razasExcluidas">Razas que NO aceptás</label>
+        <input type="text" class="form-control" id="razasExcluidas"
+               placeholder="Ej: pitbull, rottweiler" autocomplete="off">
+        <div class="form-text">Separalas con comas. Se comparan en minúsculas.</div>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-pac" id="guardarRestricciones">Guardar restricciones</button>
+        <span class="text-success small d-none" id="okRestricciones">Restricciones guardadas.</span>
+      </div>
+    </div>
+  </div>`;
+
+const chequeosTamanos = paneRestricciones.querySelector("#tamanosChecks");
+const razasExcluidas = paneRestricciones.querySelector("#razasExcluidas");
+
+function renderizarRestricciones() {
+  const aceptados = Array.isArray(sesion.tamanosAceptados)
+    ? sesion.tamanosAceptados
+    : [];
+
+  chequeosTamanos.innerHTML = TAMANOS_MASCOTA.map(
+    (tamano) => `
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="${tamano}"
+               id="tamano-${tamano}" ${aceptados.includes(tamano) ? "checked" : ""}>
+        <label class="form-check-label" for="tamano-${tamano}">
+          ${tamano.charAt(0).toUpperCase()}${tamano.slice(1)}
+        </label>
+      </div>`,
+  ).join("");
+
+  razasExcluidas.value = Array.isArray(sesion.restricciones)
+    ? sesion.restricciones.join(", ")
+    : "";
+}
+
+async function guardarRestricciones() {
+  const ok = paneRestricciones.querySelector("#okRestricciones");
+  ok.classList.add("d-none");
+
+  const tamanosAceptados = TAMANOS_MASCOTA.filter(
+    (tamano) => paneRestricciones.querySelector(`#tamano-${tamano}`).checked,
+  );
+  const restricciones = razasExcluidas.value
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+
+  try {
+    const respuesta = await fetch("/api/users/me/restricciones", {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tamanosAceptados, restricciones }),
+    });
+    const resultado = await respuesta.json();
+    if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo guardar");
+    sesion.tamanosAceptados = tamanosAceptados;
+    sesion.restricciones = restricciones;
+    ok.classList.remove("d-none");
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+paneRestricciones.querySelector("#guardarRestricciones").addEventListener("click", guardarRestricciones);
+
+/* ---------------------------------------------------------- */
 /* Inicialización                                              */
 /* ---------------------------------------------------------- */
 
@@ -211,6 +299,7 @@ if (sesion) {
       ? sesion.disponibilidad
       : {};
   renderizarDisponibilidad();
+  renderizarRestricciones();
 }
 
 cargarSolicitudes();

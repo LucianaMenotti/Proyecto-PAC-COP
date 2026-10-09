@@ -107,6 +107,16 @@ function mostrarPrestadores(lista) {
                     </p>
 
                     <p class="card-text">
+                        <strong>Acepta:</strong>
+                        ${
+                          Array.isArray(prestador.tamanosAceptados) &&
+                          prestador.tamanosAceptados.length > 0
+                            ? prestador.tamanosAceptados.join(", ")
+                            : "Todos los tamaños"
+                        }
+                    </p>
+
+                    <p class="card-text">
                         <strong>Calificación:</strong>
                         ${prestador.calificacion || 0}
                     </p>

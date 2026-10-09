@@ -144,6 +144,35 @@ const validarDisponibilidad = (prestador, fecha) => {
   return { ok: true };
 };
 
+const validarRestricciones = (prestador, mascota) => {
+  const tamanos = prestador.tamanosAceptados;
+
+  if (Array.isArray(tamanos) && tamanos.length > 0) {
+    const tamano = String(mascota.tamano ?? "").toLowerCase();
+
+    if (tamano && !tamanos.includes(tamano)) {
+      return {
+        ok: false,
+        mensaje: `Este prestador no acepta mascotas de tamaño ${tamano}`,
+      };
+    }
+  }
+
+  const restricciones = prestador.restricciones;
+  const raza = String(mascota.raza ?? "").toLowerCase();
+
+  if (Array.isArray(restricciones) && restricciones.length > 0 && raza) {
+    if (restricciones.some((item) => String(item).toLowerCase() === raza)) {
+      return {
+        ok: false,
+        mensaje: `Este prestador no acepta la raza ${mascota.raza}`,
+      };
+    }
+  }
+
+  return { ok: true };
+};
+
 export const crearServicio = async (req, res) => {
   try {
     if (req.user.rol !== "dueño") {
@@ -218,6 +247,12 @@ export const crearServicio = async (req, res) => {
 
     if (!disponibilidad.ok) {
       return res.status(409).json({ mensaje: disponibilidad.mensaje });
+    }
+
+    const restricciones = validarRestricciones(prestador, mascota);
+
+    if (!restricciones.ok) {
+      return res.status(409).json({ mensaje: restricciones.mensaje });
     }
 
     const servicio = await Servicio.create({
