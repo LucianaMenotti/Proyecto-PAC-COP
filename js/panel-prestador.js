@@ -202,21 +202,34 @@ if (usuario) {
   // Rendimiento real: servicios finalizados y nivel
   (async () => {
     let completados = 0;
+    let recientes = 0;
 
     try {
       const respuesta = await fetch("/api/servicios", {
         credentials: "include",
       });
-      const { servicios } = await respuesta.json();
-      completados = (servicios || []).filter(
-        (s) => s.estado === "finalizado",
+      const datos = await respuesta.json();
+      const servicios = datos.servicios || [];
+      completados = servicios.filter((s) => s.estado === "finalizado").length;
+      recientes = servicios.filter(
+        (s) =>
+          s.estado === "finalizado" &&
+          s.finalizadoEn &&
+          new Date(s.finalizadoEn) >= new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
       ).length;
     } catch {
       completados = 0;
+      recientes = 0;
     }
 
+    const promedio = Number(usuario.calificacion) || 0;
+
     nivelActual =
-      completados >= 50 ? "top" : completados >= 10 ? "establecido" : "nuevo";
+      completados >= 50 && promedio >= 4.5
+        ? "top"
+        : completados >= 10 && promedio >= 4
+          ? "establecido"
+          : "nuevo";
 
     if (precioInput) precioInput.placeholder = obtenerPrecioMinimo();
 
@@ -233,12 +246,25 @@ if (usuario) {
     const resumen = document.getElementById("textoResumenNivel");
 
     if (resumen) {
-      const faltan = Math.max(0, 50 - completados);
+      const faltaServicios = Math.max(0, 10 - completados);
+      const faltaPromedio = Math.max(0, 4 - promedio);
+
       resumen.innerHTML =
-        `Llevás <strong>${completados} servicios</strong> con <strong>${usuario.calificacion ?? 0}★</strong> de promedio.` +
-        (faltan > 0
-          ? ` Te faltan <strong>${faltan} servicios</strong> para alcanzar Top.`
-          : " Ya estás en el nivel Top.");
+        `Llevás <strong>${completados} servicios</strong> con <strong>${promedio}★</strong> de promedio.` +
+        (nivelActual === "top"
+          ? " Estás en el nivel <strong>Top</strong>."
+          : nivelActual === "establecido"
+            ? " Tu nivel actual es <strong>Establecido</strong>."
+            : completados >= 10
+              ? ` Para llegar a Establecido te falta <strong>${faltaPromedio.toFixed(1)}★</strong> de promedio.`
+              : ` Te faltan <strong>${faltaServicios} servicios</strong> (y +4★) para llegar a Establecido.`);
+    }
+
+    const metricas = document.querySelectorAll("#rendimiento .metric-card .metric-number");
+    if (metricas.length >= 3) {
+      metricas[0].textContent = completados;
+      metricas[1].textContent = `${promedio}★`;
+      metricas[2].textContent = recientes;
     }
   })();
 }
