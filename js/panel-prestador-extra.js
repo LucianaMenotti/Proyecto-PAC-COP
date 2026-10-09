@@ -288,6 +288,137 @@ async function guardarRestricciones() {
 paneRestricciones.querySelector("#guardarRestricciones").addEventListener("click", guardarRestricciones);
 
 /* ---------------------------------------------------------- */
+/* Cuenta de cobro y liquidaciones                             */
+/* ---------------------------------------------------------- */
+
+const paneCuenta = crearTab("cuenta", "08", "Cuenta de cobro");
+paneCuenta.innerHTML = `
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card panel-card">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-1">¿Dónde cobramos?</h5>
+          <p class="text-secondary small mb-3">Los pagos liberados se transfieren a esta cuenta.</p>
+
+          <form id="formCuentaCobro" class="d-grid gap-3">
+            <div>
+              <label class="form-label" for="cuentaTipo">Tipo de cuenta</label>
+              <select id="cuentaTipo" class="form-select">
+                <option value="banco">Cuenta bancaria</option>
+                <option value="billetera">Billetera virtual</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="cuentaTitular">Titular</label>
+              <input type="text" id="cuentaTitular" class="form-control" autocomplete="off">
+            </div>
+            <div>
+              <label class="form-label" for="cuentaCbu">CBU</label>
+              <input type="text" id="cuentaCbu" class="form-control" autocomplete="off" placeholder="22 dígitos">
+            </div>
+            <div>
+              <label class="form-label" for="cuentaAlias">Alias (opcional)</label>
+              <input type="text" id="cuentaAlias" class="form-control" autocomplete="off">
+            </div>
+            <div class="d-flex align-items-center gap-3">
+              <button type="button" class="btn btn-pac" id="guardarCuenta">Guardar cuenta</button>
+              <span class="text-success small d-none" id="okCuenta">Cuenta guardada.</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card panel-card">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-1">Tus liquidaciones</h5>
+          <p class="text-secondary small mb-3">Pagos liberados al finalizar cada servicio.</p>
+          <p class="fw-bold fs-3 text-success mb-1" id="totalLiquidado">$0</p>
+          <div id="listaLiquidaciones" class="d-grid gap-2 mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+const cuentaTipo = paneCuenta.querySelector("#cuentaTipo");
+const cuentaTitular = paneCuenta.querySelector("#cuentaTitular");
+const cuentaCbu = paneCuenta.querySelector("#cuentaCbu");
+const cuentaAlias = paneCuenta.querySelector("#cuentaAlias");
+
+function mostrarCuenta() {
+  const cuenta = sesion.cuentaCobro;
+  if (!cuenta) return;
+  cuentaTipo.value = cuenta.tipo || "banco";
+  cuentaTitular.value = cuenta.titular || "";
+  cuentaCbu.value = cuenta.cbu || "";
+  cuentaAlias.value = cuenta.alias || "";
+}
+
+async function guardarCuenta() {
+  const ok = paneCuenta.querySelector("#okCuenta");
+  ok.classList.add("d-none");
+
+  try {
+    const respuesta = await fetch("/api/users/me/cuenta-cobro", {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: cuentaTipo.value,
+        titular: cuentaTitular.value.trim(),
+        cbu: cuentaCbu.value.trim(),
+        alias: cuentaAlias.value.trim(),
+      }),
+    });
+    const resultado = await respuesta.json();
+    if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo guardar");
+    sesion.cuentaCobro = resultado.cuentaCobro;
+    ok.classList.remove("d-none");
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+async function cargarLiquidaciones() {
+  const contenedor = paneCuenta.querySelector("#listaLiquidaciones");
+  const totalEl = paneCuenta.querySelector("#totalLiquidado");
+  contenedor.innerHTML = `<p class="text-secondary mb-0">Cargando liquidaciones...</p>`;
+
+  try {
+    const respuesta = await fetch("/api/pagos/liquidaciones", { credentials: "include" });
+    const datos = await respuesta.json();
+    if (!respuesta.ok) throw new Error(datos.mensaje || "No se pudieron cargar");
+
+    totalEl.textContent = `$${Number(datos.total || 0).toLocaleString("es-AR")}`;
+
+    const pagos = datos.pagos || [];
+
+    if (pagos.length === 0) {
+      contenedor.innerHTML = `<p class="text-secondary mb-0">Todavía no hay pagos liberados.</p>`;
+      return;
+    }
+
+    contenedor.innerHTML = pagos
+      .map(
+        (pago) => `
+      <div class="border-bottom pb-2">
+        <div class="d-flex justify-content-between">
+          <span>Reserva #${pago.servicioId}</span>
+          <strong>$${Number(pago.monto).toLocaleString("es-AR")}</strong>
+        </div>
+        <small class="text-secondary">${new Date(pago.liberadoEn).toLocaleString("es-AR")}</small>
+      </div>`,
+      )
+      .join("");
+  } catch (error) {
+    contenedor.innerHTML = `<p class="text-danger mb-0">${escapar(error.message)}</p>`;
+  }
+}
+
+paneCuenta.querySelector("#guardarCuenta").addEventListener("click", guardarCuenta);
+
+/* ---------------------------------------------------------- */
 /* Inicialización                                              */
 /* ---------------------------------------------------------- */
 
@@ -300,6 +431,9 @@ if (sesion) {
       : {};
   renderizarDisponibilidad();
   renderizarRestricciones();
+  mostrarCuenta();
 }
+
+cargarLiquidaciones();
 
 cargarSolicitudes();
