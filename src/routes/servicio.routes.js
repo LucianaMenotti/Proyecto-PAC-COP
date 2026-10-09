@@ -1,11 +1,14 @@
 import express from "express";
 
 import {
+  crearServicio,
   crearServicioDemo,
   listarServicios,
   obtenerServicio,
   iniciarServicio,
   finalizarServicio,
+  aceptarServicio,
+  rechazarServicio,
   guardarUbicacion,
   obtenerUbicacion,
   crearCalificacion,
@@ -23,6 +26,10 @@ router.post("/demo", crearServicioDemo);
 // Servicios existentes
 router.get("/", listarServicios);
 router.get("/:id", obtenerServicio);
+
+// Confirmación de la reserva (prestador)
+router.post("/:id/aceptar", aceptarServicio);
+router.post("/:id/rechazar", rechazarServicio);
 
 // Estados del servicio
 router.post("/:id/iniciar", iniciarServicio);
