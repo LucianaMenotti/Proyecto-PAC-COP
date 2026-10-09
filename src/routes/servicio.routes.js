@@ -10,6 +10,7 @@ import {
   aceptarServicio,
   rechazarServicio,
   cancelarServicio,
+  precioSugerido,
   listarResenasPrestador,
   guardarUbicacion,
   obtenerUbicacion,
@@ -27,6 +28,9 @@ router.post("/demo", crearServicioDemo);
 
 // Servicios existentes
 router.get("/", listarServicios);
+
+// Rango de precio sugerido por servicio y zona
+router.get("/precios/sugerido", precioSugerido);
 
 // Reseñas públicas de un prestador (antes de /:id)
 router.get("/prestador/:id/resenas", listarResenasPrestador);

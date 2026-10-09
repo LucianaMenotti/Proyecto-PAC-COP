@@ -695,6 +695,54 @@ export const crearCalificacion = async (req, res) => {
   }
 };
 
+export const precioSugerido = async (req, res) => {
+  try {
+    const tipo = String(req.query.tipo ?? "").trim();
+    const zona = String(req.query.zona ?? "").trim().toLowerCase();
+
+    if (!SERVICIOS_RESERVABLES.includes(tipo)) {
+      return res.json({ rango: null, mensaje: "Servicio no válido" });
+    }
+
+    const prestadores = await User.findAll({
+      where: { rol: "prestador" },
+      attributes: ["zona", "servicios", "preciosServicios"],
+    });
+
+    const precios = prestadores
+      .filter((prestador) => leerLista(prestador.servicios).includes(tipo))
+      .map((prestador) => ({
+        valor: Number(prestador.preciosServicios?.[tipo]),
+        zona: String(prestador.zona ?? "").toLowerCase(),
+      }))
+      .filter(
+        (item) =>
+          Number.isFinite(item.valor) &&
+          item.valor > 0 &&
+          (!zona || item.zona.includes(zona)),
+      );
+
+    if (precios.length === 0) {
+      return res.json({
+        rango: null,
+        mensaje: "Todavía no hay precios cargados para comparar",
+      });
+    }
+
+    const valores = precios.map((item) => item.valor).sort((a, b) => a - b);
+    const min = valores[0];
+    const max = valores[valores.length - 1];
+    const promedio = Math.round(
+      valores.reduce((total, valor) => total + valor, 0) / valores.length,
+    );
+
+    return res.json({ rango: { min, promedio, max, cantidad: valores.length } });
+  } catch (error) {
+    console.error("Error al calcular el precio sugerido:", error);
+    return res.status(500).json({ mensaje: "No se pudo calcular el rango sugerido" });
+  }
+};
+
 export const listarResenasPrestador = async (req, res) => {
   const providerId = Number(req.params.id);
 
