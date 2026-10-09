@@ -25,6 +25,11 @@ const Mascota = sequelize.define("Mascota", {
         allowNull: true
     },
 
+    tamano: {
+        type: DataTypes.STRING(20),
+        allowNull: true
+    },
+
     edad: {
         type: DataTypes.INTEGER,
         allowNull: true
