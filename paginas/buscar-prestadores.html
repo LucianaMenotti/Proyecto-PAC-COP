@@ -124,6 +124,16 @@
                   <option value="mudanza">Cambio de domicilio</option>
                 </select>
               </div>
+              <div id="vueltaDatos" class="d-none">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="solicitarVuelta" />
+                  <label class="form-check-label" for="solicitarVuelta">
+                    Solicitar también la vuelta de la mascota
+                  </label>
+                </div>
+                <label class="form-label small" for="horaRegreso">Fecha y hora de regreso</label>
+                <input type="datetime-local" id="horaRegreso" class="form-control" />
+              </div>
             </div>
 
             <p class="mb-0">Precio: <strong id="reservaPrecio">-</strong></p>

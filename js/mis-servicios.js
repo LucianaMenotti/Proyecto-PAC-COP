@@ -119,6 +119,7 @@ function tarjetaDe(reserva) {
             <li class="mb-1"><i class="bi bi-heart-fill text-accent me-1"></i>${escapar(reserva.mascota)}</li>
             <li class="mb-1"><i class="bi bi-calendar-event me-1"></i>${formatearFecha(reserva.horaProgramada)}</li>
             ${reserva.origen ? `<li class="mb-1"><i class="bi bi-geo me-1"></i>${escapar(reserva.origen)} → ${escapar(reserva.destino)}</li>` : ""}
+            ${reserva.servicioVueltaId ? `<li class="mb-1"><i class="bi bi-arrow-repeat me-1"></i>${reserva.motivoTraslado === "vuelta" ? "Vuelta de la reserva" : "Incluye la vuelta"} #${reserva.servicioVueltaId}</li>` : ""}
             <li class="mb-1"><i class="bi bi-cash-coin me-1"></i>${formatearMonto(reserva.monto)}</li>
           </ul>
 
