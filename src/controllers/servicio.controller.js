@@ -695,6 +695,50 @@ export const crearCalificacion = async (req, res) => {
   }
 };
 
+export const listarResenasPrestador = async (req, res) => {
+  const providerId = Number(req.params.id);
+
+  if (!Number.isInteger(providerId) || providerId <= 0) {
+    return res.status(400).json({ mensaje: "Prestador inválido" });
+  }
+
+  try {
+    const resenas = await Calificacion.findAll({
+      where: { providerId },
+      order: [["id", "DESC"]],
+      limit: 50,
+    });
+
+    const ownerIds = [...new Set(resenas.map((resena) => resena.ownerId))];
+    const owners = ownerIds.length
+      ? await User.findAll({
+          where: { id: ownerIds },
+          attributes: ["id", "nombre", "apellido"],
+        })
+      : [];
+
+    const nombres = new Map(
+      owners.map((owner) => [
+        owner.id,
+        `${owner.nombre} ${owner.apellido}`.trim(),
+      ]),
+    );
+
+    return res.json({
+      resenas: resenas.map((resena) => ({
+        id: resena.id,
+        puntuacion: resena.puntuacion,
+        comentario: resena.comentario,
+        autor: nombres.get(resena.ownerId) || "Usuario",
+        fecha: resena.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Error al listar reseñas:", error);
+    return res.status(500).json({ mensaje: "No se pudieron cargar las reseñas" });
+  }
+};
+
 export const calificarServicio = async (req, res) => {
   try {
     const { nota, comentario } = req.body;
