@@ -106,6 +106,26 @@
               <input type="datetime-local" id="reservaFecha" class="form-control" required />
             </div>
 
+            <div id="trasladoDatos" class="d-none">
+              <div class="mb-3">
+                <label class="form-label" for="trasladoOrigen">Dirección de origen</label>
+                <input id="trasladoOrigen" type="text" class="form-control" autocomplete="off" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="trasladoDestino">Dirección de destino</label>
+                <input id="trasladoDestino" type="text" class="form-control" autocomplete="off" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="trasladoMotivo">Motivo</label>
+                <select id="trasladoMotivo" class="form-select">
+                  <option value="">Sin especificar</option>
+                  <option value="queda">Vuelta de un servicio (guardería)</option>
+                  <option value="viaje">Traslado puntual</option>
+                  <option value="mudanza">Cambio de domicilio</option>
+                </select>
+              </div>
+            </div>
+
             <p class="mb-0">Precio: <strong id="reservaPrecio">-</strong></p>
 
             <div id="reservaError" class="alert alert-danger d-none mt-3 mb-0"></div>

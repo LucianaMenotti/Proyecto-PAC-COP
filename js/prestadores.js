@@ -174,6 +174,26 @@ const reservaPrecio = document.getElementById("reservaPrecio");
 const reservaError = document.getElementById("reservaError");
 const tituloReserva = document.getElementById("tituloReserva");
 
+const trasladoDatos = document.getElementById("trasladoDatos");
+const trasladoOrigen = document.getElementById("trasladoOrigen");
+const trasladoDestino = document.getElementById("trasladoDestino");
+const trasladoMotivo = document.getElementById("trasladoMotivo");
+
+function mostrarCamposTraslado() {
+  const esTraslado = reservaServicio.value === "Traslado";
+  trasladoDatos.classList.toggle("d-none", !esTraslado);
+
+  [trasladoOrigen, trasladoDestino, trasladoMotivo].forEach((campo) => {
+    campo.required = esTraslado && campo !== trasladoMotivo;
+  });
+
+  if (!esTraslado) {
+    trasladoOrigen.value = "";
+    trasladoDestino.value = "";
+    trasladoMotivo.value = "";
+  }
+}
+
 function precioDe(prestador, tipo) {
   return Number(prestador.preciosServicios?.[tipo]) || 0;
 }
@@ -236,6 +256,7 @@ async function abrirReserva(id) {
 
   reservaFecha.value = "";
   actualizarPrecioReserva();
+  mostrarCamposTraslado();
 
   if (!modalReserva) {
     modalReserva = new bootstrap.Modal(document.getElementById("modalReserva"));
@@ -245,21 +266,36 @@ async function abrirReserva(id) {
 }
 
 reservaServicio.addEventListener("change", actualizarPrecioReserva);
+reservaServicio.addEventListener("change", mostrarCamposTraslado);
 
 formReserva.addEventListener("submit", async (event) => {
   event.preventDefault();
   reservaError.classList.add("d-none");
 
+  const datos = {
+    providerId: prestadorElegido.id,
+    tipo: reservaServicio.value,
+    mascotaId: Number(reservaMascota.value),
+    horaProgramada: new Date(reservaFecha.value).toISOString(),
+  };
+
+  if (reservaServicio.value === "Traslado") {
+    if (!trasladoOrigen.value.trim() || !trasladoDestino.value.trim()) {
+      reservaError.textContent = "Indicá el origen y el destino del traslado.";
+      reservaError.classList.remove("d-none");
+      return;
+    }
+
+    datos.origen = trasladoOrigen.value.trim();
+    datos.destino = trasladoDestino.value.trim();
+    datos.motivoTraslado = trasladoMotivo.value || "";
+  }
+
   const respuesta = await fetch("/api/servicios", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      providerId: prestadorElegido.id,
-      tipo: reservaServicio.value,
-      mascotaId: Number(reservaMascota.value),
-      horaProgramada: new Date(reservaFecha.value).toISOString(),
-    }),
+    body: JSON.stringify(datos),
   });
 
   const resultado = await respuesta.json();
