@@ -10,6 +10,7 @@ import {
   aceptarServicio,
   rechazarServicio,
   cancelarServicio,
+  listarResenasPrestador,
   guardarUbicacion,
   obtenerUbicacion,
   crearCalificacion,
@@ -26,6 +27,10 @@ router.post("/demo", crearServicioDemo);
 
 // Servicios existentes
 router.get("/", listarServicios);
+
+// Reseñas públicas de un prestador (antes de /:id)
+router.get("/prestador/:id/resenas", listarResenasPrestador);
+
 router.get("/:id", obtenerServicio);
 
 // Confirmación de la reserva (prestador)

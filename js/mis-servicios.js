@@ -17,6 +17,8 @@ const usuario = await window.PacCopAuth.requireSession();
 let reservas = [];
 let reservaACancelar = null;
 let modalCancelar = null;
+let reservaACalificar = null;
+let modalCalificar = null;
 
 const escapar = (valor) =>
   String(valor ?? "")
@@ -66,6 +68,14 @@ function accionesDe(reserva) {
          href="../seguimiento gps en tiempo real/seguimiento.html?servicio=${reserva.id}">
         <i class="bi bi-geo-alt me-1"></i> Ver seguimiento
       </a>`);
+  }
+
+  if (reserva.estado === "finalizado") {
+    botones.push(`
+      <button type="button" class="btn btn-primary btn-sm rounded-pill"
+              data-calificar="${reserva.id}">
+        <i class="bi bi-star me-1"></i> Calificar
+      </button>`);
   }
 
   return botones.join(" ");
@@ -199,13 +209,65 @@ async function confirmarCancelar() {
   }
 }
 
+function abrirCalificar(id) {
+  reservaACalificar = reservas.find((r) => r.id === id) || null;
+  document.getElementById("puntuacion").value = "5";
+  document.getElementById("comentarioResena").value = "";
+  document.getElementById("errorCalificar").classList.add("d-none");
+
+  if (!modalCalificar) {
+    modalCalificar = new bootstrap.Modal(document.getElementById("modalCalificar"));
+  }
+  modalCalificar.show();
+}
+
+async function confirmarCalificar() {
+  if (!reservaACalificar) return;
+
+  const error = document.getElementById("errorCalificar");
+  const boton = document.getElementById("confirmarCalificar");
+  boton.disabled = true;
+
+  try {
+    const respuesta = await fetch(`/api/servicios/${reservaACalificar.id}/calificacion`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        puntuacion: Number(document.getElementById("puntuacion").value),
+        comentario: document.getElementById("comentarioResena").value.trim(),
+      }),
+    });
+
+    const resultado = await respuesta.json();
+
+    if (!respuesta.ok) {
+      error.textContent = resultado.mensaje || "No se pudo enviar la reseña";
+      error.classList.remove("d-none");
+      return;
+    }
+
+    modalCalificar.hide();
+    mostrarAlerta("¡Gracias por tu reseña!", "success");
+  } catch (err) {
+    error.textContent = "No se pudo enviar la reseña";
+    error.classList.remove("d-none");
+  } finally {
+    boton.disabled = false;
+  }
+}
+
 contenedor.addEventListener("click", (event) => {
-  const boton = event.target.closest("[data-cancelar]");
-  if (boton) abrirCancelar(Number(boton.dataset.cancelar));
+  const cancelar = event.target.closest("[data-cancelar]");
+  if (cancelar) abrirCancelar(Number(cancelar.dataset.cancelar));
+
+  const calificar = event.target.closest("[data-calificar]");
+  if (calificar) abrirCalificar(Number(calificar.dataset.calificar));
 });
 
 filtroEstado.addEventListener("change", renderizar);
 document.getElementById("confirmarCancelar").addEventListener("click", confirmarCancelar);
+document.getElementById("confirmarCalificar").addEventListener("click", confirmarCalificar);
 cerrarSesion.addEventListener("click", () => window.PacCopAuth.logout());
 
 if (usuario) await cargarReservas();

@@ -6,6 +6,14 @@ const btnBuscar = document.getElementById("btnBuscar");
 
 let prestadores = [];
 
+const escapar = (valor) =>
+  String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 function obtenerServicios(servicios) {
   if (Array.isArray(servicios)) {
     return servicios;
@@ -74,13 +82,13 @@ function mostrarPrestadores(lista) {
                 <div class="card-body">
 
                     <h5 class="card-title fw-bold">
-                        ${prestador.nombre}
-                        ${prestador.apellido}
+                        ${escapar(prestador.nombre)}
+                        ${escapar(prestador.apellido)}
                     </h5>
 
                     <p class="card-text">
                         <strong>Zona:</strong>
-                        ${prestador.zona}
+                        ${escapar(prestador.zona)}
                     </p>
 
                     <p class="card-text">
@@ -108,6 +116,13 @@ function mostrarPrestadores(lista) {
                         onclick="abrirReserva(${prestador.id})"
                     >
                         Reservar
+                    </button>
+
+                    <button
+                        class="btn btn-outline-secondary w-100 mt-2"
+                        onclick="abrirResenas(${prestador.id})"
+                    >
+                        Ver reseñas (${prestador.resenas || 0})
                     </button>
 
                 </div>
@@ -261,3 +276,61 @@ formReserva.addEventListener("submit", async (event) => {
     "Reserva creada correctamente. Ya podés pagarla desde la pantalla de pago.",
   );
 });
+
+// =========================================
+// RESEÑAS DEL PRESTADOR
+// =========================================
+
+let modalResenas = null;
+
+async function abrirResenas(id) {
+  const prestador = prestadores.find((item) => item.id === id);
+  if (!prestador) return;
+
+  const contenedorResenas = document.getElementById("listaResenas");
+  document.getElementById("tituloResenas").textContent =
+    `Reseñas de ${prestador.nombre} ${prestador.apellido}`;
+  contenedorResenas.innerHTML =
+    '<p class="text-secondary mb-0">Cargando reseñas...</p>';
+
+  if (!modalResenas) {
+    modalResenas = new bootstrap.Modal(document.getElementById("modalResenas"));
+  }
+
+  modalResenas.show();
+
+  try {
+    const respuesta = await fetch(`/api/servicios/prestador/${id}/resenas`);
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok) {
+      throw new Error(datos.mensaje || "No se pudieron cargar las reseñas");
+    }
+
+    const resenas = datos.resenas || [];
+
+    if (resenas.length === 0) {
+      contenedorResenas.innerHTML =
+        '<p class="text-secondary mb-0">Este prestador todavía no tiene reseñas.</p>';
+      return;
+    }
+
+    contenedorResenas.innerHTML = resenas
+      .map(
+        (resena) => `
+        <div class="border-bottom py-2">
+          <div class="d-flex justify-content-between">
+            <strong>${escapar(resena.autor)}</strong>
+            <span class="text-warning">${"★".repeat(resena.puntuacion)}${"☆".repeat(5 - resena.puntuacion)}</span>
+          </div>
+          ${resena.comentario ? `<p class="mb-0 small">${escapar(resena.comentario)}</p>` : ""}
+          <small class="text-secondary">${new Date(resena.fecha).toLocaleDateString("es-AR")}</small>
+        </div>`,
+      )
+      .join("");
+  } catch (error) {
+    contenedorResenas.innerHTML = `<p class="text-danger mb-0">${escapar(error.message)}</p>`;
+  }
+}
+
+window.abrirResenas = abrirResenas;
