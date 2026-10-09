@@ -313,5 +313,51 @@ if (usuario) {
       metricas[1].textContent = `${promedio}★`;
       metricas[2].textContent = recientes;
     }
+
+    const tituloRecomendacion = document.getElementById("recomendacionTitulo");
+    if (tituloRecomendacion) {
+      const textoRecomendacion = document.getElementById("recomendacionTexto");
+      const botonRecomendacion = document.getElementById("recomendacionBoton");
+      const mercadoPromedio = window.__rangoSugerido?.promedio;
+      const misPreciosActuales = Object.values(usuario.preciosServicios || {}).map(Number);
+
+      let titulo;
+      let texto;
+      let accion;
+
+      if (recientes === 0) {
+        titulo = "Te recomendamos mantener tu precio actual";
+        texto =
+          `Tuviste ${recientes} reservas en las últimas 2 semanas. ` +
+          "Antes de subir el precio, esperá a validar que la demanda se sostenga.";
+        accion = "Entendido";
+      } else if (
+        recientes >= 3 &&
+        promedio >= 4 &&
+        mercadoPromedio &&
+        misPreciosActuales.some((precio) => precio < mercadoPromedio * 0.9)
+      ) {
+        titulo = "Podés subir tu precio";
+        texto =
+          `Tu demanda es alta (${recientes} reservas recientes) y tenés ${promedio}★ de promedio. ` +
+          `El mercado para tu zona promedia $${mercadoPromedio}; podés acercarte a ese rango.`;
+        accion = "Usar precio promedio";
+      } else {
+        titulo = "Tu precio actual está bien";
+        texto =
+          `Con ${recientes} reservas recientes y ${promedio}★ de promedio, mantené tu precio para consolidar la demanda.`;
+        accion = "Mantener precio actual";
+      }
+
+      tituloRecomendacion.textContent = titulo;
+      textoRecomendacion.textContent = texto;
+      botonRecomendacion.textContent = accion;
+      botonRecomendacion.onclick = () => {
+        if (window.__rangoSugerido && precioInput) {
+          precioInput.value = window.__rangoSugerido.promedio;
+          precioError?.classList.add("d-none");
+        }
+      };
+    }
   })();
 }
