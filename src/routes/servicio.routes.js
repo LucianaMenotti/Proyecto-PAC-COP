@@ -9,6 +9,7 @@ import {
   finalizarServicio,
   aceptarServicio,
   rechazarServicio,
+  cancelarServicio,
   guardarUbicacion,
   obtenerUbicacion,
   crearCalificacion,
@@ -30,6 +31,9 @@ router.get("/:id", obtenerServicio);
 // Confirmación de la reserva (prestador)
 router.post("/:id/aceptar", aceptarServicio);
 router.post("/:id/rechazar", rechazarServicio);
+
+// Cancelación (dueño o prestador)
+router.post("/:id/cancelar", cancelarServicio);
 
 // Estados del servicio
 router.post("/:id/iniciar", iniciarServicio);

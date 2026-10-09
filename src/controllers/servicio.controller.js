@@ -4,6 +4,10 @@ import Ubicacion from "../models/ubicacion.model.js";
 import Calificacion from "../models/calificacion.model.js";
 import User from "../models/user.model.js";
 import Mascota from "../models/mascota.model.js";
+import {
+  liberarPagoDelServicio,
+  reembolsarPagoDelServicio,
+} from "./pago.controller.js";
 
 const esAdministrador = (user) => ["admin", "administrador"].includes(user.rol);
 
@@ -433,6 +437,61 @@ export const rechazarServicio = async (req, res) => {
   } catch (error) {
     console.error("Error al rechazar la reserva:", error);
     return res.status(500).json({ mensaje: "No se pudo rechazar la reserva" });
+  }
+};
+
+const HORAS_REEMBOLSO_COMPLETO = 12;
+
+export const cancelarServicio = async (req, res) => {
+  try {
+    const resultado = await obtenerServicioAutorizado(req.params.id, req.user);
+    if (resultado.error)
+      return res
+        .status(resultado.error.status)
+        .json({ mensaje: resultado.error.mensaje });
+
+    const servicio = resultado.servicio;
+
+    if (!["programado", "aceptado"].includes(servicio.estado)) {
+      return res.status(409).json({
+        mensaje: "Solo se puede cancelar una reserva pendiente o aceptada",
+      });
+    }
+
+    const esDueno = Number(servicio.ownerId) === Number(req.user.id);
+    const esPrestador = Number(servicio.providerId) === Number(req.user.id);
+    const motivo = String(req.body.motivo ?? "").trim().slice(0, 255);
+
+    let reembolso = true;
+
+    if (esDueno && !esPrestador) {
+      const horas =
+        (new Date(servicio.horaProgramada).getTime() - Date.now()) / 3_600_000;
+      reembolso = horas >= HORAS_REEMBOLSO_COMPLETO;
+    }
+
+    await servicio.update({
+      estado: "cancelado",
+      canceladoEn: new Date(),
+      motivoCancelacion: motivo || null,
+      reembolso,
+    });
+
+    if (reembolso) {
+      await reembolsarPagoDelServicio(servicio.id);
+    } else {
+      await liberarPagoDelServicio(servicio.id);
+    }
+
+    return res.json({
+      mensaje: reembolso
+        ? "Reserva cancelada. El pago se reintegrará al dueño."
+        : "Reserva cancelada fuera del plazo. No corresponde reembolso.",
+      servicio: presentarServicio(servicio, null, req.user),
+    });
+  } catch (error) {
+    console.error("Error al cancelar la reserva:", error);
+    return res.status(500).json({ mensaje: "No se pudo cancelar la reserva" });
   }
 };
 
