@@ -13,11 +13,13 @@ import Servicio from "./models/servicio.model.js";
 import Ubicacion from "./models/ubicacion.model.js";
 import Pago from "./models/pago.model.js";
 import Calificacion from "./models/calificacion.model.js";
+import Mensaje from "./models/mensaje.model.js";
 
 import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
 import servicioRoutes from "./routes/servicio.routes.js";
 import pagoRoutes from "./routes/pago.routes.js";
+import mensajeRoutes from "./routes/mensaje.routes.js";
 
 const app = express();
 
@@ -63,6 +65,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/mascotas", mascotaRoutes);
 app.use("/api/servicios", servicioRoutes);
 app.use("/api/pagos", pagoRoutes);
+app.use("/api/mensajes", mensajeRoutes);
 
 const PORT = process.env.PORT || 3000;
 
