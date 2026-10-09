@@ -152,10 +152,19 @@ export const crearServicio = async (req, res) => {
         .json({ mensaje: "Solo un dueño de mascota puede reservar servicios" });
     }
 
-    const { providerId, mascotaId, tipo, horaProgramada } = req.body;
+    const { providerId, mascotaId, tipo, horaProgramada, origen, destino, motivoTraslado } =
+      req.body;
 
     if (!SERVICIOS_RESERVABLES.includes(tipo)) {
       return res.status(400).json({ mensaje: "Elegí un servicio válido" });
+    }
+
+    if (tipo === "Traslado") {
+      if (!String(origen ?? "").trim() || !String(destino ?? "").trim()) {
+        return res.status(400).json({
+          mensaje: "Para traslados indicá el origen y el destino",
+        });
+      }
     }
 
     const fecha = new Date(horaProgramada);
@@ -211,6 +220,12 @@ export const crearServicio = async (req, res) => {
       mascotaNombre: mascota.nombre,
       monto,
       horaProgramada: fecha,
+      origen: tipo === "Traslado" ? String(origen).trim() : null,
+      destino: tipo === "Traslado" ? String(destino).trim() : null,
+      motivoTraslado:
+        tipo === "Traslado"
+          ? String(motivoTraslado ?? "").trim().slice(0, 60) || null
+          : null,
     });
 
     return res.status(201).json({
