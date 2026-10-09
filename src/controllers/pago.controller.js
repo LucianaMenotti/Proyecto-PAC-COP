@@ -40,6 +40,10 @@ export const crearPago = async (req, res) => {
     const servicio = await obtenerServicioAutorizado(req.body.servicioId, req.user);
     if (!servicio) return res.status(404).json({ mensaje: "Servicio no encontrado" });
 
+    if (["cancelado", "rechazado", "finalizado"].includes(servicio.estado)) {
+        return res.status(409).json({ mensaje: "Esta reserva ya no admite pagos" });
+    }
+
     const metodo = req.body.metodo === "billetera" ? "billetera" : "tarjeta";
     const ultimosDigitos = metodo === "tarjeta"
         ? String(req.body.ultimosDigitos || "").replace(/\D/g, "").slice(-4)
@@ -53,6 +57,7 @@ export const crearPago = async (req, res) => {
         where: { servicioId: servicio.id },
         defaults: {
             ownerId: servicio.ownerId,
+            providerId: servicio.providerId,
             monto: servicio.monto,
             metodo,
             ultimosDigitos

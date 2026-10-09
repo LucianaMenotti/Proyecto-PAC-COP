@@ -5,14 +5,17 @@
 document.addEventListener('DOMContentLoaded', async () => {
 
   /* ---------- Datos de la reserva ---------- */
+  const parametros = new URLSearchParams(window.location.search);
+  const servicioId = parametros.get('servicio');
+
   let reserva;
   let pago = null;
 
   try {
-    const respuesta = await fetch('/api/servicios/demo', {
-      method: 'POST',
-      credentials: 'include'
-    });
+    const respuesta = servicioId
+      ? await fetch(`/api/servicios/${servicioId}`, { credentials: 'include' })
+      : await fetch('/api/servicios/demo', { method: 'POST', credentials: 'include' });
+
     const resultado = await respuesta.json();
     if (!respuesta.ok) throw new Error(resultado.mensaje || 'No se pudo cargar la reserva.');
     reserva = resultado.servicio;

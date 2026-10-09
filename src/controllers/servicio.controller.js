@@ -408,6 +408,8 @@ export const finalizarServicio = async (req, res) => {
     finalizadoEn: new Date(),
   });
 
+  await liberarPagoDelServicio(resultado.servicio.id);
+
   return res.json({
     servicio: presentarServicio(resultado.servicio, null, req.user),
   });
