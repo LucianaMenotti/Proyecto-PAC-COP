@@ -55,6 +55,47 @@ const Servicio = sequelize.define("Servicio", {
     allowNull: true,
   },
 
+  canceladoEn: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  motivoCancelacion: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  reembolso: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
+  },
+  origen: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  destino: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  motivoTraslado: {
+    type: DataTypes.STRING(60),
+    allowNull: true,
+  },
+  servicioVueltaId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  horaRegreso: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  checkIn: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  checkOut: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+
   calificacion: {
     type: DataTypes.INTEGER,
     allowNull: true,

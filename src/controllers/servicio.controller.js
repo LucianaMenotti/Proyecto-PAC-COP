@@ -24,6 +24,16 @@ const presentarServicio = (servicio, ubicacion = null, user = null) => ({
   horaProgramada: servicio.horaProgramada,
   iniciadoEn: servicio.iniciadoEn,
   finalizadoEn: servicio.finalizadoEn,
+  canceladoEn: servicio.canceladoEn,
+  motivoCancelacion: servicio.motivoCancelacion,
+  reembolso: servicio.reembolso,
+  origen: servicio.origen,
+  destino: servicio.destino,
+  motivoTraslado: servicio.motivoTraslado,
+  servicioVueltaId: servicio.servicioVueltaId,
+  horaRegreso: servicio.horaRegreso,
+  checkIn: servicio.checkIn,
+  checkOut: servicio.checkOut,
   ultimaUbicacion: ubicacion,
   puedeGestionar: Boolean(
     user &&
@@ -307,8 +317,10 @@ export const iniciarServicio = async (req, res) => {
     });
   }
 
-  if (resultado.servicio.estado !== "programado") {
-    return res.status(409).json({ mensaje: "El servicio no está programado" });
+  if (resultado.servicio.estado !== "aceptado") {
+    return res.status(409).json({
+      mensaje: "El servicio debe estar aceptado antes de iniciarlo",
+    });
   }
 
   await resultado.servicio.update({
@@ -344,9 +356,84 @@ export const finalizarServicio = async (req, res) => {
     estado: "finalizado",
     finalizadoEn: new Date(),
   });
+
   return res.json({
     servicio: presentarServicio(resultado.servicio, null, req.user),
   });
+};
+
+export const aceptarServicio = async (req, res) => {
+  try {
+    const resultado = await obtenerServicioAutorizado(req.params.id, req.user);
+    if (resultado.error)
+      return res
+        .status(resultado.error.status)
+        .json({ mensaje: resultado.error.mensaje });
+
+    const servicio = resultado.servicio;
+
+    if (
+      !esAdministrador(req.user) &&
+      Number(servicio.providerId) !== Number(req.user.id)
+    ) {
+      return res
+        .status(403)
+        .json({ mensaje: "Solo el prestador asignado puede aceptar esta reserva" });
+    }
+
+    if (servicio.estado !== "programado") {
+      return res
+        .status(409)
+        .json({ mensaje: "Esta reserva ya fue gestionada" });
+    }
+
+    await servicio.update({ estado: "aceptado" });
+
+    return res.json({
+      mensaje: "Reserva aceptada correctamente",
+      servicio: presentarServicio(servicio, null, req.user),
+    });
+  } catch (error) {
+    console.error("Error al aceptar la reserva:", error);
+    return res.status(500).json({ mensaje: "No se pudo aceptar la reserva" });
+  }
+};
+
+export const rechazarServicio = async (req, res) => {
+  try {
+    const resultado = await obtenerServicioAutorizado(req.params.id, req.user);
+    if (resultado.error)
+      return res
+        .status(resultado.error.status)
+        .json({ mensaje: resultado.error.mensaje });
+
+    const servicio = resultado.servicio;
+
+    if (
+      !esAdministrador(req.user) &&
+      Number(servicio.providerId) !== Number(req.user.id)
+    ) {
+      return res.status(403).json({
+        mensaje: "Solo el prestador asignado puede rechazar esta reserva",
+      });
+    }
+
+    if (servicio.estado !== "programado") {
+      return res
+        .status(409)
+        .json({ mensaje: "Esta reserva ya fue gestionada" });
+    }
+
+    await servicio.update({ estado: "rechazado" });
+
+    return res.json({
+      mensaje: "Reserva rechazada correctamente",
+      servicio: presentarServicio(servicio, null, req.user),
+    });
+  } catch (error) {
+    console.error("Error al rechazar la reserva:", error);
+    return res.status(500).json({ mensaje: "No se pudo rechazar la reserva" });
+  }
 };
 
 export const guardarUbicacion = async (req, res) => {
