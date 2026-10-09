@@ -87,6 +87,50 @@ async function guardarServicios() {
   renderizarServicios();
 }
 
+async function cargarRangoSugerido() {
+  if (!servicioSelect) return;
+
+  const servicio = NOMBRE_SERVICIO[servicioSelect.value];
+  const zona = (usuario.zona || "").trim();
+
+  try {
+    const respuesta = await fetch(
+      `/api/servicios/precios/sugerido?tipo=${encodeURIComponent(servicio)}&zona=${encodeURIComponent(zona)}`,
+      { credentials: "include" },
+    );
+    const datos = await respuesta.json();
+    const rango = datos.rango;
+
+    const barra = document.querySelector(".range-progress");
+    if (barra) barra.style.width = "0%";
+
+    window.__rangoSugerido = rango || null;
+
+    if (!rango) {
+      escribir("precioMin", "—");
+      escribir("precioPromedio", "—");
+      escribir("precioMax", "—");
+      return;
+    }
+
+    escribir("precioMin", `$${rango.min}`);
+    escribir("precioPromedio", `$${rango.promedio}`);
+    escribir("precioMax", `$${rango.max}`);
+
+    if (barra && rango.max > rango.min) {
+      const ancho = Math.round(
+        ((rango.promedio - rango.min) / (rango.max - rango.min)) * 100,
+      );
+      barra.style.width = `${Math.min(100, Math.max(15, ancho))}%`;
+    }
+  } catch {
+    escribir("precioMin", "—");
+    escribir("precioPromedio", "—");
+    escribir("precioMax", "—");
+    window.__rangoSugerido = null;
+  }
+}
+
 function renderizarServicios() {
   const contenedor = document.getElementById("serviciosPrestador");
   if (!contenedor) return;
@@ -132,6 +176,7 @@ if (usuario) {
   escribir("resenasPrestador", usuario.resenas || "0");
 
   renderizarServicios();
+  cargarRangoSugerido();
 
   // Tabla de precios mínimos
   const tabla = document.getElementById("tablaPrecios");
@@ -158,12 +203,14 @@ if (usuario) {
     servicioSelect.addEventListener("change", () => {
       precioInput.placeholder = obtenerPrecioMinimo();
       precioError.classList.add("d-none");
+      cargarRangoSugerido();
     });
   }
 
   if (useSuggested) {
     useSuggested.addEventListener("click", () => {
-      precioInput.value = obtenerPrecioMinimo();
+      const rango = window.__rangoSugerido;
+      precioInput.value = rango?.promedio || obtenerPrecioMinimo();
       precioError.classList.add("d-none");
     });
   }
