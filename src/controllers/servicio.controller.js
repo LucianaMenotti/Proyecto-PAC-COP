@@ -103,6 +103,47 @@ const leerLista = (valor) => {
   return [];
 };
 
+const DIAS_SEMANA = [
+  "domingo",
+  "lunes",
+  "martes",
+  "miercoles",
+  "jueves",
+  "viernes",
+  "sabado",
+];
+
+const validarDisponibilidad = (prestador, fecha) => {
+  const disponibilidad =
+    prestador.disponibilidad && typeof prestador.disponibilidad === "object"
+      ? prestador.disponibilidad
+      : null;
+
+  if (!disponibilidad) return { ok: true };
+
+  const dia = DIAS_SEMANA[fecha.getDay()];
+  const regla = disponibilidad[dia];
+
+  if (!regla || !regla.activo) {
+    return { ok: false, mensaje: `El prestador no atiende los ${dia}` };
+  }
+
+  const minutos = fecha.getHours() * 60 + fecha.getMinutes();
+  const [desdeH, desdeM] = String(regla.desde).split(":").map(Number);
+  const [hastaH, hastaM] = String(regla.hasta).split(":").map(Number);
+  const desde = desdeH * 60 + desdeM;
+  const hasta = hastaH * 60 + hastaM;
+
+  if (!Number.isFinite(minutos) || minutos < desde || minutos > hasta) {
+    return {
+      ok: false,
+      mensaje: `El prestador atiende ese día entre ${regla.desde} y ${regla.hasta}`,
+    };
+  }
+
+  return { ok: true };
+};
+
 export const crearServicio = async (req, res) => {
   try {
     if (req.user.rol !== "dueño") {
@@ -153,6 +194,12 @@ export const crearServicio = async (req, res) => {
 
     if (!mascota) {
       return res.status(404).json({ mensaje: "Mascota no encontrada" });
+    }
+
+    const disponibilidad = validarDisponibilidad(prestador, fecha);
+
+    if (!disponibilidad.ok) {
+      return res.status(409).json({ mensaje: disponibilidad.mensaje });
     }
 
     const servicio = await Servicio.create({

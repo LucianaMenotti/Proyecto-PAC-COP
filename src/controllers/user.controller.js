@@ -276,17 +276,23 @@ export const actualizarDisponibilidad = async (req, res) => {
       "domingo",
     ];
 
+    const esHora = (valor) => /^\d{2}:\d{2}$/.test(String(valor ?? ""));
+
     for (const [dia, valor] of Object.entries(disponibilidad)) {
       if (!diasValidos.includes(dia)) continue;
 
-      if (
-        valor &&
-        (!Array.isArray(valor.horas) ||
-          valor.horas.some((hora) => !/^\d{2}:\d{2}$/.test(hora)))
-      ) {
-        return res.status(400).json({
-          mensaje: `Los horarios de ${dia} no son válidos`,
-        });
+      if (valor && valor.activo) {
+        if (!esHora(valor.desde) || !esHora(valor.hasta)) {
+          return res.status(400).json({
+            mensaje: `Los horarios de ${dia} no son válidos (usá HH:MM)`,
+          });
+        }
+
+        if (valor.desde >= valor.hasta) {
+          return res.status(400).json({
+            mensaje: `El horario de ${dia} debe terminar después de empezar`,
+          });
+        }
       }
     }
 
