@@ -73,7 +73,7 @@ function accionesDe(reserva) {
   if (reserva.estado === "en-curso") {
     botones.push(`
       <a class="btn btn-outline-primary btn-sm rounded-pill"
-         href="../seguimiento gps en tiempo real/seguimiento.html?servicio=${reserva.id}">
+         href="../seguimiento gps en tiempo real/seguimiento.html?servicioId=${reserva.id}">
         <i class="bi bi-geo-alt me-1"></i> Ver seguimiento
       </a>`);
   }

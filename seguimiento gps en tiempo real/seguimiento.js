@@ -23,7 +23,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const botonFinal = document.getElementById("btnFinalizarDemo");
 
   const parametros = new URLSearchParams(window.location.search);
-  const servicioId = parametros.get("servicioId");
+  const servicioId =
+    parametros.get("servicioId") ||
+    parametros.get("servicio") ||
+    parametros.get("id");
 
   const formularioCalificacion = document.getElementById("form-calificacion");
 

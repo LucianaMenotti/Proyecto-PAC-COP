@@ -68,6 +68,17 @@ async function cargarSolicitudes() {
     const pendientes = (servicios || []).filter((s) => s.estado === "programado");
     const activos = (servicios || []).filter((s) => ["aceptado", "en-curso"].includes(s.estado));
 
+    const linkRuta = document.getElementById("linkSeguimientoRuta");
+    if (linkRuta) {
+      const enCurso = activos.find((s) => s.estado === "en-curso") || activos[0];
+      if (enCurso) {
+        linkRuta.href = `../seguimiento gps en tiempo real/seguimiento.html?servicioId=${enCurso.id}`;
+        linkRuta.classList.remove("disabled");
+      } else {
+        linkRuta.classList.add("disabled");
+      }
+    }
+
     const secciones = [];
 
     if (pendientes.length === 0) {
@@ -115,6 +126,9 @@ async function cargarSolicitudes() {
             </p>
           </div>
           <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary btn-sm" href="../seguimiento gps en tiempo real/seguimiento.html?servicioId=${s.id}">
+              <i class="bi bi-geo-alt me-1"></i> Seguimiento
+            </a>
             <a class="btn btn-outline-success btn-sm" href="../prestadordeServicio/chatApp.html?servicioId=${s.id}">
               <i class="bi bi-chat-dots me-1"></i> Chat
             </a>
