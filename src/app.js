@@ -75,27 +75,43 @@ const iniciarServidor = async () => {
 
     console.log("Conexión con MySQL establecida correctamente");
     const queryInterface = sequelize.getQueryInterface();
-    const columnasServicios = await queryInterface.describeTable(
-      Servicio.getTableName(),
-    );
 
-    if (!columnasServicios.calificacion) {
-      await queryInterface.addColumn(Servicio.getTableName(), "calificacion", {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      });
-    }
+    const asegurarColumnasFaltantes = async (modelo) => {
+      const tabla = modelo.getTableName();
+      let existentes;
 
-    if (!columnasServicios.comentarioCalificacion) {
-      await queryInterface.addColumn(
-        Servicio.getTableName(),
-        "comentarioCalificacion",
-        {
-          type: DataTypes.STRING(255),
+      try {
+        existentes = await queryInterface.describeTable(tabla);
+      } catch {
+        return;
+      }
+
+      for (const [nombre, definicion] of Object.entries(modelo.getAttributes())) {
+        if (existentes[nombre]) continue;
+        if (definicion.primaryKey) continue;
+        if (nombre === "createdAt" || nombre === "updatedAt") continue;
+
+        await queryInterface.addColumn(tabla, nombre, {
+          type: definicion.type,
           allowNull: true,
-        },
-      );
+        });
+
+        console.log(`Columna agregada: ${tabla}.${nombre}`);
+      }
+    };
+
+    for (const modelo of [
+      User,
+      Mascota,
+      Servicio,
+      Ubicacion,
+      Pago,
+      Calificacion,
+      Mensaje,
+    ]) {
+      await asegurarColumnasFaltantes(modelo);
     }
+
     const actualizarEstructura =
       !esProduccion && process.env.DB_SYNC_ALTER !== "false";
 
