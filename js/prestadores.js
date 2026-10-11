@@ -325,26 +325,38 @@ formReserva.addEventListener("submit", async (event) => {
     }
   }
 
-  const respuesta = await fetch("/api/servicios", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
+  try {
+    const respuesta = await fetch("/api/servicios", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
 
-  const resultado = await respuesta.json();
+    let resultado;
 
-  if (!respuesta.ok) {
+    try {
+      resultado = await respuesta.json();
+    } catch {
+      resultado = null;
+    }
+
+    if (!respuesta.ok) {
+      reservaError.textContent =
+        (resultado && resultado.mensaje) || "No se pudo crear la reserva";
+      reservaError.classList.remove("d-none");
+      return;
+    }
+
+    modalReserva.hide();
+    alert(
+      "Reserva creada correctamente. Ya podés pagarla desde la pantalla de pago.",
+    );
+  } catch (error) {
     reservaError.textContent =
-      resultado.mensaje || "No se pudo crear la reserva";
+      "No se pudo crear la reserva. Intentalo de nuevo.";
     reservaError.classList.remove("d-none");
-    return;
   }
-
-  modalReserva.hide();
-  alert(
-    "Reserva creada correctamente. Ya podés pagarla desde la pantalla de pago.",
-  );
 });
 
 // =========================================

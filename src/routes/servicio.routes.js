@@ -29,6 +29,9 @@ router.use(authMiddleware);
 // Servicio utilizado para la demo actual
 router.post("/demo", crearServicioDemo);
 
+// Reserva solicitada por el dueño
+router.post("/", crearServicio);
+
 // Servicios existentes
 router.get("/", listarServicios);
 

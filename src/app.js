@@ -67,6 +67,11 @@ app.use("/api/servicios", servicioRoutes);
 app.use("/api/pagos", pagoRoutes);
 app.use("/api/mensajes", mensajeRoutes);
 
+// Cualquier ruta /api sin coincidencia responde JSON (nunca HTML)
+app.use("/api", (req, res) => {
+  res.status(404).json({ mensaje: "Ruta no encontrada" });
+});
+
 const PORT = process.env.PORT || 3000;
 
 const iniciarServidor = async () => {
