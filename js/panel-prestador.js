@@ -61,6 +61,54 @@ function obtenerPrecioMinimo() {
   return precios[servicio]?.[nivelActual] ?? 0;
 }
 
+const CAMPOS_POR_SERVICIO = {
+  Paseo: {
+    duracion: { label: "Duración (minutos)", min: 5, step: 5, value: 30 },
+    mascotas: true,
+  },
+  Guarderia: {
+    duracion: { label: "Horas de cuidado", min: 1, step: 1, value: 4 },
+    mascotas: true,
+  },
+  Traslado: {
+    duracion: { label: "Distancia estimada (km)", min: 1, step: 1, value: 5 },
+    mascotas: false,
+  },
+};
+
+function adaptarCampos() {
+  const servicio = NOMBRE_SERVICIO[servicioSelect.value];
+  const config = CAMPOS_POR_SERVICIO[servicio];
+  if (!config) return;
+
+  const duracionLabel = document.getElementById("duracionLabel");
+  const duracionInput = document.getElementById("duracionInput");
+  const mascotasField = document.getElementById("mascotasField");
+
+  if (duracionLabel) duracionLabel.textContent = config.duracion.label;
+
+  if (duracionInput) {
+    duracionInput.min = config.duracion.min;
+    duracionInput.step = config.duracion.step;
+    duracionInput.value = config.duracion.value;
+  }
+
+  if (mascotasField) mascotasField.classList.toggle("d-none", !config.mascotas);
+}
+
+function actualizarSugerenciaNivel() {
+  const recomendado = obtenerPrecioMinimo();
+
+  escribir(
+    "nivelSugerenciaNombre",
+    nivelActual.charAt(0).toUpperCase() + nivelActual.slice(1),
+  );
+  escribir(
+    "nivelSugerenciaPrecio",
+    recomendado ? `$${recomendado}` : "—",
+  );
+}
+
 // -----------------------------------------
 // GUARDAR / MOSTRAR SERVICIOS
 // -----------------------------------------
@@ -136,17 +184,25 @@ function renderizarServicios() {
   if (!contenedor) return;
 
   if (misServicios.length === 0) {
-    contenedor.innerHTML = `<span class="text-secondary small">Todavía no publicaste servicios.</span>`;
+    contenedor.innerHTML = `<p class="text-secondary small mb-0">Todavía no publicaste servicios.</p>`;
     return;
   }
 
   contenedor.innerHTML = misServicios
     .map(
       (servicio) => `
-        <span class="badge bg-light text-dark border me-1 mb-1">
-            ${servicio} · ${misPrecios[servicio] ? "$" + misPrecios[servicio] : "sin precio"}
-        </span>
-    `,
+        <div class="d-flex justify-content-between align-items-center border rounded-3 px-3 py-2 flex-wrap gap-2">
+          <span>
+            <strong>${servicio}</strong>
+            <span class="text-secondary ms-2">
+              ${misPrecios[servicio] ? "$" + misPrecios[servicio] : "Sin precio"}
+            </span>
+          </span>
+          <button type="button" class="btn btn-outline-danger btn-sm rounded-pill"
+                  data-quitar="${servicio}">
+            <i class="bi bi-trash me-1"></i> Eliminar
+          </button>
+        </div>`,
     )
     .join("");
 }
@@ -199,11 +255,23 @@ if (usuario) {
   // Formulario de publicación
   if (servicioSelect && precioInput) {
     precioInput.placeholder = obtenerPrecioMinimo();
+    adaptarCampos();
+    actualizarSugerenciaNivel();
 
     servicioSelect.addEventListener("change", () => {
       precioInput.placeholder = obtenerPrecioMinimo();
       precioError.classList.add("d-none");
+      adaptarCampos();
+      actualizarSugerenciaNivel();
       cargarRangoSugerido();
+    });
+  }
+
+  const usarNivelSugerencia = document.getElementById("usarNivelSugerencia");
+  if (usarNivelSugerencia) {
+    usarNivelSugerencia.addEventListener("click", () => {
+      precioInput.value = obtenerPrecioMinimo();
+      precioError.classList.add("d-none");
     });
   }
 
@@ -222,7 +290,7 @@ if (usuario) {
       const servicio = NOMBRE_SERVICIO[servicioSelect.value];
       const precio = Number(precioInput.value);
 
-      if (!precio || precio < obtenerPrecioMinimo()) {
+      if (!Number.isFinite(precio) || precio <= 0) {
         precioError.classList.remove("d-none");
         return;
       }
@@ -242,6 +310,31 @@ if (usuario) {
         alert("Servicio publicado correctamente.");
       } catch (error) {
         alert(error.message);
+      }
+    });
+  }
+
+  // Eliminar un servicio publicado
+  const contenedorServicios = document.getElementById("serviciosPrestador");
+
+  if (contenedorServicios) {
+    contenedorServicios.addEventListener("click", async (event) => {
+      const boton = event.target.closest("[data-quitar]");
+      if (!boton) return;
+
+      const servicio = boton.dataset.quitar;
+
+      if (!confirm(`¿Eliminar el servicio "${servicio}"?`)) return;
+
+      misServicios = misServicios.filter((s) => s !== servicio);
+      delete misPrecios[servicio];
+      boton.disabled = true;
+
+      try {
+        await guardarServicios();
+      } catch (error) {
+        alert(error.message);
+        boton.disabled = false;
       }
     });
   }
@@ -279,6 +372,8 @@ if (usuario) {
           : "nuevo";
 
     if (precioInput) precioInput.placeholder = obtenerPrecioMinimo();
+
+    actualizarSugerenciaNivel();
 
     const barra = document.getElementById("barraProgresoNivel");
     if (barra)
