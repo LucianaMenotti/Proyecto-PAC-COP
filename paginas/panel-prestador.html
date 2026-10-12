@@ -344,14 +344,6 @@
                     <!-- BOTONES -->
 
                     <div class="d-grid gap-2">
-                      <button
-                        type="button"
-                        id="useSuggested"
-                        class="btn btn-turquesa"
-                      >
-                        Usar promedio del rango
-                      </button>
-
                       <button type="submit" class="btn btn-pac">
                         Publicar servicio
                       </button>
@@ -368,8 +360,33 @@
                 <h5 class="fw-bold mb-2">Rango sugerido</h5>
 
                 <p class="text-secondary mb-3">
-                  Precio de referencia según el mercado de tu zona.
+                  Precio recomendado para tu nivel.
                 </p>
+
+                <div class="alert alert-light border rounded-4 mb-4" id="nivelSugerenciaBox">
+                  <small class="text-secondary d-block mb-1">
+                    Recomendado para tu nivel
+                    <strong id="nivelSugerenciaNombre">Nuevo</strong>
+                  </small>
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-bold fs-4 text-pac" id="nivelSugerenciaPrecio">
+                      $0
+                    </span>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary rounded-pill"
+                      id="usarNivelSugerencia"
+                    >
+                      Usar
+                    </button>
+                  </div>
+                  <span
+                    class="small text-secondary mt-2 d-block"
+                    id="nivelSugerenciaDetalle"
+                  >
+                    Elegí un servicio para ver la sugerencia.
+                  </span>
+                </div>
 
                 <p class="small text-secondary mb-2">
                   Rango del mercado en tu zona (referencia).

@@ -34,7 +34,6 @@ const formulario = document.getElementById("publishForm");
 const servicioSelect = document.getElementById("servicioSelect");
 const precioInput = document.getElementById("precioInput");
 const precioError = document.getElementById("precioError");
-const useSuggested = document.getElementById("useSuggested");
 
 function leerLista(valor) {
   if (Array.isArray(valor)) return valor;
@@ -56,6 +55,11 @@ function escribir(id, texto) {
   if (elemento) elemento.textContent = texto;
 }
 
+function obtenerPrecioMinimo() {
+  const servicio = NOMBRE_SERVICIO[servicioSelect.value];
+  return precios[servicio]?.[nivelActual] ?? 0;
+}
+
 const CAMPOS_POR_SERVICIO = {
   Paseo: {
     duracion: { label: "Duración (minutos)", min: 5, step: 5, value: 30 },
@@ -70,6 +74,62 @@ const CAMPOS_POR_SERVICIO = {
     mascotas: false,
   },
 };
+
+// Extras que se suman al precio base según la duración, las mascotas (Guardería)
+// o los kilómetros (Traslado) cargados en el formulario.
+const EXTRAS_POR_SERVICIO = {
+  Paseo: { baseCantidad: 30, bloque: 30, costoBloque: 1000 },
+  Guarderia: { baseCantidad: 4, costoHoraExtra: 1000, costoMascotaExtra: 2000 },
+  Traslado: { baseCantidad: 5, costoPorKm: 800 },
+};
+
+function valorNumerico(id) {
+  const valor = Number(document.getElementById(id)?.value);
+  return Number.isFinite(valor) ? valor : 0;
+}
+
+function calcularSugerenciaCaso() {
+  const servicio = NOMBRE_SERVICIO[servicioSelect.value];
+  const base = obtenerPrecioMinimo();
+
+  if (!servicio || !base) return { precio: 0, detalle: "" };
+
+  const extras = EXTRAS_POR_SERVICIO[servicio];
+
+  if (!extras) return { precio: base, detalle: "" };
+
+  if (servicio === "Traslado") {
+    const km = Math.max(0, Math.round(valorNumerico("duracionInput")));
+    const costoKm = Math.max(0, km - extras.baseCantidad) * extras.costoPorKm;
+    return {
+      precio: base + costoKm,
+      detalle: `${km} km (la base incluye ${extras.baseCantidad} km)`,
+    };
+  }
+
+  const mascotas = Math.max(1, Math.round(valorNumerico("mascotasInput")) || 1);
+  const cantidad = Math.max(1, Math.round(valorNumerico("duracionInput")) || 1);
+
+  if (servicio === "Guarderia") {
+    const costoHoras =
+      Math.max(0, cantidad - extras.baseCantidad) * extras.costoHoraExtra;
+    const costoMascotas =
+      Math.max(0, mascotas - 1) * extras.costoMascotaExtra;
+    return {
+      precio: base + costoHoras + costoMascotas,
+      detalle: `${cantidad} h · ${mascotas} mascota${mascotas > 1 ? "s" : ""}`,
+    };
+  }
+
+  // Paseo: bloques de 30 minutos adicionales.
+  const bloques = Math.ceil(
+    Math.max(0, cantidad - extras.baseCantidad) / extras.bloque,
+  );
+  return {
+    precio: base + bloques * extras.costoBloque,
+    detalle: `${cantidad} minutos`,
+  };
+}
 
 function adaptarCampos() {
   const servicio = NOMBRE_SERVICIO[servicioSelect.value];
@@ -89,6 +149,28 @@ function adaptarCampos() {
   }
 
   if (mascotasField) mascotasField.classList.toggle("d-none", !config.mascotas);
+}
+
+function actualizarSugerenciaNivel() {
+  const caso = calcularSugerenciaCaso();
+  const servicio = NOMBRE_SERVICIO[servicioSelect.value];
+
+  escribir(
+    "nivelSugerenciaNombre",
+    nivelActual.charAt(0).toUpperCase() + nivelActual.slice(1),
+  );
+  escribir("nivelSugerenciaPrecio", caso.precio ? `$${caso.precio}` : "—");
+
+  if (precioInput) {
+    precioInput.placeholder = caso.precio ? `$${caso.precio}` : "Ingresá tu precio";
+  }
+
+  const detalle = document.getElementById("nivelSugerenciaDetalle");
+  if (detalle) {
+    detalle.textContent = servicio
+      ? `Calculado para tu caso: ${caso.detalle}.`
+      : "Elegí un servicio para ver la sugerencia.";
+  }
 }
 
 // -----------------------------------------
@@ -140,15 +222,12 @@ async function cargarRangoSugerido() {
       escribir("precioMin", "—");
       escribir("precioPromedio", "—");
       escribir("precioMax", "—");
-      if (precioInput) precioInput.placeholder = "Ingresá tu precio";
       return;
     }
 
     escribir("precioMin", `$${rango.min}`);
     escribir("precioPromedio", `$${rango.promedio}`);
     escribir("precioMax", `$${rango.max}`);
-
-    if (precioInput) precioInput.placeholder = `$${rango.promedio}`;
 
     if (barra && rango.max > rango.min) {
       const ancho = Math.round(
@@ -160,7 +239,6 @@ async function cargarRangoSugerido() {
     escribir("precioMin", "—");
     escribir("precioPromedio", "—");
     escribir("precioMax", "—");
-    if (precioInput) precioInput.placeholder = "Ingresá tu precio";
     window.__rangoSugerido = null;
   }
 }
@@ -240,29 +318,34 @@ if (usuario) {
 
   // Formulario de publicación
   if (servicioSelect && precioInput) {
-    precioInput.placeholder = "Ingresá tu precio";
     adaptarCampos();
+    actualizarSugerenciaNivel();
 
     servicioSelect.addEventListener("change", () => {
-      precioInput.placeholder = "Ingresá tu precio";
       precioError.classList.add("d-none");
       adaptarCampos();
+      actualizarSugerenciaNivel();
       cargarRangoSugerido();
     });
+
+    const duracionInput = document.getElementById("duracionInput");
+    const mascotasInput = document.getElementById("mascotasInput");
+
+    if (duracionInput) {
+      duracionInput.addEventListener("input", actualizarSugerenciaNivel);
+    }
+
+    if (mascotasInput) {
+      mascotasInput.addEventListener("input", actualizarSugerenciaNivel);
+    }
   }
 
-  if (useSuggested) {
-    useSuggested.addEventListener("click", () => {
-      const rango = window.__rangoSugerido;
-
-      if (!rango || !rango.promedio) {
-        alert(
-          "Todavía no se cargó el rango de precios de tu zona. Esperá unos segundos y probá de nuevo.",
-        );
-        return;
-      }
-
-      precioInput.value = rango.promedio;
+  const usarNivelSugerencia = document.getElementById("usarNivelSugerencia");
+  if (usarNivelSugerencia) {
+    usarNivelSugerencia.addEventListener("click", () => {
+      const caso = calcularSugerenciaCaso();
+      if (!caso.precio) return;
+      precioInput.value = caso.precio;
       precioError.classList.add("d-none");
     });
   }
@@ -317,7 +400,7 @@ if (usuario) {
       try {
         await guardarServicios();
         formulario.reset();
-        precioInput.placeholder = "Ingresá tu precio";
+        actualizarSugerenciaNivel();
         alert("Servicio publicado correctamente.");
       } catch (error) {
         alert(error.message);
@@ -381,6 +464,8 @@ if (usuario) {
         : completados >= 10 && promedio >= 4
           ? "establecido"
           : "nuevo";
+
+    actualizarSugerenciaNivel();
 
     const badgeNivel = document.getElementById("nivelBadge");
     if (badgeNivel) {
