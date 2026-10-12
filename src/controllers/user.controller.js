@@ -343,6 +343,38 @@ export const actualizarRestricciones = async (req, res) => {
   }
 };
 
+export const actualizarVehiculo = async (req, res) => {
+  if (!requierePrestador(req, res)) return;
+
+  try {
+    const VEHICULOS = ["auto", "moto", "camioneta"];
+    const valor = String(req.body.vehiculo ?? "").trim().toLowerCase();
+
+    if (valor && !VEHICULOS.includes(valor)) {
+      return res.status(400).json({
+        mensaje: "Elegí un vehículo válido (Auto, Moto o Camioneta)",
+      });
+    }
+
+    const vehiculo = valor
+      ? valor.charAt(0).toUpperCase() + valor.slice(1)
+      : null;
+
+    await req.user.update({ vehiculo });
+
+    return res.status(200).json({
+      mensaje: "Vehículo actualizado correctamente",
+      vehiculo: req.user.vehiculo,
+      usuario: publicUser(req.user),
+    });
+  } catch (error) {
+    console.error("Error al actualizar el vehículo:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo actualizar el vehículo" });
+  }
+};
+
 export const actualizarCuentaCobro = async (req, res) => {
   if (!requierePrestador(req, res)) return;
 

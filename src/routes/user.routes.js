@@ -10,6 +10,7 @@ import {
     actualizarMisServicios,
     actualizarDisponibilidad,
     actualizarRestricciones,
+    actualizarVehiculo,
     actualizarCuentaCobro
 } from "../controllers/user.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
@@ -34,6 +35,8 @@ router.put("/me/servicios", authMiddleware, validateActualizarServicios, actuali
 router.put("/me/disponibilidad", authMiddleware, actualizarDisponibilidad);
 
 router.put("/me/restricciones", authMiddleware, actualizarRestricciones);
+
+router.put("/me/vehiculo", authMiddleware, actualizarVehiculo);
 
 router.put("/me/cuenta-cobro", authMiddleware, actualizarCuentaCobro);
 

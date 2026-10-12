@@ -26,27 +26,27 @@
 
     <div class="seg-wrap">
       <header class="seg-header">
-        <p class="seg-eyebrow">Servicio #<span id="servicioId">7734</span></p>
+        <p class="seg-eyebrow">Servicio #<span id="servicioId">—</span></p>
         <h1>Seguimiento del paseo en vivo</h1>
       </header>
 
       <!-- Resumen del servicio, visible en todo momento -->
       <section class="resumen" aria-label="Resumen del servicio">
         <div class="resumen-prestador">
-          <div class="resumen-avatar-box">JR</div>
+          <div class="resumen-avatar-box">—</div>
           <div>
-            <p class="resumen-nombre" id="prestadorNombre">Julieta Ramos</p>
-            <p class="resumen-servicio" id="servicioNombre">Paseo · 1 hora</p>
+            <p class="resumen-nombre" id="prestadorNombre">—</p>
+            <p class="resumen-servicio" id="servicioNombre">—</p>
           </div>
         </div>
         <dl class="resumen-datos">
           <div>
             <dt>Mascota</dt>
-            <dd id="mascotaNombre">Toby</dd>
+            <dd id="mascotaNombre">—</dd>
           </div>
           <div>
             <dt>Programado</dt>
-            <dd id="horaProgramada">17:00 hs</dd>
+            <dd id="horaProgramada">—</dd>
           </div>
           <div class="resumen-estado">
             <dt>Estado</dt>
@@ -91,7 +91,7 @@
             <div class="espera">
               <p class="espera-texto">
                 El servicio todavía no comenzó. Vas a ver la ubicación de
-                <strong id="mascotaNombreEspera">Toby</strong> en el mapa en
+                <strong id="mascotaNombreEspera">—</strong> en el mapa en
                 cuanto
                 <span id="prestadorNombreEspera">el prestador</span> inicie el
                 paseo.
@@ -99,7 +99,7 @@
               <div class="espera-hora">
                 <span class="espera-hora-label">Horario programado</span>
                 <span class="espera-hora-valor" id="horaProgramadaGrande"
-                  >17:00 hs</span
+                  >—</span
                 >
               </div>
               <!-- TODO backend: este botón es solo para la demo. En producción, el estado
@@ -215,52 +215,6 @@
                 <dd><span id="finDistancia">—</span> km</dd>
               </div>
             </dl>
-
-            <!-- TARJETA PARA CALIFICAR EL SERVICIO -->
-            <div
-              id="cajaCalificacion"
-              class="tarjeta-calificacion mt-4 p-4 bg-white rounded-4 shadow-sm text-center border"
-            >
-              <h5 class="fw-bold mb-1">¿Cómo fue tu experiencia?</h5>
-              <p class="text-secondary small mb-3">
-                Calificá a tu prestador para ayudar a otros dueños.
-              </p>
-
-              <div
-                id="estrellas"
-                class="fs-2 mb-2"
-                style="cursor: pointer; color: #ffc107"
-              >
-                <span data-valor="1">★</span>
-                <span data-valor="2">★</span>
-                <span data-valor="3">★</span>
-                <span data-valor="4">★</span>
-                <span data-valor="5">★</span>
-              </div>
-
-              <input
-                type="text"
-                id="comentarioCalificacion"
-                class="form-control form-control-sm mb-3 mx-auto text-center"
-                style="max-width: 320px"
-                placeholder="Dejá un comentario opcional..."
-              />
-
-              <button
-                type="button"
-                class="btn btn-primary btn-sm rounded-pill px-4"
-                id="btnEnviarCalificacion"
-              >
-                Enviar calificación
-              </button>
-            </div>
-
-            <div
-              id="mensajeCalificado"
-              class="alert alert-success mt-3 d-none text-center rounded-pill"
-            >
-              ✓ ¡Gracias! Tu calificación fue enviada con éxito.
-            </div>
           </section>
         </div>
       </div>

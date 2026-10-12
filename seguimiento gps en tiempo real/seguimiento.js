@@ -62,6 +62,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     panel.prepend(mensaje);
   };
 
+  if (!servicioId) {
+    mostrarError(
+      "No se pudo abrir el seguimiento: falta el identificador de la reserva. Abrí la página usando el botón \"Seguimiento\" o \"Ver seguimiento\" de tu reserva.",
+    );
+
+    if (botonInicio) botonInicio.disabled = true;
+
+    if (botonFinal) botonFinal.disabled = true;
+
+    return;
+  }
+
   const formatearHora = (fecha) => {
     if (!fecha) return "—";
 

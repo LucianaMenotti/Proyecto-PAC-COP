@@ -544,6 +544,66 @@ listaGuarderia.addEventListener("click", async (event) => {
 });
 
 /* ---------------------------------------------------------- */
+/* Vehículo                                                    */
+/* ---------------------------------------------------------- */
+
+const paneVehiculo = crearTab("vehiculo", "10", "Vehículo");
+paneVehiculo.innerHTML = `
+  <div class="panel-section-header mb-4">
+    <h2 class="fw-bold">Tu vehículo</h2>
+    <p class="text-secondary mb-0">
+      Lo necesitás para ofrecer Traslados. Si no cargás ninguno, no podés
+      publicar ese servicio.
+    </p>
+  </div>
+  <div class="card panel-card">
+    <div class="card-body p-4">
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="vehiculoSelect">
+          Tipo de vehículo
+        </label>
+        <select id="vehiculoSelect" class="form-select">
+          <option value="">— Sin vehículo —</option>
+          <option value="Auto">Auto</option>
+          <option value="Moto">Moto</option>
+          <option value="Camioneta">Camioneta</option>
+        </select>
+        <div class="form-text">
+          ¿Qué vehículo usás para los traslados de mascotas?
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-pac" id="guardarVehiculo">Guardar vehículo</button>
+        <span class="text-success small d-none" id="okVehiculo">Vehículo guardado.</span>
+      </div>
+    </div>
+  </div>`;
+
+const vehiculoSelect = paneVehiculo.querySelector("#vehiculoSelect");
+
+paneVehiculo
+  .querySelector("#guardarVehiculo")
+  .addEventListener("click", async () => {
+    const ok = paneVehiculo.querySelector("#okVehiculo");
+    ok.classList.add("d-none");
+
+    try {
+      const respuesta = await fetch("/api/users/me/vehiculo", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vehiculo: vehiculoSelect.value || null }),
+      });
+      const resultado = await respuesta.json();
+      if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo guardar");
+      sesion.vehiculo = resultado.vehiculo || null;
+      ok.classList.remove("d-none");
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+/* ---------------------------------------------------------- */
 /* Ruta de hoy                                                 */
 /* ---------------------------------------------------------- */
 
@@ -609,6 +669,10 @@ if (sesion) {
   renderizarDisponibilidad();
   renderizarRestricciones();
   mostrarCuenta();
+
+  if (vehiculoSelect && sesion.vehiculo) {
+    vehiculoSelect.value = sesion.vehiculo;
+  }
 }
 
 cargarLiquidaciones();
