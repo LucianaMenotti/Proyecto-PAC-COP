@@ -206,39 +206,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     mostrarTexto("distanciaRecorrida", distanciaTotal.toFixed(2));
 
+    if (!mapaVivo) return;
+
     if (marcadorVivo) {
       marcadorVivo.setLatLng(punto);
+    } else {
+      marcadorVivo = L.marker(punto).addTo(mapaVivo);
     }
 
     if (lineaRecorrida) {
       lineaRecorrida.addLatLng(punto);
+    } else {
+      lineaRecorrida = L.polyline([punto], {
+        color: "#1F7A74",
+        weight: 4,
+      }).addTo(mapaVivo);
     }
 
-    if (mapaVivo) {
-      mapaVivo.panTo(punto);
-    }
+    mapaVivo.setView(punto, Math.max(mapaVivo.getZoom(), 16));
   };
 
   const inicializarMapaVivo = () => {
     if (mapaVivo) return;
 
-    const puntoInicial = ultimaPosicion || [-26.1849, -58.1731];
+    const centro = ultimaPosicion || [-34.6158, -58.4358];
 
     mapaVivo = L.map("mapaVivo", {
       zoomControl: false,
-    }).setView(puntoInicial, 16);
+    }).setView(centro, ultimaPosicion ? 16 : 12);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(mapaVivo);
 
-    marcadorVivo = L.marker(puntoInicial).addTo(mapaVivo);
+    if (ultimaPosicion) {
+      marcadorVivo = L.marker(ultimaPosicion).addTo(mapaVivo);
 
-    lineaRecorrida = L.polyline([puntoInicial], {
-      color: "#1F7A74",
-      weight: 4,
-    }).addTo(mapaVivo);
+      lineaRecorrida = L.polyline([ultimaPosicion], {
+        color: "#1F7A74",
+        weight: 4,
+      }).addTo(mapaVivo);
+    }
   };
 
   const enviarUbicacion = async (latitud, longitud) => {
@@ -322,11 +331,33 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       }
 
+      if (
+        estadoAnterior !== "aceptado" &&
+        servicio.estado === "aceptado" &&
+        servicio.puedeGestionar
+      ) {
+        solicitarPermisoUbicacion();
+      }
+
       if (estadoAnterior !== "finalizado" && servicio.estado === "finalizado") {
         mostrarServicioFinalizado();
       }
     } catch (error) {
       console.error("Error al consultar el estado del servicio:", error);
+    }
+  };
+
+  const solicitarPermisoUbicacion = () => {
+    if (!navigator.geolocation) return;
+
+    try {
+      navigator.geolocation.getCurrentPosition(
+        () => {},
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 60000, timeout: 15000 },
+      );
+    } catch {
+      /* si el navegador no lo permite, se pide al iniciar el servicio */
     }
   };
 
@@ -348,7 +379,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
       () => {
         mostrarError(
-          "No se pudo obtener la ubicación. Revisá el permiso del navegador.",
+          "No se pudo obtener la ubicación. Habilitá el permiso de ubicación del navegador (ícono del candado junto a la dirección) y recargá la página.",
         );
       },
       {
@@ -458,19 +489,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const puntos =
-      recorridoReal.length > 0 ? recorridoReal : [[-26.1849, -58.1731]];
+    const puntos = recorridoReal.slice();
 
     mapaFinal = L.map("mapaFinal", {
       zoomControl: false,
       dragging: false,
       scrollWheelZoom: false,
-    });
+    }).setView(puntos[0] || ultimaPosicion || [-34.6158, -58.4358], puntos.length ? 16 : 12);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(mapaFinal);
+
+    if (puntos.length === 0) {
+      return;
+    }
 
     const linea = L.polyline(puntos, {
       color: "#FF6F52",
@@ -633,6 +667,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         botonInicio.disabled = !servicio.puedeGestionar;
       }
 
+      if (servicio.puedeGestionar) {
+        solicitarPermisoUbicacion();
+      }
+
       if (!servicio.puedeGestionar) {
         mostrarError(
           "El servicio está programado. El prestador debe iniciarlo.",
@@ -649,6 +687,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (servicio.estado === "aceptado") {
       if (botonInicio) {
         botonInicio.disabled = !servicio.puedeGestionar;
+      }
+
+      if (servicio.puedeGestionar) {
+        solicitarPermisoUbicacion();
       }
 
       if (!intervaloEstado) {
