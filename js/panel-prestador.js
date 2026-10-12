@@ -78,7 +78,12 @@ const CAMPOS_POR_SERVICIO = {
 // Extras que se suman al precio base según la duración, las mascotas (Guardería)
 // o los kilómetros (Traslado) cargados en el formulario.
 const EXTRAS_POR_SERVICIO = {
-  Paseo: { baseCantidad: 30, bloque: 30, costoBloque: 1000 },
+  Paseo: {
+    baseCantidad: 30,
+    bloque: 30,
+    costoBloque: 1000,
+    costoMascotaExtra: 2000,
+  },
   Guarderia: { baseCantidad: 4, costoHoraExtra: 1000, costoMascotaExtra: 2000 },
   Traslado: { baseCantidad: 5, costoPorKm: 800 },
 };
@@ -121,13 +126,14 @@ function calcularSugerenciaCaso() {
     };
   }
 
-  // Paseo: bloques de 30 minutos adicionales.
+  // Paseo: bloques de 30 minutos adicionales y recargo por mascota extra.
   const bloques = Math.ceil(
     Math.max(0, cantidad - extras.baseCantidad) / extras.bloque,
   );
+  const costoMascotas = Math.max(0, mascotas - 1) * extras.costoMascotaExtra;
   return {
-    precio: base + bloques * extras.costoBloque,
-    detalle: `${cantidad} minutos`,
+    precio: base + bloques * extras.costoBloque + costoMascotas,
+    detalle: `${cantidad} minutos · ${mascotas} mascota${mascotas > 1 ? "s" : ""}`,
   };
 }
 
