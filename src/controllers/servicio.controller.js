@@ -125,7 +125,7 @@ const validarDisponibilidad = (prestador, fecha) => {
   const regla = disponibilidad[dia];
 
   if (!regla || !regla.activo) {
-    return { ok: false, mensaje: `El prestador no atiende los ${dia}` };
+    return { ok: false, mensaje: "En ese horario no está disponible" };
   }
 
   const minutos = fecha.getHours() * 60 + fecha.getMinutes();
@@ -135,10 +135,7 @@ const validarDisponibilidad = (prestador, fecha) => {
   const hasta = hastaH * 60 + hastaM;
 
   if (!Number.isFinite(minutos) || minutos < desde || minutos > hasta) {
-    return {
-      ok: false,
-      mensaje: `El prestador atiende ese día entre ${regla.desde} y ${regla.hasta}`,
-    };
+    return { ok: false, mensaje: "En ese horario no está disponible" };
   }
 
   return { ok: true };
