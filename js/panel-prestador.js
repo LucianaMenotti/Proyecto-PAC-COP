@@ -26,6 +26,10 @@ const precios = {
   Traslado: { nombre: "Traslado", nuevo: 5000, establecido: 7000, top: 10000 },
 };
 
+// Rango real de precios del mercado por servicio (se completa desde el backend).
+// Si no hay datos para un servicio, se usa la tabla "precios" de arriba como respaldo.
+let rangosMercado = {};
+
 let nivelActual = "nuevo";
 let misServicios = [];
 let misPrecios = {};
@@ -57,6 +61,19 @@ function escribir(id, texto) {
 
 function obtenerPrecioMinimo() {
   const servicio = NOMBRE_SERVICIO[servicioSelect.value];
+  const rango = rangosMercado[servicio] || window.__rangoSugerido;
+
+  // Con datos reales del mercado: nuevo toma el mínimo, establecido el promedio
+  // y top el máximo. Sin datos, se usa la tabla de respaldo.
+  if (rango) {
+    const porNivel = {
+      nuevo: rango.min,
+      establecido: rango.promedio,
+      top: rango.max,
+    };
+    return porNivel[nivelActual] ?? 0;
+  }
+
   return precios[servicio]?.[nivelActual] ?? 0;
 }
 
@@ -205,48 +222,94 @@ async function guardarServicios() {
   renderizarServicios();
 }
 
-async function cargarRangoSugerido() {
-  if (!servicioSelect) return;
-
-  const servicio = NOMBRE_SERVICIO[servicioSelect.value];
-  const zona = (usuario.zona || "").trim();
-
+async function consultarRangoMercado(servicio, zona) {
   try {
     const respuesta = await fetch(
       `/api/servicios/precios/sugerido?tipo=${encodeURIComponent(servicio)}&zona=${encodeURIComponent(zona)}`,
       { credentials: "include" },
     );
     const datos = await respuesta.json();
-    const rango = datos.rango;
-
-    const barra = document.querySelector(".range-progress");
-    if (barra) barra.style.width = "0%";
-
-    window.__rangoSugerido = rango || null;
-
-    if (!rango) {
-      escribir("precioMin", "—");
-      escribir("precioPromedio", "—");
-      escribir("precioMax", "—");
-      return;
-    }
-
-    escribir("precioMin", `$${rango.min}`);
-    escribir("precioPromedio", `$${rango.promedio}`);
-    escribir("precioMax", `$${rango.max}`);
-
-    if (barra && rango.max > rango.min) {
-      const ancho = Math.round(
-        ((rango.promedio - rango.min) / (rango.max - rango.min)) * 100,
-      );
-      barra.style.width = `${Math.min(100, Math.max(15, ancho))}%`;
-    }
+    return datos.rango || null;
   } catch {
+    return null;
+  }
+}
+
+function renderizarTablaPrecios() {
+  const tabla = document.getElementById("tablaPrecios");
+  if (!tabla) return;
+
+  tabla.innerHTML = Object.entries(precios)
+    .map(([servicio, niveles]) => {
+      const rango = rangosMercado[servicio];
+      const nuevo = rango ? rango.min : niveles.nuevo;
+      const establecido = rango ? rango.promedio : niveles.establecido;
+      const top = rango ? rango.max : niveles.top;
+
+      return `
+            <tr>
+                <td class="fw-semibold">${niveles.nombre}</td>
+                <td>$${nuevo}</td>
+                <td class="fw-bold text-success">$${establecido}</td>
+                <td>$${top}</td>
+            </tr>
+        `;
+    })
+    .join("");
+}
+
+async function cargarPrecios() {
+  renderizarTablaPrecios();
+
+  const zona = (usuario.zona || "").trim();
+  const resultados = await Promise.all(
+    Object.keys(precios).map(async (servicio) => [
+      servicio,
+      await consultarRangoMercado(servicio, zona),
+    ]),
+  );
+
+  for (const [servicio, rango] of resultados) {
+    rangosMercado[servicio] = rango;
+  }
+
+  renderizarTablaPrecios();
+  await cargarRangoSugerido();
+}
+
+async function cargarRangoSugerido() {
+  if (!servicioSelect) return;
+
+  const servicio = NOMBRE_SERVICIO[servicioSelect.value];
+  const zona = (usuario.zona || "").trim();
+  const rango = await consultarRangoMercado(servicio, zona);
+
+  rangosMercado[servicio] = rango;
+  window.__rangoSugerido = rango;
+
+  const barra = document.querySelector(".range-progress");
+  if (barra) barra.style.width = "0%";
+
+  if (!rango) {
     escribir("precioMin", "—");
     escribir("precioPromedio", "—");
     escribir("precioMax", "—");
-    window.__rangoSugerido = null;
+    actualizarSugerenciaNivel();
+    return;
   }
+
+  escribir("precioMin", `$${rango.min}`);
+  escribir("precioPromedio", `$${rango.promedio}`);
+  escribir("precioMax", `$${rango.max}`);
+
+  if (barra && rango.max > rango.min) {
+    const ancho = Math.round(
+      ((rango.promedio - rango.min) / (rango.max - rango.min)) * 100,
+    );
+    barra.style.width = `${Math.min(100, Math.max(15, ancho))}%`;
+  }
+
+  actualizarSugerenciaNivel();
 }
 
 function renderizarServicios() {
@@ -302,25 +365,7 @@ if (usuario) {
   escribir("resenasPrestador", usuario.resenas || "0");
 
   renderizarServicios();
-  cargarRangoSugerido();
-
-  // Tabla de precios mínimos
-  const tabla = document.getElementById("tablaPrecios");
-
-  if (tabla) {
-    tabla.innerHTML = Object.values(precios)
-      .map(
-        (servicio) => `
-            <tr>
-                <td class="fw-semibold">${servicio.nombre}</td>
-                <td>$${servicio.nuevo}</td>
-                <td class="fw-bold text-success">$${servicio.establecido}</td>
-                <td>$${servicio.top}</td>
-            </tr>
-        `,
-      )
-      .join("");
-  }
+  cargarPrecios();
 
   // Formulario de publicación
   if (servicioSelect && precioInput) {
