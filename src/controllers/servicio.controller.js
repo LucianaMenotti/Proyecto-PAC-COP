@@ -822,7 +822,9 @@ export const precioSugerido = async (req, res) => {
         (item) =>
           Number.isFinite(item.valor) &&
           item.valor > 0 &&
-          (!zona || item.zona.includes(zona)),
+          (!zona ||
+            (item.zona &&
+              (item.zona.includes(zona) || zona.includes(item.zona)))),
       );
 
     if (precios.length === 0) {
