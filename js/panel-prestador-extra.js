@@ -57,6 +57,65 @@ paneSolicitudes.innerHTML = `
 
 const listaSolicitudes = paneSolicitudes.querySelector("#listaSolicitudes");
 
+/* Notificación de nuevas solicitudes */
+
+let idsPendientesPrevios = null;
+
+function mostrarToastSolicitud(cantidad) {
+  const contenedor = document.getElementById("toastNotificaciones");
+  if (!contenedor || typeof bootstrap === "undefined") return;
+
+  const toast = document.createElement("div");
+  toast.className = "toast align-items-center text-bg-primary border-0";
+  toast.setAttribute("role", "alert");
+  toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-bell-fill me-1"></i>
+        ${
+          cantidad === 1
+            ? "Te solicitaron un servicio nuevo."
+            : `Te solicitaron ${cantidad} servicios nuevos.`
+        }
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>`;
+  contenedor.appendChild(toast);
+
+  const instancia = bootstrap.Toast.getOrCreateInstance(toast, {
+    autohide: true,
+    delay: 6000,
+  });
+  toast.addEventListener("hidden.bs.toast", () => toast.remove());
+  instancia.show();
+}
+
+function actualizarNotificaciones(pendientes) {
+  const badge = document.getElementById("badgeSolicitudes");
+  const cantidad = pendientes.length;
+
+  if (badge) {
+    badge.textContent = cantidad;
+    badge.classList.toggle("d-none", cantidad === 0);
+  }
+
+  const ids = pendientes.map((s) => s.id).sort((a, b) => a - b);
+
+  if (idsPendientesPrevios !== null) {
+    const nuevos = ids.filter((id) => !idsPendientesPrevios.includes(id));
+    if (nuevos.length > 0) mostrarToastSolicitud(nuevos.length);
+  }
+
+  idsPendientesPrevios = ids;
+}
+
+document.getElementById("btnNotificaciones")?.addEventListener("click", () => {
+  const tab = document.getElementById("tab-solicitudes");
+  if (tab && typeof bootstrap !== "undefined") {
+    bootstrap.Tab.getOrCreateInstance(tab).show();
+  }
+});
+
 async function cargarSolicitudes() {
   listaSolicitudes.innerHTML = `<p class="text-secondary">Cargando solicitudes...</p>`;
 
@@ -67,6 +126,8 @@ async function cargarSolicitudes() {
     const { servicios } = await respuesta.json();
     const pendientes = (servicios || []).filter((s) => s.estado === "programado");
     const activos = (servicios || []).filter((s) => ["aceptado", "en-curso"].includes(s.estado));
+
+    actualizarNotificaciones(pendientes);
 
     const linkRuta = document.getElementById("linkSeguimientoRuta");
     if (linkRuta) {
@@ -604,6 +665,98 @@ paneVehiculo
   });
 
 /* ---------------------------------------------------------- */
+/* Mis reseñas                                                 */
+/* ---------------------------------------------------------- */
+
+const paneResenas = crearTab("resenas", "11", "Mis reseñas");
+paneResenas.innerHTML = `
+  <div class="panel-section-header mb-4">
+    <h2 class="fw-bold">Calificaciones y reseñas</h2>
+    <p class="text-secondary mb-0">
+      Esto es lo que opinan los dueños que contrataron tus servicios.
+    </p>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card metric-card h-100">
+        <div class="card-body text-center p-4">
+          <div class="metric-number" id="promedioResenas">0<span>★</span></div>
+          <div class="text-secondary">Calificación promedio</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card metric-card h-100">
+        <div class="card-body text-center p-4">
+          <div class="metric-number" id="totalResenas">0</div>
+          <div class="text-secondary">Reseñas recibidas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="listaResenasPrestador" class="d-grid gap-3"></div>`;
+
+const listaResenasPrestador = paneResenas.querySelector("#listaResenasPrestador");
+
+async function cargarMisResenas() {
+  listaResenasPrestador.innerHTML = `<p class="text-secondary mb-0">Cargando reseñas...</p>`;
+
+  try {
+    const respuesta = await fetch(`/api/servicios/prestador/${sesion.id}/resenas`, {
+      credentials: "include",
+    });
+    const datos = await respuesta.json();
+    if (!respuesta.ok) {
+      throw new Error(datos.mensaje || "No se pudieron cargar las reseñas");
+    }
+
+    const resenas = datos.resenas || [];
+    const total = Number(sesion.resenas) || resenas.length;
+    const promedio = resenas.length
+      ? resenas.reduce((suma, r) => suma + Number(r.puntuacion || 0), 0) / resenas.length
+      : Number(sesion.calificacion) || 0;
+
+    const promedioEl = paneResenas.querySelector("#promedioResenas");
+    const totalEl = paneResenas.querySelector("#totalResenas");
+    if (promedioEl) promedioEl.innerHTML = `${promedio.toFixed(1)}<span>★</span>`;
+    if (totalEl) totalEl.textContent = total;
+
+    if (resenas.length === 0) {
+      listaResenasPrestador.innerHTML = `<div class="alert alert-info mb-0">Todavía no recibiste reseñas.</div>`;
+      return;
+    }
+
+    listaResenasPrestador.innerHTML = resenas
+      .map((resena) => {
+        const estrellas = Math.max(
+          0,
+          Math.min(5, Math.round(Number(resena.puntuacion) || 0)),
+        );
+        return `
+      <div class="card panel-card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong>${escapar(resena.autor)}</strong>
+            <span class="text-warning">${"★".repeat(estrellas)}${"☆".repeat(5 - estrellas)}</span>
+          </div>
+          ${
+            resena.comentario
+              ? `<p class="mb-1">${escapar(resena.comentario)}</p>`
+              : `<p class="text-secondary mb-1">Sin comentario.</p>`
+          }
+          <small class="text-secondary">${new Date(resena.fecha).toLocaleDateString("es-AR")}</small>
+        </div>
+      </div>`;
+      })
+      .join("");
+  } catch (error) {
+    listaResenasPrestador.innerHTML = `<div class="alert alert-danger mb-0">${escapar(error.message)}</div>`;
+  }
+}
+
+/* ---------------------------------------------------------- */
 /* Ruta de hoy                                                 */
 /* ---------------------------------------------------------- */
 
@@ -680,3 +833,6 @@ cargarGuarderia();
 cargarRutaHoy();
 
 cargarSolicitudes();
+cargarMisResenas();
+
+setInterval(cargarSolicitudes, 20000);
