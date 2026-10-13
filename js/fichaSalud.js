@@ -1,147 +1,260 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const healthForm = document.getElementById("health-form");
-  const vistaDueno = document.getElementById("vista-dueno");
-  const resumenPantalla = document.getElementById("resumen-pantalla");
-  const resumenContenido = document.getElementById("resumen-contenido");
+console.log("FICHA SALUD JS CARGADO");
+document.addEventListener("DOMContentLoaded", async () => {
 
-  const btnFinalizar = document.getElementById("btn-finalizar");
-  const btnEditar = document.getElementById("btn-editar");
-  const btnSubmitForm = document.getElementById("btn-submit-form");
-  const tituloResumen = document.getElementById("titulo-resumen");
-  const subtituloResumen = document.getElementById("subtitulo-resumen");
+    const healthForm = document.getElementById("health-form");
+    const mensaje = document.getElementById("mensaje");
+    const nombreMascota = document.getElementById("nombreMascota");
 
-  let modoEdicion = false;
+    // ===============================
+    // COMPROBAR USUARIO
+    // ===============================
 
-  // Función para mostrar la pantalla de resumen dependiendo de si ya finalizó o no
-  const mostrarResumen = (datos, estado) => {
-    resumenContenido.innerHTML = `
-      <p><span class="label-resumen">Nombre:</span> ${datos.raza}</p>
-      <p><span class="label-resumen">Edad:</span> ${datos.edad} años</p>
-      <p><span class="label-resumen">Condición Médica:</span> ${datos.condicion}</p>
-      <p><span class="label-resumen">Alergias:</span> ${datos.alergias}</p>
-      <p><span class="label-resumen">Vacunación:</span> ${datos.vacunacion}</p>
-      <p><span class="label-resumen">Comportamiento:</span> ${datos.reactividad}</p>
-      <p><span class="label-resumen">Alerta prestador:</span> ${datos.alertaDueño}</p>
-    `;
+    const usuario = await window.PacCopAuth.requireSession(["dueño"]);
 
-    vistaDueno.classList.add("hidden");
-    resumenPantalla.classList.remove("hidden");
-
-    if (estado === "finalizada") {
-      // Si la ficha está finalizada, mostramos solo "Editar"
-      btnFinalizar.classList.add("hidden");
-      btnEditar.classList.remove("hidden");
-      tituloResumen.textContent = "Ficha Finalizada";
-      subtituloResumen.textContent = "Los datos de tu mascota están guardados.";
-    } else {
-      // Si está en revisión, mostramos solo "Aceptar y Finalizar"
-      btnFinalizar.classList.remove("hidden");
-      btnEditar.classList.add("hidden");
-      tituloResumen.textContent = "Revisión de Ficha";
-      subtituloResumen.textContent =
-        "Revisa que todo esté correcto antes de finalizar.";
+    if (!usuario) {
+        return;
     }
-  };
 
-  // Verificamos el estado al cargar la página (por si el dueño vuelve a entrar)
-  const estadoFicha = localStorage.getItem("estadoFicha");
-  const datosGuardados = JSON.parse(localStorage.getItem("datosMascota"));
 
-  if (datosGuardados && estadoFicha === "finalizada") {
-    mostrarResumen(datosGuardados, "finalizada");
-  }
+    // ===============================
+    // OBTENER ID DE LA MASCOTA
+    // ===============================
 
-  // Evento al enviar el formulario (Click en "Guardar Ficha" o "Edición finalizada")
-  healthForm.addEventListener("submit", function (evento) {
-    evento.preventDefault();
+    const parametros = new URLSearchParams(window.location.search);
+    const mascotaId = parametros.get("id");
 
-    const tipoVacunacion = document.getElementById("vacunacion").value;
-    const detalleVacunacion = document.querySelector(
-      'textarea[name="vacunacion-detalle"]',
-    ).value;
-    const vacunacionFinal = detalleVacunacion
-      ? `${tipoVacunacion} - ${detalleVacunacion}`
-      : tipoVacunacion;
-
-    const alertaIngresada = document.getElementById("alerta-general").value;
-    const alertaFinal =
-      alertaIngresada.trim() === ""
-        ? "Ninguna indicación particular."
-        : alertaIngresada;
-
-    const datosMascota = {
-      raza: document.getElementById("raza").value,
-      edad: document.getElementById("edad").value,
-      condicion: document.getElementById("condicion").value,
-      alergias: document.getElementById("alergias").value,
-      vacunacion: vacunacionFinal,
-      reactividad: document.getElementById("reactividad").value,
-      alertaDueño: alertaFinal,
-    };
-
-    localStorage.setItem("datosMascota", JSON.stringify(datosMascota));
-
-    if (modoEdicion) {
-      // Si venía de editar, se finaliza automáticamente
-      localStorage.setItem("estadoFicha", "finalizada");
-      mostrarResumen(datosMascota, "finalizada");
-      modoEdicion = false; // reseteamos la variable
-    } else {
-      // Si es la primera vez, se pone en estado de revisión
-      localStorage.setItem("estadoFicha", "revision");
-      mostrarResumen(datosMascota, "revision");
+    if (!mascotaId) {
+        mostrarMensaje("No se indicó qué mascota se quiere modificar.", "danger");
+        healthForm.style.display = "none";
+        return;
     }
-  });
 
-  // Evento "Aceptar y Finalizar" (ocurre la primera vez)
-  btnFinalizar.addEventListener("click", () => {
-    localStorage.setItem("estadoFicha", "finalizada");
 
-    // Oculta el de finalizar y muestra el de editar
-    btnFinalizar.classList.add("hidden");
-    btnEditar.classList.remove("hidden");
+    // ===============================
+    // OBTENER MASCOTA
+    // ===============================
 
-    tituloResumen.textContent = "¡Ficha Finalizada con éxito!";
-    subtituloResumen.textContent = "Ya puedes salir de esta pantalla.";
-  });
+    try {
 
-  // Evento "Editar Ficha" (ocurre cuando la ficha ya estaba finalizada)
-  btnEditar.addEventListener("click", () => {
-    modoEdicion = true;
-    const datosActuales = JSON.parse(localStorage.getItem("datosMascota"));
+        const respuesta = await fetch(`/api/mascotas/${mascotaId}`, {
+            credentials: "include"
+        });
 
-    if (datosActuales) {
-      document.getElementById("raza").value = datosActuales.raza;
-      document.getElementById("edad").value = datosActuales.edad;
-      document.getElementById("condicion").value = datosActuales.condicion;
-      document.getElementById("alergias").value = datosActuales.alergias;
+        const mascota = await respuesta.json();
 
-      if (datosActuales.vacunacion.includes(" - ")) {
-        const partes = datosActuales.vacunacion.split(" - ");
-        document.getElementById("vacunacion").value = partes[0];
-        document.querySelector('textarea[name="vacunacion-detalle"]').value =
-          partes[1];
-      } else {
-        document.getElementById("vacunacion").value = datosActuales.vacunacion;
-        document.querySelector('textarea[name="vacunacion-detalle"]').value =
-          "";
-      }
 
-      document.getElementById("reactividad").value = datosActuales.reactividad;
+        if (!respuesta.ok) {
+            mostrarMensaje(
+                mascota.mensaje || "No se pudo obtener la mascota.",
+                "danger"
+            );
 
-      if (datosActuales.alertaDueño !== "Ninguna indicación particular.") {
+            healthForm.style.display = "none";
+            return;
+        }
+
+
+        // ===============================
+        // COMPROBAR DUEÑO
+        // ===============================
+
+        if (Number(mascota.userId) !== Number(usuario.id)) {
+
+            mostrarMensaje(
+                "No tenés permiso para modificar esta mascota.",
+                "danger"
+            );
+
+            healthForm.style.display = "none";
+            return;
+        }
+
+
+        // ===============================
+        // MOSTRAR NOMBRE
+        // ===============================
+
+        nombreMascota.textContent = mascota.nombre;
+
+
+        // ===============================
+        // CARGAR DATOS EXISTENTES
+        // ===============================
+
+        document.getElementById("condicion").value =
+            mascota.condicion || "";
+
+        document.getElementById("alergias").value =
+            mascota.alergias || "";
+
+        document.getElementById("vacunacion").value =
+            mascota.vacunacion || "";
+
+        document.getElementById("reactividad").value =
+            mascota.reactividad || "";
+
         document.getElementById("alerta-general").value =
-          datosActuales.alertaDueño;
-      } else {
-        document.getElementById("alerta-general").value = "";
-      }
+            mascota.alertaDueno || "";
+
+
+    } catch (error) {
+
+        console.error("Error al obtener la mascota:", error);
+
+        mostrarMensaje(
+            "No se pudo conectar con el servidor.",
+            "danger"
+        );
+
+        healthForm.style.display = "none";
+
+        return;
     }
 
-    // Cambiamos el texto del botón al modo de edición como pediste
-    btnSubmitForm.textContent = "Edición finalizada";
 
-    // Ocultamos el resumen y mostramos el formulario
-    resumenPantalla.classList.add("hidden");
-    vistaDueno.classList.remove("hidden");
-  });
+    // ===============================
+    // GUARDAR FICHA
+    // ===============================
+
+    healthForm.addEventListener("submit", async function (evento) {
+
+        evento.preventDefault();
+
+        limpiarMensaje();
+
+
+        const datosFicha = {
+
+            condicion: document
+                .getElementById("condicion")
+                .value
+                .trim(),
+
+            alergias: document
+                .getElementById("alergias")
+                .value
+                .trim(),
+
+            vacunacion: document
+                .getElementById("vacunacion")
+                .value,
+
+            reactividad: document
+                .getElementById("reactividad")
+                .value,
+
+            alertaDueno: document
+                .getElementById("alerta-general")
+                .value
+                .trim()
+        };
+
+
+        // ===============================
+        // VALIDACIÓN
+        // ===============================
+
+        if (
+            !datosFicha.condicion ||
+            !datosFicha.alergias ||
+            !datosFicha.vacunacion ||
+            !datosFicha.reactividad ||
+            !datosFicha.alertaDueno
+        ) {
+
+            mostrarMensaje(
+                "Completá todos los campos de la ficha de salud.",
+                "danger"
+            );
+
+            return;
+        }
+
+
+        // ===============================
+        // ACTUALIZAR MASCOTA
+        // ===============================
+
+        try {
+
+            const respuesta = await fetch(
+                `/api/mascotas/${mascotaId}`,
+                {
+                    method: "PUT",
+
+                    credentials: "include",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(datosFicha)
+                }
+            );
+
+
+            const resultado = await respuesta.json();
+
+
+            if (!respuesta.ok) {
+
+                mostrarMensaje(
+                    resultado.mensaje ||
+                    "No se pudo guardar la ficha de salud.",
+                    "danger"
+                );
+
+                return;
+            }
+
+
+            // ===============================
+            // ÉXITO
+            // ===============================
+
+            mostrarMensaje(
+                "¡Ficha de salud guardada correctamente!",
+                "success"
+            );
+
+
+            setTimeout(() => {
+                window.location.href = "mis-mascotas.html";
+            }, 1200);
+
+
+        } catch (error) {
+
+            console.error(
+                "Error al guardar la ficha:",
+                error
+            );
+
+            mostrarMensaje(
+                "No se pudo conectar con el servidor.",
+                "danger"
+            );
+        }
+
+    });
+
+
+    // ===============================
+    // FUNCIONES AUXILIARES
+    // ===============================
+
+    function mostrarMensaje(texto, tipo) {
+
+        mensaje.innerHTML = `
+            <div class="alert alert-${tipo}">
+                ${texto}
+            </div>
+        `;
+    }
+
+
+    function limpiarMensaje() {
+        mensaje.innerHTML = "";
+    }
+
 });

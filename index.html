@@ -1,55 +1,92 @@
 <!doctype html>
+
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    ```
     <title>Pac-Cop - Servicios para mascotas</title>
 
+    <!-- Bootstrap -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
 
+    <!-- Bootstrap Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+
+    <!-- Estilos propios -->
     <link rel="stylesheet" href="css/styles.css" />
+    ```
   </head>
 
   <body>
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
       <div class="container">
         <a class="navbar-brand fw-bold text-primary" href="index.html">
-          Pac-Cop
+          <i class="bi bi-shield-fill-check me-1"></i> Pac-Cop
         </a>
-
         <button
           class="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarPrincipal"
+          aria-controls="navbarPrincipal"
+          aria-expanded="false"
+          aria-label="Abrir menú"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarPrincipal">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
               <a class="nav-link" href="#como-funciona"> ¿Cómo funciona? </a>
             </li>
-
             <li class="nav-item">
               <a class="nav-link" href="#servicios"> Servicios </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link fw-medium" href="paginas/panel-prestador.html">
+                <i class="bi bi-speedometer2 me-1"></i> Panel Prestador
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link fw-medium"
+                href="paginas/buscar-prestadores.html"
+              >
+                <i class="bi bi-search me-1"></i> Buscar
+              </a>
+            </li>
           </ul>
-
-          <div class="d-flex gap-2">
+          <!-- Botones para usuarios sin sesión -->
+          <div id="botonesVisitante" class="d-flex gap-2">
             <a href="paginas/login.html" class="btn btn-outline-primary">
               Iniciar sesión
             </a>
-
-            <a href="paginas\registro.html" class="btn btn-primary">
+            <a href="paginas/registro.html" class="btn btn-primary">
               Registrarse
             </a>
+          </div>
+          <!-- Botones para usuarios con sesión -->
+          <div id="botonesUsuario" class="d-none gap-2 align-items-center">
+            <a href="paginas/inicio.html" class="btn btn-outline-primary">
+              <i class="bi bi-person-circle me-1"></i>
+              <span id="nombreUsuarioIndex">Mi cuenta</span>
+            </a>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="cerrarSesionIndex"
+            >
+              <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+            </button>
           </div>
         </div>
       </div>
@@ -61,7 +98,7 @@
         <div class="row align-items-center">
           <div class="col-lg-6">
             <span class="badge bg-primary-subtle text-primary mb-3">
-              La Mejor Red de Servicios para Mascotas en Formosa
+              La mejor red de servicios para mascotas en Formosa
             </span>
 
             <h1 class="display-4 fw-bold">
@@ -78,23 +115,50 @@
                 href="paginas/buscar-prestadores.html"
                 class="btn btn-primary btn-lg"
               >
+                <i class="bi bi-search me-1"></i>
                 Buscar prestadores
               </a>
 
               <a
-                href="paginas/registro-prestador.html"
+                href="paginas/registro.html"
                 class="btn btn-outline-primary btn-lg"
               >
-                Quiero ofrecer servicios
+                <i class="bi bi-person-plus me-1"></i>
+                Registrarme
               </a>
             </div>
           </div>
 
-          <div class="col-lg-6 figure-img ratio-1x1 mt-5 mt-lg-0">
-            <img
-              src="assets/img/descarga (58).png"
-              class="d-flex ratio small"
-            />
+          <div class="col-lg-5 text-center mt-5 mt-lg-0">
+            <div class="position-relative d-inline-block">
+              <img
+                src="assets/img/descarga (58).png"
+                alt="Mascota feliz con Pac-Cop"
+                class="img-fluid rounded-4 shadow-lg"
+                style="max-height: 420px; object-fit: cover"
+              />
+
+              <div
+                id="tarjetaPaseoActivo"
+                class="d-none position-absolute bottom-0 start-0 translate-middle-y bg-white p-3 rounded-4 shadow border text-start"
+                style="max-width: 220px"
+              >
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span
+                    class="spinner-grow spinner-grow-sm text-danger"
+                    role="status"
+                  ></span>
+
+                  <span class="badge bg-danger-subtle text-danger fw-bold">
+                    En paseo
+                  </span>
+                </div>
+
+                <p class="small fw-bold mb-0" id="paseoActivoTitulo"></p>
+
+                <small class="text-secondary" id="paseoActivoDetalle"></small>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -104,45 +168,55 @@
     <section id="como-funciona" class="py-5">
       <div class="container">
         <div class="text-center mb-5">
-          <h2 class="fw-bold">¿Cómo Funciona?</h2>
+          <h2 class="fw-bold">¿Cómo funciona?</h2>
 
-          <p class="text-secondary">Es muy sencillo :3</p>
+          <p class="text-secondary">
+            Encontrar un servicio para tu mascota es muy sencillo.
+          </p>
         </div>
 
         <div class="row g-4">
           <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm text-center p-4">
-              <h4 class="mt-3">Buscas</h4>
+              <div class="mb-3">
+                <i class="bi bi-search fs-1 text-primary"></i>
+              </div>
+
+              <h4>Buscás</h4>
 
               <p class="text-secondary">
-                Encontrá prestadores según el servicio, en tu zona, los podes
-                filtrar por tus preferencias como el precio y su calificion que
-                necesitás.
+                Encontrá prestadores según el servicio que necesitás y buscá
+                opciones disponibles en tu zona.
               </p>
             </div>
           </div>
 
           <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm text-center p-4">
-              <h4 class="mt-3">Elegis</h4>
+              <div class="mb-3">
+                <i class="bi bi-person-check fs-1 text-primary"></i>
+              </div>
+
+              <h4>Elegís</h4>
 
               <p class="text-secondary">
-                Consultas el perfil del prestador, sus servicios u
-                calificaciones. Te contactas con el mediante una solicutd y
-                esperas que te acepte.
+                Consultá el perfil del prestador, sus servicios y la información
+                disponible antes de contratar.
               </p>
             </div>
           </div>
 
           <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm text-center p-4">
-              <h4 class="mt-3">Comprobar</h4>
+              <div class="mb-3">
+                <i class="bi bi-heart-check fs-1 text-primary"></i>
+              </div>
+
+              <h4>Comprobás</h4>
 
               <p class="text-secondary">
-                Una ves contratado el servicio y asegurate de que tu mascota
-                reciba la atención que necesita. si te surgen dudas siempre
-                podes chatear con el prestador de servicios y el te mantendra al
-                tanto.
+                Una vez contratado el servicio, podés mantenerte en contacto con
+                el prestador y consultar el estado.
               </p>
             </div>
           </div>
@@ -154,7 +228,7 @@
     <section id="servicios" class="py-5 bg-light">
       <div class="container">
         <div class="text-center mb-5">
-          <h2 class="fw-bold">Nuestros Servicios Principales</h2>
+          <h2 class="fw-bold">Nuestros servicios</h2>
 
           <p class="text-secondary">
             Encontrá el servicio adecuado para tu mascota.
@@ -162,41 +236,150 @@
         </div>
 
         <div class="row g-4">
+          <!-- Paseo -->
           <div class="col-md-4">
             <div class="card service-card h-100 border-0 shadow-sm">
               <div class="card-body text-center p-4">
+                <i class="bi bi-person-walking fs-1 text-primary"></i>
+
                 <h4 class="mt-3">Paseo</h4>
 
                 <p class="text-secondary">
                   Encontrá paseadores para que tu mascota pueda salir, caminar y
                   gastar energía.
                 </p>
+
+                <a
+                  href="paginas/buscar-prestadores.html"
+                  class="btn btn-outline-primary"
+                >
+                  Buscar paseadores
+                </a>
               </div>
             </div>
           </div>
 
+          <!-- Cuidado -->
           <div class="col-md-4">
             <div class="card service-card h-100 border-0 shadow-sm">
               <div class="card-body text-center p-4">
+                <i class="bi bi-house-heart fs-1 text-primary"></i>
+
                 <h4 class="mt-3">Cuidado</h4>
 
                 <p class="text-secondary">
                   Personas que pueden acompañar y cuidar a tu mascota mientras
                   estás fuera.
                 </p>
+
+                <a
+                  href="paginas/buscar-prestadores.html"
+                  class="btn btn-outline-primary"
+                >
+                  Buscar cuidadores
+                </a>
               </div>
             </div>
           </div>
 
+          <!-- Traslado -->
           <div class="col-md-4">
             <div class="card service-card h-100 border-0 shadow-sm">
               <div class="card-body text-center p-4">
+                <i class="bi bi-car-front fs-1 text-primary"></i>
+
                 <h4 class="mt-3">Traslado</h4>
 
                 <p class="text-secondary">
-                  Encontráras personas que puedan ayudarte con el traslado para
-                  ti y tu mascota.
+                  Encontrá personas que puedan ayudarte con el traslado de tu
+                  mascota.
                 </p>
+
+                <a
+                  href="paginas/buscar-prestadores.html"
+                  class="btn btn-outline-primary"
+                >
+                  Buscar prestadores
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUNCIONES ADICIONALES -->
+    <section class="py-5">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 class="fw-bold">También contamos con</h2>
+
+          <p class="text-secondary">
+            Herramientas adicionales para mejorar la experiencia.
+          </p>
+        </div>
+
+        <div class="row g-4">
+          <!-- Pago -->
+          <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <i class="bi bi-shield-lock fs-1 text-primary"></i>
+
+                <h4 class="mt-3">Pago Seguro</h4>
+
+                <p class="text-secondary">
+                  Un flujo de pago protegido para las reservas de servicios.
+                </p>
+
+                <a href="pagos/pago.html" class="btn btn-outline-primary">
+                  Ver módulo
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- GPS -->
+          <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <i class="bi bi-geo-alt fs-1 text-primary"></i>
+
+                <h4 class="mt-3">Seguimiento GPS</h4>
+
+                <p class="text-secondary">
+                  Seguimiento de paseos y traslados mediante un mapa en tiempo
+                  real.
+                </p>
+
+                <a
+                  href="seguimiento gps en tiempo real/seguimiento.html"
+                  class="btn btn-outline-primary"
+                >
+                  Ver módulo
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ficha -->
+          <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <i class="bi bi-heart-pulse fs-1 text-primary"></i>
+
+                <h4 class="mt-3">Ficha de Salud</h4>
+
+                <p class="text-secondary">
+                  Información de salud y datos importantes de tu mascota.
+                </p>
+
+                <a
+                  href="paginas/FichaSalud.html"
+                  class="btn btn-outline-primary"
+                >
+                  Ver ficha
+                </a>
               </div>
             </div>
           </div>
@@ -210,29 +393,167 @@
         <div class="cta-box text-center p-5">
           <h2 class="fw-bold">¿Necesitás ayuda con tu mascota?</h2>
 
-          <p class="mt-3">
-            Encontrá un prestador de servicios en tu zona ahora mismo.
-          </p>
+          <p class="mt-3">Encontrá un prestador de servicios en tu zona.</p>
 
-          <a
-            href="paginas/buscar-prestadores.html"
-            class="btn btn-primary btn-lg mt-1"
-          >
-            Encontrar un prestador de servios
-          </a>
+          <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
+            <a
+              href="paginas/buscar-prestadores.html"
+              class="btn btn-primary btn-lg"
+            >
+              <i class="bi bi-search me-1"></i>
+              Encontrar un prestador
+            </a>
+
+            <a
+              href="paginas/registro.html"
+              class="btn btn-outline-primary btn-lg"
+            >
+              <i class="bi bi-person-plus me-1"></i>
+              Registrarme
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- FOOTER -->
     <footer class="py-4 bg-dark text-white">
-      <div class="container text-center">
-        <p class="mb-0">@Pac-Cop</p>
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <h5 class="fw-bold">
+              <i class="bi bi-shield-fill-check me-1"></i>
+              Pac-Cop
+            </h5>
 
-        <small class="text-secondary"> Proyecto Grupal Insano >:3 </small>
+            <p class="text-white-50 mb-0">
+              Plataforma de servicios para el cuidado, paseo y traslado de
+              mascotas en Formosa.
+            </p>
+          </div>
+
+          <div class="col-md-3">
+            <h6 class="fw-bold">Plataforma</h6>
+
+            <ul class="list-unstyled">
+              <li>
+                <a
+                  href="paginas/buscar-prestadores.html"
+                  class="text-white-50 text-decoration-none"
+                >
+                  Buscar prestadores
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="paginas/login.html"
+                  class="text-white-50 text-decoration-none"
+                >
+                  Iniciar sesión
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="paginas/registro.html"
+                  class="text-white-50 text-decoration-none"
+                >
+                  Registrarse
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="paginas/panel-prestador.html"
+                  class="text-white-50 text-decoration-none"
+                >
+                  Panel del Prestador
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-md-3">
+            <h6 class="fw-bold">Herramientas</h6>
+
+            <ul class="list-unstyled">
+              <li>
+                <a
+                  href="pagos/pago.html"
+                  class="text-white-50 text-decoration-none"
+                >
+                  Pago Seguro
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="seguimiento gps en tiempo real/seguimiento.html"
+                  class="text-white-50 text-decoration-none"
+                >
+                  Seguimiento GPS
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="paginas/FichaSalud.html"
+                  class="text-white-50 text-decoration-none"
+                >
+                  Ficha de Salud
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <hr class="border-secondary my-4" />
+
+        <p class="text-center text-white-50 mb-0">
+          © 2026 Pac-Cop · Proyecto Grupal
+        </p>
       </div>
     </footer>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Paseo activo -->
+    <script src="js/auth.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const botonesVisitante = document.getElementById("botonesVisitante");
+        const botonesUsuario = document.getElementById("botonesUsuario");
+        const cerrarSesionIndex = document.getElementById("cerrarSesionIndex");
+
+        try {
+          const usuario = await window.PacCopAuth.getCurrentSession();
+
+          botonesVisitante.classList.add("d-none");
+          botonesUsuario.classList.remove("d-none");
+
+          const nombreUsuario = document.getElementById("nombreUsuarioIndex");
+
+          if (nombreUsuario) {
+            nombreUsuario.textContent = usuario.nombre || "Mi cuenta";
+          }
+        } catch {
+          botonesVisitante.classList.remove("d-none");
+          botonesUsuario.classList.add("d-none");
+        }
+
+        if (cerrarSesionIndex) {
+          cerrarSesionIndex.addEventListener("click", async () => {
+            cerrarSesionIndex.disabled = true;
+            cerrarSesionIndex.textContent = "Cerrando sesión...";
+
+            await window.PacCopAuth.logout();
+          });
+        }
+      });
+    </script>
+    ```
   </body>
 </html>

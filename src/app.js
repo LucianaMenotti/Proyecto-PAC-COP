@@ -2,20 +2,60 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
+import { DataTypes } from "sequelize";
 import "dotenv/config";
 
 import sequelize from "./config/database.js";
 
+import Reserva from "./models/reserva.model.js";
+
+import Mensaje from "./models/mensaje.model.js";
 import User from "./models/user.model.js";
 import Mascota from "./models/mascota.model.js";
+import Servicio from "./models/servicio.model.js";
+import Ubicacion from "./models/ubicacion.model.js";
+import Pago from "./models/pago.model.js";
 
 import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
+import reservaRoutes from "./routes/reserva.routes.js";
+import servicioRoutes from "./routes/servicio.routes.js";
+
+import mensajeRoutes from "./routes/mensaje.routes.js";
+
+import pagoRoutes from "./routes/pago.routes.js";
 
 const app = express();
 
-app.use(cors());
+const esProduccion = process.env.NODE_ENV === "production";
+const origenConfigurado = process.env.FRONTEND_ORIGIN;
+
+const origenesPermitidos = new Set([
+    origenConfigurado,
+    ...(esProduccion
+        ? []
+        : [
+            "http://localhost:3000",
+            "http://localhost:5500",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5500"
+        ])
+].filter(Boolean));
+
+app.use(cors({
+    origin: (origen, callback) => {
+        if (!origen || origenesPermitidos.has(origen)) {
+            callback(null, true);
+            return;
+        }
+
+        callback(new Error(`Origen no permitido: ${origen}`));
+    },
+    credentials: true
+}));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,43 +66,56 @@ app.use(express.static(rutaPrincipal));
 
 app.use("/api/users", userRoutes);
 app.use("/api/mascotas", mascotaRoutes);
+app.use("/api/reservas", reservaRoutes);
+app.use("/api/servicios", servicioRoutes);
+app.use("/api/pagos", pagoRoutes);
+app.use("/api/mensajes", mensajeRoutes);
 
 const PORT = process.env.PORT || 3000;
 
 const iniciarServidor = async () => {
-
     try {
-
         await sequelize.authenticate();
 
         console.log(
             "Conexión con MySQL establecida correctamente"
         );
 
-        await sequelize.sync({
-            alter: true
-        });
+        const actualizarEstructura =
+            !esProduccion && process.env.DB_SYNC_ALTER !== "false";
+
+        await sequelize.sync(
+            actualizarEstructura ? { alter: true } : {}
+        );
+
+        if (actualizarEstructura) {
+            await sequelize.getQueryInterface().changeColumn(
+                User.getTableName(),
+                "password",
+                {
+                    type: DataTypes.STRING(255),
+                    allowNull: false
+                }
+            );
+        }
 
         console.log(
-            "Tablas sincronizadas correctamente"
+            actualizarEstructura
+                ? "Tablas creadas o actualizadas correctamente; password admite hashes completos"
+                : "Tablas sincronizadas correctamente"
         );
 
         app.listen(PORT, () => {
-
             console.log(
-                `Servidor ejecutándose en http://localhost:${PORT}`
+                `Servidor Pac-Cop ejecutándose en http://localhost:${PORT}`
             );
-
         });
 
-    } catch (error) {
-
-        console.error(
-            "Error al iniciar Pac-Cop:",
-            error.message
-        );
-
-    }
+        } catch (error) {
+            console.error("No se pudo iniciar la aplicación:");
+            console.error(error);
+            process.exitCode = 1;
+        }
 };
 
 iniciarServidor();

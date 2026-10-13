@@ -14,34 +14,29 @@ formulario.addEventListener("submit", async function (event) {
 
     try {
 
-        const respuesta = await fetch("/api/users");
-
-        if (!respuesta.ok) {
-            throw new Error("No se pudieron obtener los usuarios");
-        }
-
-        const usuarios = await respuesta.json();
-
-        const usuario = usuarios.find(function (item) {
-
-            return (
-                item.email === email &&
-                item.password === password
-            );
-
+        const respuesta = await fetch("/api/users/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({ email, password })
         });
 
+        const resultado = await respuesta.json();
 
-        if (!usuario) {
+        if (!respuesta.ok) {
 
             mensaje.innerHTML = `
                 <div class="alert alert-danger">
-                    Correo o contraseña incorrectos.
+                    ${resultado.mensaje || "Correo o contraseña incorrectos."}
                 </div>
             `;
 
             return;
         }
+
+        const usuario = resultado.usuario;
 
 
         // Guardar usuario que inició sesión
@@ -58,18 +53,19 @@ formulario.addEventListener("submit", async function (event) {
         `;
 
 
-        // Redirigir según el tipo de usuario
-        setTimeout(function () {
+                setTimeout(function () {
 
             if (usuario.rol === "prestador") {
 
-                window.location.href =
-                    "panel-prestador.html";
+                window.location.replace(
+                    "panel-prestador.html"
+                );
 
             } else {
 
-                window.location.href =
-                    "inicio.html";
+                window.location.replace(
+                    "inicio.html"
+                );
 
             }
 

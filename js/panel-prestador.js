@@ -1,356 +1,133 @@
-
 // =========================================
 // PAC-COP - PANEL DEL PRESTADOR
 // =========================================
 
+import {
+    inicializarServicios,
+} from "./panel-servicios.js";
+
+import {
+    cargarRendimiento,
+} from "./panel-rendimiento.js";
+
+import {
+    cargarSolicitudes,
+} from "./panel-solicitudes.js";
+
+import {
+    cargarServiciosActivos,
+} from "./panel-activos.js";
 
 // -----------------------------------------
-// USUARIO LOGUEADO
+// SESIÓN
 // -----------------------------------------
 
-const usuarioGuardado = localStorage.getItem("usuario");
+const usuario =
+    await window.PacCopAuth.requireSession([
+        "prestador",
+    ]);
 
-let usuario = null;
-
-if (!usuarioGuardado) {
-
-    window.location.href = "login.html";
-
-} else {
-
-    usuario = JSON.parse(usuarioGuardado);
-
-    // Solo prestadores pueden entrar
-    if (usuario.rol !== "prestador") {
-
-        window.location.href = "inicio.html";
-
-    }
+if (!usuario) {
+    throw new Error(
+        "No se pudo obtener la sesión del prestador"
+    );
 }
 
-
 // -----------------------------------------
-// DATOS DEL USUARIO
-// -----------------------------------------
-
-if (usuario) {
-
-    // Avatar
-    const avatar =
-        document.getElementById("avatarUsuario");
-
-    if (avatar && usuario.nombre) {
-
-        avatar.textContent =
-            usuario.nombre.charAt(0).toUpperCase();
-
-    }
-
-
-    // Nombre del prestador
-    const nombrePrestador =
-        document.getElementById("nombrePrestador");
-
-    if (nombrePrestador) {
-
-        nombrePrestador.textContent =
-            `${usuario.nombre} ${usuario.apellido}`;
-
-    }
-
-
-    // Zona
-    const zonaPrestador =
-        document.getElementById("zonaPrestador");
-
-    if (zonaPrestador) {
-
-        zonaPrestador.textContent =
-            usuario.zona || "Zona no especificada";
-
-    }
-
-
-    // Calificación
-    const calificacion =
-        document.getElementById("calificacionPrestador");
-
-    if (calificacion) {
-
-        calificacion.textContent =
-            usuario.calificacion || "0";
-
-    }
-
-
-    // Reseñas
-    const resenas =
-        document.getElementById("resenasPrestador");
-
-    if (resenas) {
-
-        resenas.textContent =
-            usuario.resenas || "0";
-
-    }
-
-
-    // -------------------------------------
-    // SERVICIOS DEL PRESTADOR
-    // -------------------------------------
-
-    const serviciosPrestador =
-        document.getElementById("serviciosPrestador");
-
-    if (serviciosPrestador && usuario.servicios) {
-
-        try {
-
-            const servicios =
-                typeof usuario.servicios === "string"
-                    ? JSON.parse(usuario.servicios)
-                    : usuario.servicios;
-
-
-            if (Array.isArray(servicios)) {
-
-                serviciosPrestador.innerHTML =
-                    servicios
-                        .map(function (servicio) {
-
-                            return `
-                                <span class="badge bg-light text-dark border">
-                                    ${servicio}
-                                </span>
-                            `;
-
-                        })
-                        .join("");
-
-            }
-
-        } catch (error) {
-
-            console.error(
-                "No se pudieron cargar los servicios:",
-                error
-            );
-
-        }
-
-    }
-
-
-    // -------------------------------------
-    // AVATAR → PERFIL
-    // -------------------------------------
-
-    if (avatar) {
-
-        avatar.style.cursor = "pointer";
-
-        avatar.addEventListener(
-            "click",
-            function () {
-
-                window.location.href =
-                    "perfil-prestador.html";
-
-            }
-        );
-
-    }
-
-}
-
-
-// -----------------------------------------
-// PRECIOS MÍNIMOS
+// ESTADO COMPARTIDO
 // -----------------------------------------
 
-const precios = {
-
-    paseo: {
-        nombre: "Paseo",
-        nuevo: 4000,
-        establecido: 5000,
-        top: 7000
-    },
-
-    guarderia: {
-        nombre: "Guardería",
-        nuevo: 7000,
-        establecido: 9000,
-        top: 12000
-    },
-
-    traslado: {
-        nombre: "Traslado",
-        nuevo: 5000,
-        establecido: 7000,
-        top: 10000
-    }
-
+const estado = {
+    nivelActual: "nuevo",
+    misServicios: [],
+    misPrecios: {},
 };
 
+// -----------------------------------------
+// PERFIL
+// -----------------------------------------
 
-const tabla =
-    document.getElementById("tablaPrecios");
+function escribir(id, texto) {
+    const elemento =
+        document.getElementById(id);
 
-
-if (tabla) {
-
-    tabla.innerHTML = "";
-
-    Object.values(precios).forEach(function (servicio) {
-
-        tabla.innerHTML += `
-
-            <tr>
-
-                <td class="fw-semibold">
-                    ${servicio.nombre}
-                </td>
-
-                <td>
-                    $${servicio.nuevo}
-                </td>
-
-                <td class="fw-bold text-success">
-                    $${servicio.establecido}
-                </td>
-
-                <td>
-                    $${servicio.top}
-                </td>
-
-            </tr>
-
-        `;
-
-    });
-
+    if (elemento) {
+        elemento.textContent = texto;
+    }
 }
 
-
-// -----------------------------------------
-// FORMULARIO DE PUBLICACIÓN
-// -----------------------------------------
-
-const formulario =
-    document.getElementById("publishForm");
-
-const servicioSelect =
-    document.getElementById("servicioSelect");
-
-const precioInput =
-    document.getElementById("precioInput");
-
-const precioError =
-    document.getElementById("precioError");
-
-const useSuggested =
-    document.getElementById("useSuggested");
-
-
-function obtenerPrecioMinimo() {
-
-    const servicio =
-        servicioSelect.value;
-
-    return precios[servicio].establecido;
-
-}
-
-
-// -----------------------------------------
-// CAMBIO DE SERVICIO
-// -----------------------------------------
-
-if (servicioSelect) {
-
-    servicioSelect.addEventListener(
-        "change",
-        function () {
-
-            const minimo =
-                obtenerPrecioMinimo();
-
-            precioInput.placeholder =
-                minimo;
-
-            precioError.classList.add("d-none");
-
-        }
+const avatar =
+    document.getElementById(
+        "avatarUsuario"
     );
 
-}
+if (avatar) {
+    avatar.textContent =
+        (
+            usuario.nombre ||
+            "P"
+        )
+            .charAt(0)
+            .toUpperCase();
 
+    avatar.style.cursor =
+        "pointer";
 
-// -----------------------------------------
-// USAR PRECIO SUGERIDO
-// -----------------------------------------
-
-if (useSuggested) {
-
-    useSuggested.addEventListener(
+    avatar.addEventListener(
         "click",
-        function () {
-
-            const minimo =
-                obtenerPrecioMinimo();
-
-            precioInput.value =
-                minimo;
-
-            precioError.classList.add("d-none");
-
+        () => {
+            window.location.href =
+                "perfil-prestador.html";
         }
     );
-
 }
 
+escribir(
+    "nombrePrestador",
+    `${usuario.nombre} ${usuario.apellido}`
+);
+
+escribir(
+    "zonaPrestador",
+    usuario.zona ||
+        "Zona no especificada"
+);
+
+escribir(
+    "calificacionPrestador",
+    usuario.calificacion || "0"
+);
+
+escribir(
+    "resenasPrestador",
+    usuario.resenas || "0"
+);
 
 // -----------------------------------------
-// PUBLICAR
+// INICIALIZAR MÓDULOS
 // -----------------------------------------
 
-if (formulario) {
+inicializarServicios(
+    usuario,
+    estado
+);
 
-    formulario.addEventListener(
-        "submit",
-        function (event) {
+await cargarRendimiento(
+    usuario,
+    estado
+);
 
-            event.preventDefault();
+await cargarSolicitudes();
 
-            const precio =
-                Number(precioInput.value);
+await cargarServiciosActivos();
 
-            const minimo =
-                obtenerPrecioMinimo();
+// -----------------------------------------
+// ACTUALIZAR SERVICIOS ACTIVOS
+// -----------------------------------------
 
-
-            if (!precio || precio < minimo) {
-
-                precioError.classList.remove("d-none");
-
-                return;
-
-            }
-
-
-            precioError.classList.add("d-none");
-
-
-            alert(
-                "Servicio publicado correctamente."
-            );
-
-
-            formulario.reset();
-
-        }
-    );
-
-}
-
+window.addEventListener(
+    "servicioActualizado",
+    async () => {
+        await cargarServiciosActivos();
+    }
+);

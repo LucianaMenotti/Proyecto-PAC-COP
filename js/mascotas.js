@@ -19,47 +19,10 @@ const mensaje =
 // USUARIO LOGUEADO
 // -----------------------------------------
 
-const usuarioGuardado =
-    localStorage.getItem("usuario");
+const usuario = await window.PacCopAuth.requireSession(["dueño"]);
 
-
-if (!usuarioGuardado) {
-
-    window.location.href =
-        "login.html";
-
-} else {
-
-    try {
-
-        const usuario =
-            JSON.parse(usuarioGuardado);
-
-
-        // Solo los dueños pueden acceder
-        if (usuario.rol !== "dueño") {
-
-            window.location.href =
-                "inicio.html";
-
-        } else {
-
-            cargarMascotas(usuario.id);
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Error al leer el usuario:",
-            error
-        );
-
-        localStorage.removeItem("usuario");
-
-        window.location.href =
-            "login.html";
-    }
+if (usuario) {
+    cargarMascotas(usuario.id);
 }
 
 
@@ -73,7 +36,8 @@ async function cargarMascotas(userId) {
 
         const respuesta =
             await fetch(
-                `/api/mascotas/usuario/${userId}`
+                `/api/mascotas/usuario/${userId}`,
+                { credentials: "include" }
             );
 
 
@@ -118,6 +82,22 @@ async function cargarMascotas(userId) {
         // ---------------------------------
 
         mascotas.forEach(function (mascota) {
+
+            // Comprobar si la ficha de salud
+            // tiene información
+            const fichaCompleta =
+                mascota.condicion ||
+                mascota.alergias ||
+                mascota.vacunacion ||
+                mascota.reactividad ||
+                mascota.alertaDueno;
+
+
+            const textoBoton =
+                fichaCompleta
+                    ? "✏️ Editar ficha de salud"
+                    : "🩺 Completar ficha de salud";
+
 
             contenedor.innerHTML += `
 
@@ -164,7 +144,7 @@ async function cargarMascotas(userId) {
                                 href="FichaSalud.html?id=${mascota.id}"
                                 class="btn btn-outline-primary w-100"
                             >
-                                🩺 Ficha de salud
+                                ${textoBoton}
                             </a>
 
                         </div>
@@ -193,3 +173,4 @@ async function cargarMascotas(userId) {
     }
 
 }
+
