@@ -11,10 +11,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   let reserva;
   let pago = null;
 
+  if (!servicioId) {
+    const aviso = document.createElement('div');
+    aviso.className = 'alert alert-warning m-4';
+    aviso.innerHTML =
+      'Para pagar una reserva tenés que ingresar desde tus reservas. ' +
+      '<a href="../paginas/mis-servicios.html" class="alert-link">Ir a Mis reservas</a>.';
+    document.body.prepend(aviso);
+    return;
+  }
+
   try {
-    const respuesta = servicioId
-      ? await fetch(`/api/servicios/${servicioId}`, { credentials: 'include' })
-      : await fetch('/api/servicios/demo', { method: 'POST', credentials: 'include' });
+    const respuesta = await fetch(`/api/servicios/${servicioId}`, { credentials: 'include' });
 
     const resultado = await respuesta.json();
     if (!respuesta.ok) throw new Error(resultado.mensaje || 'No se pudo cargar la reserva.');
