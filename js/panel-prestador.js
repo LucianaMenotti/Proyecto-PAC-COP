@@ -1,133 +1,85 @@
-// =========================================
-// PAC-COP - PANEL DEL PRESTADOR
-// =========================================
+import { inicializarServicios } from "./panel-servicios.js";
 
-import {
-    inicializarServicios,
-} from "./panel-servicios.js";
+import { cargarRendimiento } from "./panel-rendimiento.js";
 
-import {
-    cargarRendimiento,
-} from "./panel-rendimiento.js";
+import { cargarSolicitudes } from "./panel-solicitudes.js";
 
-import {
-    cargarSolicitudes,
-} from "./panel-solicitudes.js";
+import { cargarServiciosActivos } from "./panel-activos.js";
 
-import {
-    cargarServiciosActivos,
-} from "./panel-activos.js";
+import { cargarContadorNotificaciones } from "./notificaciones-badge.js";
 
-// -----------------------------------------
-// SESIÓN
-// -----------------------------------------
-
-const usuario =
-    await window.PacCopAuth.requireSession([
-        "prestador",
-    ]);
+const usuario = await window.PacCopAuth.requireSession(["prestador"]);
 
 if (!usuario) {
-    throw new Error(
-        "No se pudo obtener la sesión del prestador"
-    );
+  throw new Error("No se pudo obtener la sesión del prestador");
 }
-
-// -----------------------------------------
-// ESTADO COMPARTIDO
-// -----------------------------------------
 
 const estado = {
-    nivelActual: "nuevo",
-    misServicios: [],
-    misPrecios: {},
+  nivelActual: "nuevo",
+  misServicios: [],
+  misPrecios: {},
 };
 
-// -----------------------------------------
-// PERFIL
-// -----------------------------------------
-
 function escribir(id, texto) {
-    const elemento =
-        document.getElementById(id);
+  const elemento = document.getElementById(id);
 
-    if (elemento) {
-        elemento.textContent = texto;
-    }
+  if (elemento) {
+    elemento.textContent = texto;
+  }
 }
 
-const avatar =
-    document.getElementById(
-        "avatarUsuario"
-    );
+const zonaAcciones = document.querySelector(".navbar .d-flex");
+
+if (zonaAcciones) {
+  zonaAcciones.insertAdjacentHTML(
+    "afterbegin",
+    `
+            <a href="mis-servicios.html" class="btn btn-outline-primary btn-sm">
+                Mis servicios
+            </a>
+            <a href="notificaciones.html" class="btn btn-outline-primary btn-sm">
+                Notificaciones
+                <span
+                    class="badge bg-danger rounded-pill d-none"
+                    data-contador-notificaciones
+                >0</span>
+            </a>
+        `,
+  );
+}
+
+const avatar = document.getElementById("avatarUsuario");
 
 if (avatar) {
-    avatar.textContent =
-        (
-            usuario.nombre ||
-            "P"
-        )
-            .charAt(0)
-            .toUpperCase();
+  avatar.textContent = (usuario.nombre || "P").charAt(0).toUpperCase();
 
-    avatar.style.cursor =
-        "pointer";
+  avatar.style.cursor = "pointer";
 
-    avatar.addEventListener(
-        "click",
-        () => {
-            window.location.href =
-                "perfil-prestador.html";
-        }
-    );
+  avatar.addEventListener("click", () => {
+    window.location.href = "perfil-prestador.html";
+  });
 }
 
-escribir(
-    "nombrePrestador",
-    `${usuario.nombre} ${usuario.apellido}`
-);
+escribir("nombrePrestador", `${usuario.nombre} ${usuario.apellido}`);
 
-escribir(
-    "zonaPrestador",
-    usuario.zona ||
-        "Zona no especificada"
-);
+escribir("zonaPrestador", usuario.zona || "Zona no especificada");
 
-escribir(
-    "calificacionPrestador",
-    usuario.calificacion || "0"
-);
+escribir("calificacionPrestador", usuario.calificacion || "0");
 
-escribir(
-    "resenasPrestador",
-    usuario.resenas || "0"
-);
+escribir("resenasPrestador", usuario.resenas || "0");
 
-// -----------------------------------------
-// INICIALIZAR MÓDULOS
-// -----------------------------------------
+inicializarServicios(usuario, estado);
 
-inicializarServicios(
-    usuario,
-    estado
-);
-
-await cargarRendimiento(
-    usuario,
-    estado
-);
+await cargarRendimiento(usuario, estado);
 
 await cargarSolicitudes();
 
 await cargarServiciosActivos();
 
-// -----------------------------------------
-// ACTUALIZAR SERVICIOS ACTIVOS
-// -----------------------------------------
+await cargarContadorNotificaciones();
 
-window.addEventListener(
-    "servicioActualizado",
-    async () => {
-        await cargarServiciosActivos();
-    }
-);
+setInterval(cargarContadorNotificaciones, 15000);
+
+window.addEventListener("servicioActualizado", async () => {
+  await cargarServiciosActivos();
+});

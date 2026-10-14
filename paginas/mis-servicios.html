@@ -21,9 +21,18 @@
           Pac-Cop
         </a>
 
-        <a href="inicio.html" class="btn btn-outline-primary">
-          Volver
-        </a>
+        <div class="d-flex gap-2">
+          <a href="notificaciones.html" class="btn btn-outline-primary">
+            Notificaciones
+            <span
+              class="badge bg-danger rounded-pill d-none"
+              data-contador-notificaciones
+              >0</span
+            >
+          </a>
+
+          <a href="inicio.html" class="btn btn-outline-primary"> Volver </a>
+        </div>
       </div>
     </nav>
 
@@ -32,9 +41,12 @@
         <h1 class="fw-bold">Mis servicios</h1>
 
         <p class="text-secondary">
-          Consultá tus reservas y accedé al chat con tu prestador.
+          Consultá tus reservas, accedé al chat y abrí reclamos de servicios
+          finalizados.
         </p>
       </div>
+
+      <div id="mensajeExito" class="alert alert-success d-none"></div>
 
       <div id="mensajeCarga" class="text-center text-secondary">
         Cargando tus servicios...
@@ -49,6 +61,93 @@
       <div id="listaServicios" class="row g-4"></div>
     </main>
 
+    <div class="modal fade" id="modalReclamo" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <form id="formReclamo" class="modal-content rounded-4 border-0 shadow">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">Reclamar servicio</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <p class="text-secondary mb-3" id="reclamoServicio"></p>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="reclamoFechaHora">
+                Fecha y hora del reclamo
+              </label>
+              <input
+                type="text"
+                id="reclamoFechaHora"
+                class="form-control"
+                readonly
+              />
+              <div class="form-text">
+                Se registra automáticamente al enviar el reclamo.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="reclamoDescripcion">
+                Descripción
+              </label>
+              <textarea
+                id="reclamoDescripcion"
+                class="form-control"
+                rows="4"
+                minlength="10"
+                maxlength="2000"
+                placeholder="Explicá el motivo del reclamo: mascota lastimada, prestador ausente, cobro indebido, daños, etc."
+                required
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="reclamoEvidencias">
+                Evidencias fotográficas (opcional)
+              </label>
+              <input
+                type="file"
+                id="reclamoEvidencias"
+                class="form-control"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+              />
+              <div class="form-text">
+                Hasta 5 imágenes JPG, PNG o WEBP de 5 MB cada una.
+              </div>
+              <div
+                id="reclamoVistaPrevia"
+                class="d-flex flex-wrap gap-2 mt-2"
+              ></div>
+            </div>
+
+            <div id="reclamoError" class="alert alert-danger d-none mb-0"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-danger" id="btnEnviarReclamo">
+              Enviar reclamo
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/api.js"></script>
     <script src="../js/auth.js"></script>
     <script type="module" src="../js/mis-servicios.js"></script>
   </body>

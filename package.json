@@ -1,7 +1,7 @@
 {
   "name": "proyecto-Pac-Cop",
   "version": "1.0.0",
-    "description": "Proyecto PAC-COP - plataforma de gestion de servicios para mascotas",
+  "description": "Proyecto PAC-COP - plataforma de gestion de servicios para mascotas",
   "keywords": [],
   "homepage": "https://github.com/LucianaMenotti/Proyecto-PAC-COP#readme",
   "bugs": {
@@ -73,6 +73,7 @@
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.48",
     "ms": "^2.1.3",
+    "multer": "^2.4.0",
     "mysql2": "^3.24.2",
     "named-placeholders": "^1.1.6",
     "negotiator": "^1.1.0",
