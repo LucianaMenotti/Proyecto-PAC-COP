@@ -104,19 +104,34 @@ export const listarLiquidaciones = async (req, res) => {
     }
 
     try {
-        const pagos = await Pago.findAll({
+        const limitePedido = Number(req.query.limite);
+        const paginaPedida = Number(req.query.pagina);
+        const limite =
+            Number.isInteger(limitePedido) && limitePedido > 0
+                ? Math.min(limitePedido, 200)
+                : 200;
+        const pagina =
+            Number.isInteger(paginaPedida) && paginaPedida > 0 ? paginaPedida : 1;
+
+        const { count, rows } = await Pago.findAndCountAll({
             where: { providerId: req.user.id, estado: "liberado" },
             order: [["liberadoEn", "DESC"]],
-            limit: 200,
+            limit: limite,
+            offset: (pagina - 1) * limite,
         });
 
-        const total = pagos.reduce(
+        const totales = await Pago.findAll({
+            where: { providerId: req.user.id, estado: "liberado" },
+            attributes: ["monto"],
+        });
+
+        const total = totales.reduce(
             (acumulador, pago) => acumulador + Number(pago.monto),
             0,
         );
 
         return res.json({
-            pagos: pagos.map((pago) => ({
+            pagos: rows.map((pago) => ({
                 id: pago.id,
                 servicioId: pago.servicioId,
                 monto: Number(pago.monto),
@@ -124,6 +139,10 @@ export const listarLiquidaciones = async (req, res) => {
                 liberadoEn: pago.liberadoEn,
             })),
             total,
+            cantidad: count,
+            pagina,
+            limite,
+            totalPaginas: Math.ceil(count / limite),
             cuenta: req.user.cuentaCobro || null,
         });
     } catch (error) {

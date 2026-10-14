@@ -416,11 +416,30 @@ export const listarServicios = async (req, res) => {
       ? { providerId: req.user.id }
       : { ownerId: req.user.id };
 
-  const servicios = await Servicio.findAll({ where, order: [["id", "DESC"]] });
+  const { estado, servicio } = req.query;
+  if (estado) where.estado = estado;
+  if (servicio) where.tipo = { [Op.like]: `%${servicio}%` };
+
+  const limitePedido = Number(req.query.limite);
+  const paginaPedida = Number(req.query.pagina);
+  const paginar = Number.isInteger(limitePedido) && limitePedido > 0;
+  const pagina =
+    Number.isInteger(paginaPedida) && paginaPedida > 0 ? paginaPedida : 1;
+
+  const consulta = { where, order: [["id", "DESC"]] };
+  if (paginar) {
+    consulta.limit = Math.min(limitePedido, 100);
+    consulta.offset = (pagina - 1) * consulta.limit;
+  }
+
+  const { count, rows } = await Servicio.findAndCountAll(consulta);
+
   return res.json({
-    servicios: servicios.map((servicio) =>
-      presentarServicio(servicio, null, req.user),
-    ),
+    servicios: rows.map((item) => presentarServicio(item, null, req.user)),
+    total: count,
+    pagina,
+    limite: paginar ? consulta.limit : count,
+    totalPaginas: paginar ? Math.ceil(count / consulta.limit) : 1,
   });
 };
 
@@ -979,10 +998,20 @@ export const listarResenasPrestador = async (req, res) => {
   }
 
   try {
-    const resenas = await Calificacion.findAll({
+    const limitePedido = Number(req.query.limite);
+    const paginaPedida = Number(req.query.pagina);
+    const limite =
+      Number.isInteger(limitePedido) && limitePedido > 0
+        ? Math.min(limitePedido, 100)
+        : 50;
+    const pagina =
+      Number.isInteger(paginaPedida) && paginaPedida > 0 ? paginaPedida : 1;
+
+    const { count, rows: resenas } = await Calificacion.findAndCountAll({
       where: { providerId },
       order: [["id", "DESC"]],
-      limit: 50,
+      limit: limite,
+      offset: (pagina - 1) * limite,
     });
 
     const ownerIds = [...new Set(resenas.map((resena) => resena.ownerId))];
@@ -1008,87 +1037,13 @@ export const listarResenasPrestador = async (req, res) => {
         autor: nombres.get(resena.ownerId) || "Usuario",
         fecha: resena.createdAt,
       })),
+      total: count,
+      pagina,
+      limite,
+      totalPaginas: Math.ceil(count / limite),
     });
   } catch (error) {
     console.error("Error al listar reseñas:", error);
     return res.status(500).json({ mensaje: "No se pudieron cargar las reseñas" });
-  }
-};
-
-export const calificarServicio = async (req, res) => {
-  try {
-    const { nota, comentario } = req.body;
-    const valorNota = Number(nota);
-
-    if (!valorNota || valorNota < 1 || valorNota > 5) {
-      return res
-        .status(400)
-        .json({ mensaje: "La calificación debe ser un número del 1 al 5." });
-    }
-
-    const resultado = await obtenerServicioAutorizado(req.params.id, req.user);
-    if (resultado.error) {
-      return res
-        .status(resultado.error.status)
-        .json({ mensaje: resultado.error.mensaje });
-    }
-
-    const servicio = resultado.servicio;
-
-    // Solo el dueño que reservó puede calificar
-    if (Number(servicio.ownerId) !== Number(req.user.id)) {
-      return res.status(403).json({
-        mensaje: "Solo el dueño de la mascota puede calificar este servicio.",
-      });
-    }
-
-    // El servicio debe estar terminado
-    if (servicio.estado !== "finalizado") {
-      return res.status(400).json({
-        mensaje: "Solo podés calificar un servicio cuando haya finalizado.",
-      });
-    }
-
-    // No permitir calificar dos veces el mismo servicio
-    if (servicio.calificacion !== null) {
-      return res
-        .status(409)
-        .json({ mensaje: "Este servicio ya fue calificado." });
-    }
-
-    // Guardar calificación en el servicio
-    await servicio.update({
-      calificacion: valorNota,
-      comentarioCalificacion: comentario ? String(comentario).trim() : null,
-    });
-
-    // Actualizar promedio y total de reseñas del prestador en la tabla User
-    if (servicio.providerId) {
-      const prestador = await User.findByPk(servicio.providerId);
-      if (prestador) {
-        const resenasPrevias = Number(prestador.resenas) || 0;
-        const califPrevia = Number(prestador.calificacion) || 0;
-
-        const nuevoTotal = resenasPrevias + 1;
-        const nuevoPromedio = Number(
-          ((califPrevia * resenasPrevias + valorNota) / nuevoTotal).toFixed(1),
-        );
-
-        await prestador.update({
-          calificacion: nuevoPromedio,
-          resenas: nuevoTotal,
-        });
-      }
-    }
-
-    return res.json({
-      mensaje: "¡Gracias por calificar el servicio!",
-      servicio: presentarServicio(servicio, null, req.user),
-    });
-  } catch (error) {
-    console.error("Error al calificar servicio:", error);
-    return res
-      .status(500)
-      .json({ mensaje: "No se pudo registrar la calificación." });
   }
 };

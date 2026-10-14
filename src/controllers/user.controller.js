@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import User from "../models/user.model.js";
 import { hashPassword, verifyPassword } from "../helpers/password.helper.js";
 import {
@@ -181,12 +182,35 @@ export const obtenerSesion = (req, res) =>
 
 export const obtenerUsuarios = async (req, res) => {
   try {
+    const { rol, servicio, zona, q } = req.query;
+    const where = {};
+
+    if (rol) where.rol = rol;
+    if (zona) where.zona = { [Op.like]: `%${zona}%` };
+    if (q) {
+      where[Op.or] = [
+        { nombre: { [Op.like]: `%${q}%` } },
+        { apellido: { [Op.like]: `%${q}%` } },
+      ];
+    }
+
     const users = await User.findAll({
+      where,
       attributes: DIRECTORY_USER_FIELDS,
       order: [["nombre", "ASC"]],
     });
 
-    return res.status(200).json(users);
+    const filtrados = servicio
+      ? users.filter((user) => {
+          const lista = Array.isArray(user.servicios) ? user.servicios : [];
+          const buscado = String(servicio).toLowerCase();
+          return lista.some((item) =>
+            String(item).toLowerCase().includes(buscado),
+          );
+        })
+      : users;
+
+    return res.status(200).json(filtrados);
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
     return res.status(500).json({ mensaje: "Error al obtener los usuarios" });
