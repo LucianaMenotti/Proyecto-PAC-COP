@@ -4,9 +4,9 @@ Aplicación web para gestionar usuarios, mascotas, fichas de salud y servicios p
 
 ## Requisitos
 
-* Node.js 20 o superior.
-* MySQL 8 o superior.
-* XAMPP u otro servidor local para iniciar MySQL.
+- Node.js 20 o superior.
+- MySQL 8 o superior.
+- XAMPP u otro servidor local para iniciar MySQL.
 
 ## Instalación
 
@@ -33,7 +33,39 @@ AUTH_SECRET=una-clave-local-de-al-menos-32-caracteres
 
 `AUTH_SECRET` debe ser privada y tener al menos 32 caracteres.
 
-**No subir `.env` al repositorio.**
+No subir `.env` al repositorio.
+
+### Dependencias del módulo de reclamos
+
+El módulo de reclamos agrega una dependencia nueva:
+
+| Paquete | Uso                                                         |
+| ------- | ----------------------------------------------------------- |
+| multer  | Recibir las imágenes de evidencia del formulario de reclamo |
+
+Ya figura en `package.json`. Después de traer la rama, ejecutar:
+
+```bash
+npm install
+```
+
+Si se trabaja sin traer la rama completa, se instala con:
+
+```bash
+npm install multer
+```
+
+Este comando debe ejecutarse dentro de la carpeta del proyecto, la que contiene `package.json`.
+
+Las imágenes de los reclamos se guardan en la carpeta `uploads/`. Esa carpeta no se sube a Git. Agregar esta línea al archivo `.gitignore`:
+
+```text
+uploads/
+```
+
+Editar `.gitignore` desde VS Code. No usar `echo` en PowerShell, porque guarda el archivo en UTF-16 y Git no lo lee bien.
+
+La carpeta `uploads/reclamos/` se crea sola al iniciar el servidor.
 
 ## Base de datos
 
@@ -63,6 +95,97 @@ DB_SYNC_ALTER=true
 Para desarrollo puede permanecer en `true` o puede omitirse porque es el valor predeterminado.
 
 Si se establece en `false`, Sequelize sincroniza las tablas sin modificar columnas existentes.
+
+### Tablas del módulo de reclamos
+
+El módulo de reclamos agrega dos tablas nuevas: `Reclamos` y `Notificaciones`. No modifica ninguna tabla existente.
+
+La creación es automática. Al iniciar el servidor, Sequelize crea las tablas que no existen. Normalmente no hace falta ejecutar SQL.
+
+El SQL siguiente sirve de referencia y para entornos con `NODE_ENV=production` o `DB_SYNC_ALTER=false`, donde se prefiere crear las tablas a mano.
+
+Tabla `Reclamos`. Guarda cada reclamo y se relaciona con `Servicios` y con `Users`:
+
+```sql
+CREATE TABLE IF NOT EXISTS Reclamos (
+    id INT NOT NULL AUTO_INCREMENT,
+    servicioId INT NOT NULL,
+    reclamanteId INT NOT NULL,
+    reclamadoId INT NOT NULL,
+    descripcion TEXT NOT NULL,
+    evidencias JSON NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+    createdAt DATETIME NOT NULL,
+    updatedAt DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_reclamos_servicio FOREIGN KEY (servicioId) REFERENCES Servicios (id),
+    CONSTRAINT fk_reclamos_reclamante FOREIGN KEY (reclamanteId) REFERENCES Users (id),
+    CONSTRAINT fk_reclamos_reclamado FOREIGN KEY (reclamadoId) REFERENCES Users (id)
+) ENGINE=InnoDB;
+```
+
+| Campo        | Descripción                                        |
+| ------------ | -------------------------------------------------- |
+| servicioId   | Servicio sobre el que se reclama                   |
+| reclamanteId | Usuario que abre el reclamo                        |
+| reclamadoId  | Contraparte del servicio                           |
+| descripcion  | Motivo del reclamo, entre 10 y 2000 caracteres     |
+| evidencias   | Lista JSON con las rutas de las imágenes           |
+| estado       | pendiente, en-revision o finalizado                |
+| createdAt    | Fecha y hora del reclamo, asignada por el servidor |
+
+Tabla `Notificaciones`. Guarda los avisos de cada usuario:
+
+```sql
+CREATE TABLE IF NOT EXISTS Notificaciones (
+    id INT NOT NULL AUTO_INCREMENT,
+    userId INT NOT NULL,
+    tipo VARCHAR(30) NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    mensaje TEXT NOT NULL,
+    reclamoId INT NULL,
+    servicioId INT NULL,
+    leida TINYINT(1) NOT NULL DEFAULT 0,
+    createdAt DATETIME NOT NULL,
+    updatedAt DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_notificaciones_user FOREIGN KEY (userId) REFERENCES Users (id)
+) ENGINE=InnoDB;
+```
+
+Los campos `reclamoId` y `servicioId` no tienen clave foránea. Solo enlazan la notificación con su origen.
+
+Tipos de notificación:
+
+| Tipo           | Cuándo se crea                                                      |
+| -------------- | ------------------------------------------------------------------- |
+| reclamo-nuevo  | Al abrir un reclamo. Llega a los administradores y a la contraparte |
+| reclamo-estado | Cuando el administrador cambia el estado. Llega a las dos partes    |
+
+### Crear un administrador
+
+El registro solo permite los roles dueño y prestador. El administrador se define cambiando el rol de una cuenta existente:
+
+```sql
+UPDATE Users SET rol = 'admin' WHERE email = 'correo-del-admin@ejemplo.com';
+```
+
+El sistema acepta los roles `admin` y `administrador`. Sin un administrador, los reclamos se crean pero nadie los gestiona.
+
+### Datos para probar reclamos
+
+Un reclamo solo se puede abrir sobre un servicio con estado `finalizado`. Para forzar ese estado en pruebas:
+
+```sql
+UPDATE Servicios SET estado = 'finalizado', finalizadoEn = NOW() WHERE id = 1;
+```
+
+### Deshacer las tablas de reclamos
+
+```sql
+DROP TABLE IF EXISTS Notificaciones;
+DROP TABLE IF EXISTS Reclamos;
+```
 
 ## Ejecución
 
@@ -159,9 +282,9 @@ GET  /api/servicios/:id/ubicacion
 
 El endpoint `GET /api/servicios` devuelve los servicios correspondientes al usuario autenticado.
 
-* Dueño: sus servicios.
-* Prestador: servicios asignados.
-* Administrador: servicios disponibles para administración.
+- Dueño: sus servicios.
+- Prestador: servicios asignados.
+- Administrador: servicios disponibles para administración.
 
 ## Mis servicios
 
@@ -180,12 +303,12 @@ GET /api/servicios
 
 Muestra:
 
-* Tipo de servicio.
-* Mascota.
-* Prestador.
-* Fecha programada.
-* Monto.
-* Estado.
+- Tipo de servicio.
+- Mascota.
+- Prestador.
+- Fecha programada.
+- Monto.
+- Estado.
 
 Cuando el servicio está `aceptado` o `en-curso`, el dueño puede abrir el chat correspondiente.
 
@@ -210,9 +333,9 @@ POST /api/mensajes/:servicioId
 
 El backend verifica que el usuario sea:
 
-* El dueño del servicio.
-* El prestador del servicio.
-* Un administrador.
+- El dueño del servicio.
+- El prestador del servicio.
+- Un administrador.
 
 El chat está disponible cuando el servicio está:
 
@@ -237,11 +360,11 @@ js/panel-activos.js
 
 Esto permite separar:
 
-* Información general.
-* Rendimiento.
-* Servicios ofrecidos.
-* Solicitudes.
-* Servicios activos.
+- Información general.
+- Rendimiento.
+- Servicios ofrecidos.
+- Solicitudes.
+- Servicios activos.
 
 Los servicios activos permiten acceder al chat correspondiente.
 
@@ -269,6 +392,52 @@ seguimiento gps en tiempo real/
 
 Permite guardar y consultar la ubicación asociada a un servicio.
 
+## Notas para quienes hagan merge de la rama de reclamos
+
+Después del merge, seguir este orden:
+
+1. Resolver los conflictos si los hay.
+2. Ejecutar `npm install`.
+3. Verificar que `uploads/` esté en `.gitignore`.
+4. Iniciar MySQL y ejecutar `npm run dev`. Se crean las tablas `Reclamos` y `Notificaciones`.
+5. Convertir una cuenta en administrador con el SQL de la sección Base de datos.
+
+Archivos nuevos:
+
+```text
+src/models/reclamo.model.js
+src/models/notificacion.model.js
+src/middlewares/upload.middleware.js
+src/controllers/reclamo.controller.js
+src/controllers/notificacion.controller.js
+src/routes/reclamo.routes.js
+src/routes/notificacion.routes.js
+js/reclamos-comun.js
+js/notificaciones-badge.js
+js/notificaciones.js
+js/admin-reclamos.js
+paginas/notificaciones.html
+paginas/admin-reclamos.html
+```
+
+Archivos modificados que pueden generar conflicto:
+
+| Archivo                          | Qué hacer si hay conflicto                                                                                                                             |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| src/app.js                       | Conservar todos los imports y todos los `app.use` de ambas ramas. Los modelos deben importarse antes de `sequelize.sync`, si no sus tablas no se crean |
+| paginas/mis-servicios.html       | La rama de reclamos agrega el modal de reclamo. Integrar los cambios de la otra rama sobre esa versión                                                 |
+| js/mis-servicios.js              | La rama de reclamos agrega el botón Reclamar, el estado del reclamo y permite el rol prestador. Integrar sobre esa versión                             |
+| js/inicio.js                     | Conservar la redirección del prestador y las tarjetas de Notificaciones y Gestionar reclamos                                                           |
+| js/panel-prestador.js            | Conservar los botones Mis servicios y Notificaciones de la barra superior                                                                              |
+| package.json y package-lock.json | Conservar las dependencias de ambas ramas y ejecutar `npm install` de nuevo                                                                            |
+
+Cambios de comportamiento que conviene conocer:
+
+- Mis servicios ahora también lo usan los prestadores.
+- Solo se puede reclamar un servicio con estado `finalizado`. El servidor lo valida.
+- Cada usuario puede abrir un solo reclamo por servicio.
+- Las imágenes de los reclamos no se versionan. Si dos colaboradores comparten la base de datos y no la carpeta `uploads/`, las imágenes del otro no se verán.
+
 ## Pruebas
 
 Ejecutar:
@@ -279,19 +448,22 @@ npm test
 
 También se recomienda probar manualmente:
 
-* Registro.
-* Login.
-* Logout.
-* Registro de mascotas.
-* Solicitud de servicios.
-* Aceptación y rechazo de servicios.
-* Consulta de Mis servicios.
-* Acceso al chat desde el dueño.
-* Acceso al mismo chat desde el prestador.
-* Envío y recepción de mensajes.
-* Inicio y finalización de servicios.
-* Seguimiento GPS.
-* Pagos.
+- Registro.
+- Login.
+- Logout.
+- Registro de mascotas.
+- Solicitud de servicios.
+- Aceptación y rechazo de servicios.
+- Consulta de Mis servicios.
+- Acceso al chat desde el dueño.
+- Acceso al mismo chat desde el prestador.
+- Envío y recepción de mensajes.
+- Inicio y finalización de servicios.
+- Seguimiento GPS.
+- Pagos.
+- Apertura de un reclamo sobre un servicio finalizado.
+- Notificación al administrador y a la contraparte.
+- Cambio de estado del reclamo por el administrador.
 
 ## Estructura
 
@@ -316,9 +488,11 @@ src/
     routes/                     rutas HTTP
     controllers/                controladores
     helpers/                    contraseñas y sesiones
-    middlewares/                autenticación y validaciones
+    middlewares/                autenticación, validaciones y carga de imágenes
 
 test/                           pruebas automatizadas
+
+uploads/                        imágenes de reclamos, se crea sola y no se versiona
 
 .env.example                    variables de entorno de ejemplo
 package.json                    dependencias y scripts
@@ -335,10 +509,10 @@ npm start
 npm test
 ```
 
-* `npm install`: instala las dependencias.
-* `npm run dev`: inicia el servidor en desarrollo.
-* `npm start`: inicia el servidor normalmente.
-* `npm test`: ejecuta las pruebas automatizadas.
+- `npm install`: instala las dependencias.
+- `npm run dev`: inicia el servidor en desarrollo.
+- `npm start`: inicia el servidor normalmente.
+- `npm test`: ejecuta las pruebas automatizadas.
 
 ## Documentación técnica adicional
 
