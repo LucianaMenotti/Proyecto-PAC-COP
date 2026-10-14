@@ -1,6 +1,7 @@
 import Mensaje from "../models/mensaje.model.js";
 import Servicio from "../models/servicio.model.js";
 import User from "../models/user.model.js";
+import { crearNotificacion } from "./notificacion.controller.js";
 
 const puedeAccederAlChat = (servicio, usuario) => {
     return (
@@ -102,6 +103,19 @@ export const enviarMensaje = async (req, res) => {
                     attributes: ["id", "nombre", "apellido"]
                 }
             ]
+        });
+
+        const destinatario =
+            Number(servicio.ownerId) === Number(req.user.id)
+                ? servicio.providerId
+                : servicio.ownerId;
+
+        await crearNotificacion({
+            usuarioId: destinatario,
+            tipo: "mensaje",
+            titulo: "Nuevo mensaje",
+            mensaje: texto.slice(0, 120),
+            servicioId: servicio.id
         });
 
         return res.status(201).json({

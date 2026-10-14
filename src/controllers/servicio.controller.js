@@ -8,6 +8,7 @@ import {
   liberarPagoDelServicio,
   reembolsarPagoDelServicio,
 } from "./pago.controller.js";
+import { crearNotificacion } from "./notificacion.controller.js";
 
 const esAdministrador = (user) => ["admin", "administrador"].includes(user.rol);
 
@@ -311,6 +312,14 @@ export const crearServicio = async (req, res) => {
       await servicioVuelta.update({ servicioVueltaId: servicio.id });
     }
 
+    await crearNotificacion({
+      usuarioId: prestador.id,
+      tipo: "reserva",
+      titulo: "Nueva solicitud de reserva",
+      mensaje: `${req.user.nombre} reservó ${tipo} para ${mascota.nombre}.`,
+      servicioId: servicio.id,
+    });
+
     return res.status(201).json({
       mensaje: esIdaVuelta
         ? "Reserva de traslado y vuelta creadas correctamente"
@@ -564,6 +573,14 @@ export const aceptarServicio = async (req, res) => {
 
     await servicio.update({ estado: "aceptado" });
 
+    await crearNotificacion({
+      usuarioId: servicio.ownerId,
+      tipo: "reserva-aceptada",
+      titulo: "Reserva aceptada",
+      mensaje: `Tu reserva de ${servicio.tipo} fue aceptada.`,
+      servicioId: servicio.id,
+    });
+
     return res.json({
       mensaje: "Reserva aceptada correctamente",
       servicio: presentarServicio(servicio, null, req.user),
@@ -600,6 +617,14 @@ export const rechazarServicio = async (req, res) => {
     }
 
     await servicio.update({ estado: "rechazado" });
+
+    await crearNotificacion({
+      usuarioId: servicio.ownerId,
+      tipo: "reserva-rechazada",
+      titulo: "Reserva rechazada",
+      mensaje: `Tu reserva de ${servicio.tipo} fue rechazada.`,
+      servicioId: servicio.id,
+    });
 
     return res.json({
       mensaje: "Reserva rechazada correctamente",
@@ -653,6 +678,18 @@ export const cancelarServicio = async (req, res) => {
     } else {
       await liberarPagoDelServicio(servicio.id);
     }
+
+    const destinatarioCancelacion = esDueno
+      ? servicio.providerId
+      : servicio.ownerId;
+
+    await crearNotificacion({
+      usuarioId: destinatario,
+      tipo: "reserva-cancelada",
+      titulo: "Reserva cancelada",
+      mensaje: `Se canceló la reserva de ${servicio.tipo}.`,
+      servicioId: servicio.id,
+    });
 
     return res.json({
       mensaje: reembolso
@@ -803,6 +840,14 @@ export const crearCalificacion = async (req, res) => {
         },
       },
     );
+
+    await crearNotificacion({
+      usuarioId: servicio.providerId,
+      tipo: "resena",
+      titulo: "Nueva reseña recibida",
+      mensaje: `${req.user.nombre} te dejó ${puntuacion} estrella(s).`,
+      servicioId: servicio.id,
+    });
 
     return res.status(201).json({
       mensaje: "Calificación guardada correctamente",

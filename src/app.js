@@ -14,12 +14,14 @@ import Ubicacion from "./models/ubicacion.model.js";
 import Pago from "./models/pago.model.js";
 import Calificacion from "./models/calificacion.model.js";
 import Mensaje from "./models/mensaje.model.js";
+import Notificacion from "./models/notificacion.model.js";
 
 import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
 import servicioRoutes from "./routes/servicio.routes.js";
 import pagoRoutes from "./routes/pago.routes.js";
 import mensajeRoutes from "./routes/mensaje.routes.js";
+import notificacionRoutes from "./routes/notificacion.routes.js";
 
 const app = express();
 
@@ -66,6 +68,7 @@ app.use("/api/mascotas", mascotaRoutes);
 app.use("/api/servicios", servicioRoutes);
 app.use("/api/pagos", pagoRoutes);
 app.use("/api/mensajes", mensajeRoutes);
+app.use("/api/notificaciones", notificacionRoutes);
 
 // Cualquier ruta /api sin coincidencia responde JSON (nunca HTML)
 app.use("/api", (req, res) => {
@@ -113,6 +116,7 @@ const iniciarServidor = async () => {
       Pago,
       Calificacion,
       Mensaje,
+      Notificacion,
     ]) {
       await asegurarColumnasFaltantes(modelo);
     }

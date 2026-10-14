@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import Pago from "../models/pago.model.js";
 import Servicio from "../models/servicio.model.js";
+import { crearNotificacion } from "./notificacion.controller.js";
 
 const generarTransaccion = () => `PC-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`;
 const esAdministrador = (user) => ["admin", "administrador"].includes(user.rol);
@@ -82,6 +83,14 @@ export const confirmarPago = async (req, res) => {
         confirmadoEn: new Date()
     });
 
+    await crearNotificacion({
+        usuarioId: pago.providerId,
+        tipo: "pago-confirmado",
+        titulo: "Pago confirmado",
+        mensaje: `El dueño confirmó el pago del servicio #${pago.servicioId}.`,
+        servicioId: pago.servicioId
+    });
+
     return res.json({ pago });
 };
 
@@ -95,6 +104,15 @@ export const liberarPago = async (req, res) => {
     if (pago.estado !== "retenido") return res.status(409).json({ mensaje: "El pago no está retenido" });
 
     await pago.update({ estado: "liberado", liberadoEn: new Date() });
+
+    await crearNotificacion({
+        usuarioId: pago.providerId,
+        tipo: "pago-liberado",
+        titulo: "Pago liberado",
+        mensaje: `Se liberó el pago del servicio #${pago.servicioId} a tu favor.`,
+        servicioId: pago.servicioId
+    });
+
     return res.json({ pago });
 };
 
