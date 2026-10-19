@@ -408,6 +408,46 @@
                     Ver comprobante <i class="bi bi-receipt ms-1"></i>
                   </button>
                 </div>
+
+                <!-- Estado fallido -->
+                <div id="estado-fallido" class="d-none">
+                  <span
+                    class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle px-3 py-2 rounded-pill fw-bold mb-3"
+                  >
+                    <i class="bi bi-x-octagon-fill me-1"></i> Pago rechazado
+                  </span>
+                  <p class="text-secondary mb-4" id="motivoFallo">
+                    No pudimos procesar tu pago. Probá con otro medio.
+                  </p>
+                  <button
+                    type="button"
+                    class="btn btn-accent px-4 py-2 fw-semibold rounded-3 shadow-sm"
+                    id="btnReintentarFallo"
+                  >
+                    <i class="bi bi-arrow-clockwise me-1"></i> Reintentar pago
+                  </button>
+                </div>
+
+                <!-- Estado expirado -->
+                <div id="estado-expirado" class="d-none">
+                  <span
+                    class="badge bg-secondary-subtle text-secondary-emphasis border px-3 py-2 rounded-pill fw-bold mb-3"
+                  >
+                    <i class="bi bi-clock-history me-1"></i> Pago expirado
+                  </span>
+                  <p class="text-secondary mb-4">
+                    El tiempo para confirmar el pago venció. Podés iniciar el
+                    pago nuevamente.
+                  </p>
+                  <button
+                    type="button"
+                    class="btn btn-accent px-4 py-2 fw-semibold rounded-3 shadow-sm"
+                    id="btnReintentarExpirado"
+                  >
+                    <i class="bi bi-arrow-clockwise me-1"></i> Volver a pagar
+                  </button>
+                </div>
+              </div>
               </div>
             </section>
 

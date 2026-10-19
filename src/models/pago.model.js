@@ -55,6 +55,14 @@ const Pago = sequelize.define("Pago", {
     reembolsadoEn: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    motivoFallo: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    expiradoEn: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 });
 

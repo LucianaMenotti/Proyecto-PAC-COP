@@ -48,6 +48,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     el.textContent = montoFormateado;
   });
 
+  /* ---------- Pago existente de la reserva ---------- */
+  try {
+    const respPago = await fetch(`/api/pagos/servicio/${reserva.id}`, {
+      credentials: 'include'
+    });
+
+    if (respPago.ok) {
+      const { pago: existente } = await respPago.json();
+
+      if (existente && existente.estado !== 'pendiente') {
+        pago = existente;
+
+        if (existente.estado === 'retenido') {
+          irAPaso('confirmar');
+          mostrarEstado('estado-retenido');
+        } else if (existente.estado === 'fallido') {
+          irAPaso('confirmar');
+          document.getElementById('motivoFallo').textContent =
+            existente.motivoFallo || 'El pago fue rechazado. Probá con otro medio.';
+          mostrarEstado('estado-fallido');
+        } else if (existente.estado === 'expirado') {
+          irAPaso('confirmar');
+          mostrarEstado('estado-expirado');
+        }
+      }
+    }
+  } catch {
+    /* silencioso */
+  }
+
   /* ---------- Estado del flujo ---------- */
   let metodoActual = 'tarjeta';
   let datosTarjeta = null;
@@ -226,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /* ---------- Paso 2: Confirmar y Escrow ---------- */
-  const estados = ['estado-previo', 'estado-procesando', 'estado-retenido', 'estado-liberado'];
+  const estados = ['estado-previo', 'estado-procesando', 'estado-retenido', 'estado-liberado', 'estado-fallido', 'estado-expirado'];
 
   function mostrarEstado(idEstado) {
     estados.forEach(id => {
@@ -250,7 +280,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         credentials: 'include'
       });
       const resultado = await respuesta.json();
-      if (!respuesta.ok) throw new Error(resultado.mensaje || 'No se pudo confirmar el pago.');
+
+      if (!respuesta.ok) {
+        if (resultado.estado === 'expirado') {
+          mostrarEstado('estado-expirado');
+          return;
+        }
+        if (resultado.estado === 'fallido') {
+          document.getElementById('motivoFallo').textContent =
+            resultado.mensaje || 'El pago fue rechazado. Probá con otro medio.';
+          mostrarEstado('estado-fallido');
+          return;
+        }
+        throw new Error(resultado.mensaje || 'No se pudo confirmar el pago.');
+      }
+
       pago = resultado.pago;
       transaccion = {
         id: pago.transaccionId,
@@ -265,6 +309,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert(error.message);
       mostrarEstado('estado-previo');
     }
+  });
+
+  document.getElementById('btnReintentarFallo').addEventListener('click', () => {
+    window.location.reload();
+  });
+
+  document.getElementById('btnReintentarExpirado').addEventListener('click', () => {
+    window.location.reload();
   });
 
   document.getElementById('btnLiberarPago').addEventListener('click', async () => {
