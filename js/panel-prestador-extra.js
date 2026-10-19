@@ -57,63 +57,22 @@ paneSolicitudes.innerHTML = `
 
 const listaSolicitudes = paneSolicitudes.querySelector("#listaSolicitudes");
 
-/* Notificación de nuevas solicitudes */
+/* La campana global (js/notificaciones.js) avisa de nuevas solicitudes por SSE.
+   Acá solo se listan y se ofrece el acceso directo a la pestaña Solicitudes. */
 
-let idsPendientesPrevios = null;
-
-function mostrarToastSolicitud(cantidad) {
-  const contenedor = document.getElementById("toastNotificaciones");
-  if (!contenedor || typeof bootstrap === "undefined") return;
-
-  const toast = document.createElement("div");
-  toast.className = "toast align-items-center text-bg-primary border-0";
-  toast.setAttribute("role", "alert");
-  toast.innerHTML = `
-    <div class="d-flex">
-      <div class="toast-body">
-        <i class="bi bi-bell-fill me-1"></i>
-        ${
-          cantidad === 1
-            ? "Te solicitaron un servicio nuevo."
-            : `Te solicitaron ${cantidad} servicios nuevos.`
-        }
-      </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-    </div>`;
-  contenedor.appendChild(toast);
-
-  const instancia = bootstrap.Toast.getOrCreateInstance(toast, {
-    autohide: true,
-    delay: 6000,
-  });
-  toast.addEventListener("hidden.bs.toast", () => toast.remove());
-  instancia.show();
-}
-
-function actualizarNotificaciones(pendientes) {
-  const badge = document.getElementById("badgeSolicitudes");
-  const cantidad = pendientes.length;
-
-  if (badge) {
-    badge.textContent = cantidad;
-    badge.classList.toggle("d-none", cantidad === 0);
-  }
-
-  const ids = pendientes.map((s) => s.id).sort((a, b) => a - b);
-
-  if (idsPendientesPrevios !== null) {
-    const nuevos = ids.filter((id) => !idsPendientesPrevios.includes(id));
-    if (nuevos.length > 0) mostrarToastSolicitud(nuevos.length);
-  }
-
-  idsPendientesPrevios = ids;
-}
-
-document.getElementById("btnNotificaciones")?.addEventListener("click", () => {
+function abrirSolicitudes() {
   const tab = document.getElementById("tab-solicitudes");
-  if (tab && typeof bootstrap !== "undefined") {
+  if (!tab) return;
+  if (typeof bootstrap !== "undefined") {
     bootstrap.Tab.getOrCreateInstance(tab).show();
+  } else {
+    tab.click();
   }
+  tab.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+window.addEventListener("hashchange", () => {
+  if (location.hash === "#solicitudes") abrirSolicitudes();
 });
 
 async function cargarSolicitudes() {
@@ -126,8 +85,6 @@ async function cargarSolicitudes() {
     const { servicios } = await respuesta.json();
     const pendientes = (servicios || []).filter((s) => s.estado === "programado");
     const activos = (servicios || []).filter((s) => ["aceptado", "en-curso"].includes(s.estado));
-
-    actualizarNotificaciones(pendientes);
 
     const linkRuta = document.getElementById("linkSeguimientoRuta");
     if (linkRuta) {
@@ -834,5 +791,7 @@ cargarRutaHoy();
 
 cargarSolicitudes();
 cargarMisResenas();
+
+if (location.hash === "#solicitudes") abrirSolicitudes();
 
 setInterval(cargarSolicitudes, 20000);

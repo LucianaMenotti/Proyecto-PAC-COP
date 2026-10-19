@@ -39,6 +39,9 @@
       .notif-item p{margin:0;color:#5b6b69;font-size:.8rem}
       .notif-item time{color:#93a3a1;font-size:.7rem}
       .notif-vacio{padding:1.2rem 1rem;text-align:center;color:#93a3a1;font-size:.85rem}
+      .notif-footer{display:block;width:100%;border:0;border-top:1px solid #e2e8f0;background:#f4fbf9;color:#1f7a74;font-weight:600;font-size:.82rem;padding:.65rem;cursor:pointer}
+      .notif-footer:hover{background:#e4f3f1}
+      .notif-footer.d-none{display:none}
       #notifToasts{position:fixed;right:1rem;bottom:5rem;z-index:1079;display:flex;flex-direction:column;gap:.5rem;max-width:min(320px,86vw)}
       .notif-toast{background:#155551;color:#fff;border-radius:12px;padding:.7rem .9rem;box-shadow:0 10px 24px rgba(0,0,0,.22);font-size:.82rem;transition:opacity .3s,transform .3s}
       .notif-toast strong{display:block;margin-bottom:.1rem;font-size:.85rem}
@@ -46,6 +49,17 @@
       .notif-toast.saliendo{opacity:0;transform:translateY(8px)}
     `;
     document.head.appendChild(style);
+  };
+
+  const abrirSolicitudes = () => {
+    const tab = document.getElementById("tab-solicitudes");
+    if (!tab) return;
+    if (typeof window.bootstrap !== "undefined" && window.bootstrap.Tab) {
+      window.bootstrap.Tab.getOrCreateInstance(tab).show();
+    } else {
+      tab.click();
+    }
+    tab.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const crearWidget = () => {
@@ -61,6 +75,7 @@
           <button type="button" id="notifLeerTodas">Marcar leídas</button>
         </header>
         <div id="notifLista"><div class="notif-vacio">Cargando…</div></div>
+        <button type="button" id="notifVerSolicitudes" class="notif-footer d-none">Ver solicitudes pendientes</button>
       </div>
       <button type="button" id="notifToggle" aria-label="Ver notificaciones" aria-expanded="false">
         <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -77,6 +92,15 @@
     widget
       .querySelector("#notifLeerTodas")
       .addEventListener("click", marcarTodas);
+
+    const verSolicitudes = widget.querySelector("#notifVerSolicitudes");
+    if (verSolicitudes && document.getElementById("tab-solicitudes")) {
+      verSolicitudes.classList.remove("d-none");
+      verSolicitudes.addEventListener("click", () => {
+        alternarPanel(false);
+        abrirSolicitudes();
+      });
+    }
   };
 
   const alternarPanel = (valor) => {
@@ -135,7 +159,7 @@
     contenedor.innerHTML = lista
       .map(
         (item) => `
-        <div class="notif-item${item.leida ? "" : " no-leida"}" data-id="${item.id}">
+        <div class="notif-item${item.leida ? "" : " no-leida"}" data-id="${item.id}" data-tipo="${escapar(item.tipo || "")}">
           <h6>${escapar(item.titulo)}</h6>
           ${item.mensaje ? `<p>${escapar(item.mensaje)}</p>` : ""}
           <time>${formatearFecha(item.creadoEn)}</time>
@@ -143,8 +167,18 @@
       )
       .join("");
 
-    contenedor.querySelectorAll(".notif-item.no-leida").forEach((nodo) => {
-      nodo.addEventListener("click", () => marcarLeida(nodo.dataset.id));
+    contenedor.querySelectorAll(".notif-item").forEach((nodo) => {
+      nodo.addEventListener("click", () => {
+        if (nodo.classList.contains("no-leida")) marcarLeida(nodo.dataset.id);
+        const tipo = nodo.dataset.tipo || "";
+        if (
+          tipo.startsWith("reserva") &&
+          document.getElementById("tab-solicitudes")
+        ) {
+          alternarPanel(false);
+          abrirSolicitudes();
+        }
+      });
     });
   };
 
