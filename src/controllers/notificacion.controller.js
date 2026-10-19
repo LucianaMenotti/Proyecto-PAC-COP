@@ -1,4 +1,5 @@
 import Notificacion from "../models/notificacion.model.js";
+import { publicarEvento } from "../helpers/realtime.helper.js";
 
 const LIMITE_NOTIFICACIONES = 30;
 
@@ -12,13 +13,23 @@ export const crearNotificacion = async ({
     try {
         if (!usuarioId || !tipo || !titulo) return null;
 
-        return await Notificacion.create({
+        const notificacion = await Notificacion.create({
             usuarioId,
             tipo,
             titulo,
             mensaje,
             servicioId
         });
+
+        publicarEvento(usuarioId, "notificacion", {
+            id: notificacion.id,
+            tipo,
+            titulo,
+            mensaje,
+            servicioId
+        });
+
+        return notificacion;
     } catch (error) {
         console.error("Error al crear notificación:", error);
         return null;

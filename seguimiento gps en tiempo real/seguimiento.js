@@ -347,6 +347,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  document.addEventListener("pac:ubicacion", (evento) => {
+    const datos = evento.detail || {};
+
+    if (!servicioId || Number(datos.servicioId) !== Number(servicioId)) {
+      return;
+    }
+
+    agregarPosicionAlMapa({
+      latitud: datos.latitud,
+      longitud: datos.longitud,
+    });
+  });
+
+  document.addEventListener("pac:notificacion", (evento) => {
+    const datos = evento.detail || {};
+
+    if (
+      servicioId &&
+      datos.servicioId &&
+      Number(datos.servicioId) === Number(servicioId)
+    ) {
+      consultarEstadoServicio();
+    }
+  });
+
   const solicitarPermisoUbicacion = () => {
     if (!navigator.geolocation) return;
 

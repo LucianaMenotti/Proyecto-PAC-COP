@@ -2,6 +2,7 @@ import Mensaje from "../models/mensaje.model.js";
 import Servicio from "../models/servicio.model.js";
 import User from "../models/user.model.js";
 import { crearNotificacion } from "./notificacion.controller.js";
+import { publicarEvento } from "../helpers/realtime.helper.js";
 
 const puedeAccederAlChat = (servicio, usuario) => {
     return (
@@ -116,6 +117,13 @@ export const enviarMensaje = async (req, res) => {
             titulo: "Nuevo mensaje",
             mensaje: texto.slice(0, 120),
             servicioId: servicio.id
+        });
+
+        publicarEvento(destinatario, "mensaje", {
+            servicioId: servicio.id,
+            remitenteId: req.user.id,
+            texto,
+            momento: new Date().toISOString()
         });
 
         return res.status(201).json({

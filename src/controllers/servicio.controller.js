@@ -9,6 +9,7 @@ import {
   reembolsarPagoDelServicio,
 } from "./pago.controller.js";
 import { crearNotificacion } from "./notificacion.controller.js";
+import { publicarEvento } from "../helpers/realtime.helper.js";
 
 const esAdministrador = (user) => ["admin", "administrador"].includes(user.rol);
 
@@ -737,6 +738,13 @@ export const guardarUbicacion = async (req, res) => {
     userId: req.user.id,
     latitud,
     longitud,
+  });
+
+  publicarEvento(resultado.servicio.ownerId, "ubicacion", {
+    servicioId: resultado.servicio.id,
+    latitud,
+    longitud,
+    registradoEn: ubicacion.registradoEn ?? new Date().toISOString(),
   });
 
   return res.status(201).json({ ubicacion });

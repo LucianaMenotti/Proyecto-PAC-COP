@@ -265,7 +265,18 @@ const getCurrentSession =
             chatInput.style.height =
                 "auto";
 
-            await cargarMensajes();
+    document.addEventListener("pac:mensaje", (evento) => {
+        const datos = evento.detail || {};
+
+        if (
+            !datos.servicioId ||
+            Number(datos.servicioId) === Number(servicioId)
+        ) {
+            cargarMensajes();
+        }
+    });
+
+    await cargarMensajes();
 
             chatInput.focus();
 

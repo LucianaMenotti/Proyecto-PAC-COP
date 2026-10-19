@@ -39,6 +39,11 @@
       .notif-item p{margin:0;color:#5b6b69;font-size:.8rem}
       .notif-item time{color:#93a3a1;font-size:.7rem}
       .notif-vacio{padding:1.2rem 1rem;text-align:center;color:#93a3a1;font-size:.85rem}
+      #notifToasts{position:fixed;right:1rem;bottom:5rem;z-index:1079;display:flex;flex-direction:column;gap:.5rem;max-width:min(320px,86vw)}
+      .notif-toast{background:#155551;color:#fff;border-radius:12px;padding:.7rem .9rem;box-shadow:0 10px 24px rgba(0,0,0,.22);font-size:.82rem;transition:opacity .3s,transform .3s}
+      .notif-toast strong{display:block;margin-bottom:.1rem;font-size:.85rem}
+      .notif-toast p{margin:0;opacity:.9;font-size:.78rem}
+      .notif-toast.saliendo{opacity:0;transform:translateY(8px)}
     `;
     document.head.appendChild(style);
   };
@@ -167,6 +172,77 @@
     }
   };
 
+  const mostrarToast = (titulo, cuerpo = "") => {
+    let contenedor = document.getElementById("notifToasts");
+    if (!contenedor) {
+      contenedor = document.createElement("div");
+      contenedor.id = "notifToasts";
+      document.body.appendChild(contenedor);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = "notif-toast";
+    toast.innerHTML = `<strong>${escapar(titulo)}</strong>${cuerpo ? `<p>${escapar(cuerpo)}</p>` : ""}`;
+    contenedor.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("saliendo");
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  };
+
+  const urlEventos = () => {
+    const puertoLive = window.location.port === "5500";
+    const hostLocal = ["localhost", "127.0.0.1"].includes(
+      window.location.hostname,
+    );
+    return puertoLive && hostLocal
+      ? `http://${window.location.hostname}:3000/api/eventos`
+      : "/api/eventos";
+  };
+
+  const parsear = (evento) => {
+    try {
+      return JSON.parse(evento.data || "{}");
+    } catch {
+      return {};
+    }
+  };
+
+  const conectarTiempoReal = () => {
+    if (typeof EventSource === "undefined") return null;
+
+    try {
+      const fuente = new EventSource(urlEventos(), { withCredentials: true });
+
+      fuente.addEventListener("notificacion", (evento) => {
+        const datos = parsear(evento);
+        cargar();
+        mostrarToast(datos.titulo || "Nueva notificación", datos.mensaje);
+        document.dispatchEvent(
+          new CustomEvent("pac:notificacion", { detail: datos }),
+        );
+      });
+
+      fuente.addEventListener("mensaje", (evento) => {
+        const datos = parsear(evento);
+        mostrarToast("Nuevo mensaje", datos.texto);
+        document.dispatchEvent(new CustomEvent("pac:mensaje", { detail: datos }));
+      });
+
+      fuente.addEventListener("ubicacion", (evento) => {
+        document.dispatchEvent(
+          new CustomEvent("pac:ubicacion", { detail: parsear(evento) }),
+        );
+      });
+
+      window.addEventListener("beforeunload", () => fuente.close());
+      return fuente;
+    } catch {
+      return null;
+    }
+  };
+
   const iniciar = async () => {
     try {
       const sesion = await fetch("/api/users/me", { credentials: "include" });
@@ -177,6 +253,7 @@
 
     crearWidget();
     await cargar();
+    conectarTiempoReal();
     temporizador = setInterval(cargar, INTERVALO);
     window.addEventListener("beforeunload", () => clearInterval(temporizador));
   };
