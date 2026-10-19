@@ -105,6 +105,16 @@ const User = sequelize.define("User", {
     cuentaCobro: {
         type: DataTypes.JSON,
         allowNull: true
+    },
+
+    resetTokenHash: {
+        type: DataTypes.STRING(64),
+        allowNull: true
+    },
+
+    resetExpira: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 
 });

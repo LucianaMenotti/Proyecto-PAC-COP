@@ -1,6 +1,8 @@
 import { Op } from "sequelize";
+import { createHash, randomBytes } from "node:crypto";
 import User from "../models/user.model.js";
 import { hashPassword, verifyPassword } from "../helpers/password.helper.js";
+import { enviarEmail } from "../helpers/email.helper.js";
 import {
   clearAuthCookie,
   createAuthToken,
@@ -436,5 +438,97 @@ export const actualizarCuentaCobro = async (req, res) => {
     return res
       .status(500)
       .json({ mensaje: "No se pudo actualizar la cuenta de cobro" });
+  }
+};
+
+const hashResetToken = (token) =>
+  createHash("sha256").update(token).digest("hex");
+
+const MINUTOS_VIGENCIA_RESET = 30;
+
+export const solicitarRecuperacion = async (req, res) => {
+  try {
+    const email = String(req.body.email ?? "").trim();
+
+    if (!email) {
+      return res.status(400).json({ mensaje: "Ingresá tu correo electrónico" });
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (user) {
+      const token = randomBytes(32).toString("hex");
+      const expira = new Date(Date.now() + MINUTOS_VIGENCIA_RESET * 60 * 1000);
+
+      await user.update({
+        resetTokenHash: hashResetToken(token),
+        resetExpira: expira,
+      });
+
+      const base = (process.env.FRONTEND_URL || "http://localhost:3000").replace(
+        /\/$/,
+        "",
+      );
+      const enlace = `${base}/paginas/restablecer.html?token=${token}`;
+
+      await enviarEmail({
+        to: user.email,
+        subject: "Recuperación de contraseña - Pac-Cop",
+        texto: `Para restablecer tu contraseña ingresá a: ${enlace}\nEl enlace vence en ${MINUTOS_VIGENCIA_RESET} minutos.`,
+        html: `<p>Para restablecer tu contraseña hacé clic <a href="${enlace}">aquí</a>.</p><p>El enlace vence en ${MINUTOS_VIGENCIA_RESET} minutos.</p>`,
+      });
+    }
+
+    return res.status(200).json({
+      mensaje:
+        "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña",
+    });
+  } catch (error) {
+    console.error("Error al solicitar recuperación:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo procesar la solicitud" });
+  }
+};
+
+export const restablecerPassword = async (req, res) => {
+  try {
+    const token = String(req.body.token ?? "").trim();
+    const password = String(req.body.password ?? "");
+
+    if (!token) {
+      return res.status(400).json({ mensaje: "El enlace no es válido" });
+    }
+
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ mensaje: "La contraseña debe tener al menos 8 caracteres" });
+    }
+
+    const user = await User.findOne({
+      where: { resetTokenHash: hashResetToken(token) },
+    });
+
+    if (!user || !user.resetExpira || new Date(user.resetExpira) < new Date()) {
+      return res
+        .status(400)
+        .json({ mensaje: "El enlace es inválido o ya venció" });
+    }
+
+    await user.update({
+      password: await hashPassword(password),
+      resetTokenHash: null,
+      resetExpira: null,
+    });
+
+    return res
+      .status(200)
+      .json({ mensaje: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error("Error al restablecer contraseña:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo restablecer la contraseña" });
   }
 };
