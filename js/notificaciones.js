@@ -244,9 +244,13 @@
   };
 
   const iniciar = async () => {
+    let usuario = null;
+
     try {
       const sesion = await fetch("/api/users/me", { credentials: "include" });
       if (!sesion.ok) return;
+      const datos = await sesion.json();
+      usuario = datos.usuario;
     } catch {
       return;
     }
@@ -254,6 +258,13 @@
     crearWidget();
     await cargar();
     conectarTiempoReal();
+
+    if (usuario && ["admin", "administrador"].includes(usuario.rol)) {
+      document
+        .querySelectorAll("[data-admin]")
+        .forEach((nodo) => nodo.classList.remove("d-none"));
+    }
+
     temporizador = setInterval(cargar, INTERVALO);
     window.addEventListener("beforeunload", () => clearInterval(temporizador));
   };

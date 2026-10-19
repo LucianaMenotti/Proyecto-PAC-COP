@@ -23,6 +23,7 @@ import pagoRoutes from "./routes/pago.routes.js";
 import mensajeRoutes from "./routes/mensaje.routes.js";
 import notificacionRoutes from "./routes/notificacion.routes.js";
 import eventoRoutes from "./routes/evento.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use("/api/pagos", pagoRoutes);
 app.use("/api/mensajes", mensajeRoutes);
 app.use("/api/notificaciones", notificacionRoutes);
 app.use("/api/eventos", eventoRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Cualquier ruta /api sin coincidencia responde JSON (nunca HTML)
 app.use("/api", (req, res) => {
