@@ -9,13 +9,13 @@
   margin: 0;
   padding: 0;
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif;
 }
 
 body {
-  background-color: #f4f6f8;
-  color: #333;
+  background-color: #f4fbf9;
+  color: #2c3e50;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -35,14 +35,15 @@ body {
 
 .logo {
   font-size: 1.25rem;
+  font-family: "Fraunces", serif;
   font-weight: 700;
   color: #2c3e50;
 }
 
 .role-toggle-btn {
-  background: #eef2ff;
-  color: #4f46e5;
-  border: 1px solid #c7d2fe;
+  background: #e4f3f1;
+  color: #1f7a74;
+  border: 1px solid #a9d9d4;
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -63,18 +64,18 @@ body {
   border: none;
   border-bottom: 3px solid transparent;
   font-weight: 600;
-  color: #6b7280;
+  color: #64748b;
   cursor: pointer;
   position: relative;
 }
 
 .nav-btn.active {
-  color: #4f46e5;
-  border-bottom-color: #4f46e5;
+  color: #1f7a74;
+  border-bottom-color: #1f7a74;
 }
 
 .badge {
-  background-color: #ef4444;
+  background-color: #ff6f52;
   color: white;
   border-radius: 10px;
   padding: 2px 6px;
@@ -114,14 +115,14 @@ body {
 }
 
 .primary-btn {
-  background-color: #4f46e5;
+  background-color: #1f7a74;
   color: white;
   width: 100%;
 }
 
 .secondary-btn {
-  background-color: #e5e7eb;
-  color: #374151;
+  background-color: #eef2f1;
+  color: #2c3e50;
 }
 
 .capture-card {
@@ -158,15 +159,15 @@ body {
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: #64748b;
   margin-bottom: 0.4rem;
 }
 
 .report-tag {
   display: inline-block;
   font-size: 0.75rem;
-  color: #059669;
-  background-color: #ecfdf5;
+  color: #1f7a74;
+  background-color: #e4f3f1;
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: 600;
@@ -174,7 +175,7 @@ body {
 
 .empty-state {
   text-align: center;
-  color: #9ca3af;
+  color: #94a3b8;
   margin-top: 3rem;
 }
 
@@ -191,7 +192,7 @@ body {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #4f46e5;
+  background: #1f7a74;
   color: white;
   display: flex;
   align-items: center;
@@ -227,15 +228,15 @@ body {
 
 .msg-me {
   align-self: flex-end;
-  background-color: #4f46e5;
+  background-color: #1f7a74;
   color: white;
   border-bottom-right-radius: 2px;
 }
 
 .msg-them {
   align-self: flex-start;
-  background-color: #e5e7eb;
-  color: #1f2937;
+  background-color: #eef2f1;
+  color: #2c3e50;
   border-bottom-left-radius: 2px;
 }
 
@@ -256,7 +257,7 @@ body {
 .chat-form textarea {
   flex: 1;
   resize: none;
-  border: 1px solid #d1d5db;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 0.5rem;
   font-size: 0.9rem;
@@ -264,7 +265,7 @@ body {
 }
 
 .send-btn {
-  background: #4f46e5;
+  background: #1f7a74;
   color: white;
   border: none;
   padding: 0 1rem;
@@ -370,7 +371,7 @@ body {
 
 .fallback-btn {
   background: white;
-  color: #333;
+  color: #2c3e50;
 }
 
 /* Toasts */
@@ -389,7 +390,7 @@ body {
 }
 
 .toast {
-  background: #1f2937;
+  background: #155551;
   color: white;
   padding: 0.8rem 1rem;
   border-radius: 8px;
@@ -440,7 +441,7 @@ body {
 
   /* El fondo general fuera del contenedor de la app */
   html {
-    background-color: #f4f6f8;
+  background-color: #f4fbf9;
   }
 
   .reports-feed {

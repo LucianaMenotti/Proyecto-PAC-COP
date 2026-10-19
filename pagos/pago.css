@@ -1,13 +1,13 @@
 :root {
   --bs-turquesa: #1f7a74;
   --bs-turquesa-soft: #e4f3f1;
-  --bs-crema: #fbf6ec;
+  --bs-crema: #f4fbf9;
   --bs-coral: #ff6f52;
-  --bs-coral-hover: #e85f44;
-  --bs-linea: #dcd5c4;
-  --bs-linea-subtle: #ece6d8;
-  --bs-tinta: #223333;
-  --bs-tinta-suave: #5b6b6a;
+  --bs-coral-hover: #e85b3e;
+  --bs-linea: #e2e8f0;
+  --bs-linea-subtle: #eef2f1;
+  --bs-tinta: #2c3e50;
+  --bs-tinta-suave: #64748b;
 
   --fuente-display: "Fraunces", serif;
   --fuente-texto: "Inter", sans-serif;
