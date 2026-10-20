@@ -455,7 +455,6 @@ export const solicitarRecuperacion = async (req, res) => {
     }
 
     const user = await User.findOne({ where: { email } });
-    let enlaceDev = null;
 
     if (user) {
       const token = randomBytes(32).toString("hex");
@@ -481,17 +480,16 @@ export const solicitarRecuperacion = async (req, res) => {
         enlace,
       });
 
-      // Sin SMTP configurado (y fuera de producción) el enlace se devuelve
-      // en la respuesta para poder probar el flujo sin enviar correo real.
-      if (envio?.simulado && process.env.NODE_ENV !== "production") {
-        enlaceDev = enlace;
+      if (envio?.error) {
+        return res.status(502).json({
+          mensaje: "No se pudo enviar el correo de recuperación",
+        });
       }
     }
 
     return res.status(200).json({
       mensaje:
         "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña",
-      ...(enlaceDev ? { enlace: enlaceDev } : {}),
     });
   } catch (error) {
     console.error("Error al solicitar recuperación:", error);
