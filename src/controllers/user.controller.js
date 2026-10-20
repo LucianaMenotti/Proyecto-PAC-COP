@@ -3,6 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import User from "../models/user.model.js";
 import { hashPassword, verifyPassword } from "../helpers/password.helper.js";
 import { enviarEmail } from "../helpers/email.helper.js";
+import { plantillaRecuperacion } from "../helpers/email.templates.js";
 import {
   clearAuthCookie,
   createAuthToken,
@@ -472,11 +473,17 @@ export const solicitarRecuperacion = async (req, res) => {
       ).replace(/\/$/, "");
       const enlace = `${base}/paginas/restablecer.html?token=${token}`;
 
+      const plantilla = plantillaRecuperacion({
+        nombre: user.nombre,
+        enlace,
+        minutos: MINUTOS_VIGENCIA_RESET,
+      });
+
       const envio = await enviarEmail({
         to: user.email,
-        subject: "Recuperación de contraseña - Pac-Cop",
-        texto: `Para restablecer tu contraseña ingresá a: ${enlace}\nEl enlace vence en ${MINUTOS_VIGENCIA_RESET} minutos.`,
-        html: `<p>Para restablecer tu contraseña hacé clic <a href="${enlace}">aquí</a>.</p><p>El enlace vence en ${MINUTOS_VIGENCIA_RESET} minutos.</p>`,
+        subject: plantilla.subject,
+        texto: plantilla.texto,
+        html: plantilla.html,
         enlace,
       });
 
