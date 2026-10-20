@@ -455,6 +455,7 @@ export const solicitarRecuperacion = async (req, res) => {
     }
 
     const user = await User.findOne({ where: { email } });
+    let enlaceDev = null;
 
     if (user) {
       const token = randomBytes(32).toString("hex");
@@ -465,23 +466,32 @@ export const solicitarRecuperacion = async (req, res) => {
         resetExpira: expira,
       });
 
-      const base = (process.env.FRONTEND_URL || "http://localhost:3000").replace(
-        /\/$/,
-        "",
-      );
+      const base = (
+        process.env.FRONTEND_URL ||
+        process.env.FRONTEND_ORIGIN ||
+        `http://localhost:${process.env.PORT || 3000}`
+      ).replace(/\/$/, "");
       const enlace = `${base}/paginas/restablecer.html?token=${token}`;
 
-      await enviarEmail({
+      const envio = await enviarEmail({
         to: user.email,
         subject: "Recuperación de contraseña - Pac-Cop",
         texto: `Para restablecer tu contraseña ingresá a: ${enlace}\nEl enlace vence en ${MINUTOS_VIGENCIA_RESET} minutos.`,
         html: `<p>Para restablecer tu contraseña hacé clic <a href="${enlace}">aquí</a>.</p><p>El enlace vence en ${MINUTOS_VIGENCIA_RESET} minutos.</p>`,
+        enlace,
       });
+
+      // Sin SMTP configurado (y fuera de producción) el enlace se devuelve
+      // en la respuesta para poder probar el flujo sin enviar correo real.
+      if (envio?.simulado && process.env.NODE_ENV !== "production") {
+        enlaceDev = enlace;
+      }
     }
 
     return res.status(200).json({
       mensaje:
         "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña",
+      ...(enlaceDev ? { enlace: enlaceDev } : {}),
     });
   } catch (error) {
     console.error("Error al solicitar recuperación:", error);

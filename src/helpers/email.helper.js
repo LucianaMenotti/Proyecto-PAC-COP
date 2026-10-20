@@ -7,10 +7,13 @@ const smtpConfigurado = () =>
         process.env.SMTP_PASS
     );
 
-export const enviarEmail = async ({ to, subject, texto, html }) => {
+export const enviarEmail = async ({ to, subject, texto, html, enlace }) => {
     if (!smtpConfigurado()) {
-        console.log("[email simulado]", { to, subject, texto });
-        return { simulado: true };
+        console.log(
+            "[email simulado] SMTP no configurado. Enlace de recuperación:",
+            enlace || texto
+        );
+        return { simulado: true, enlace: enlace || null };
     }
 
     try {
