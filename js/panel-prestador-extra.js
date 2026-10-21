@@ -200,6 +200,7 @@ listaSolicitudes.addEventListener("click", async (event) => {
 /* ---------------------------------------------------------- */
 
 const paneDisponibilidad = crearTab("trabajo", "04", "Mi trabajo");
+const paneRestricciones = paneDisponibilidad;
 paneDisponibilidad.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Tu disponibilidad semanal</h2>
@@ -211,8 +212,35 @@ paneDisponibilidad.innerHTML = `
     <div class="card-body p-4">
       <div id="formDisponibilidad" class="d-grid gap-3"></div>
       <div class="d-flex align-items-center gap-3 mt-4">
-        <button class="btn btn-pac" id="guardarDisponibilidad">Guardar disponibilidad</button>
+        <button type="button" class="btn btn-pac" id="guardarDisponibilidad">Guardar disponibilidad</button>
         <span class="text-success small d-none" id="okDisponibilidad">Disponibilidad guardada.</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="my-5 border-light" />
+
+  <div class="panel-section-header mb-4">
+    <h2 class="fw-bold">Qué mascotas aceptás</h2>
+    <p class="text-secondary mb-0">
+      Si no marcás tamaños, aceptás mascotas de cualquier tamaño.
+    </p>
+  </div>
+  <div class="card panel-card">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-3">Tamaños aceptados</h5>
+      <div class="d-flex flex-wrap gap-3 mb-4" id="tamanosChecks"></div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="razasExcluidas">Razas que NO aceptás</label>
+        <input type="text" class="form-control" id="razasExcluidas"
+               placeholder="Ej: pitbull, rottweiler" autocomplete="off">
+        <div class="form-text">Separalas con comas. Se comparan en minúsculas.</div>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <button type="button" class="btn btn-pac" id="guardarRestricciones">Guardar restricciones</button>
+        <span class="text-success small d-none" id="okRestricciones">Restricciones guardadas.</span>
       </div>
     </div>
   </div>`;
@@ -268,6 +296,7 @@ async function guardarDisponibilidad() {
     const resultado = await respuesta.json();
     if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo guardar");
     disponibilidadActual = resultado.disponibilidad || disponibilidad;
+    sesion.disponibilidad = disponibilidadActual;
     ok.classList.remove("d-none");
   } catch (error) {
     alert(error.message);
@@ -281,34 +310,6 @@ paneDisponibilidad.querySelector("#guardarDisponibilidad").addEventListener("cli
 /* ---------------------------------------------------------- */
 
 const TAMANOS_MASCOTA = ["pequeño", "mediano", "grande"];
-
-const paneRestricciones = paneDisponibilidad;
-paneRestricciones.innerHTML += `
-  <hr class="my-5 border-light" />
-  <div class="panel-section-header mb-4">
-    <h2 class="fw-bold">Qué mascotas aceptás</h2>
-    <p class="text-secondary mb-0">
-      Si no marcás tamaños, aceptás mascotas de cualquier tamaño.
-    </p>
-  </div>
-  <div class="card panel-card">
-    <div class="card-body p-4">
-      <h5 class="fw-bold mb-3">Tamaños aceptados</h5>
-      <div class="d-flex flex-wrap gap-3 mb-4" id="tamanosChecks"></div>
-
-      <div class="mb-3">
-        <label class="form-label fw-semibold" for="razasExcluidas">Razas que NO aceptás</label>
-        <input type="text" class="form-control" id="razasExcluidas"
-               placeholder="Ej: pitbull, rottweiler" autocomplete="off">
-        <div class="form-text">Separalas con comas. Se comparan en minúsculas.</div>
-      </div>
-
-      <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-pac" id="guardarRestricciones">Guardar restricciones</button>
-        <span class="text-success small d-none" id="okRestricciones">Restricciones guardadas.</span>
-      </div>
-    </div>
-  </div>`;
 
 const chequeosTamanos = paneRestricciones.querySelector("#tamanosChecks");
 const razasExcluidas = paneRestricciones.querySelector("#razasExcluidas");
@@ -371,6 +372,7 @@ paneRestricciones.querySelector("#guardarRestricciones").addEventListener("click
 
 const paneCobros = crearTab("cobros", "05", "Cobros y guardería");
 const paneCuenta = paneCobros;
+const paneGuarderia = paneCobros;
 paneCuenta.innerHTML = `
   <div class="row g-4">
     <div class="col-lg-6">
@@ -400,8 +402,9 @@ paneCuenta.innerHTML = `
               <input type="text" id="cuentaAlias" class="form-control" autocomplete="off">
             </div>
             <div class="d-flex align-items-center gap-3">
-              <button type="button" class="btn btn-pac" id="guardarCuenta">Guardar cuenta</button>
+              <button type="submit" class="btn btn-pac" id="guardarCuenta">Guardar cuenta</button>
               <span class="text-success small d-none" id="okCuenta">Cuenta guardada.</span>
+              <span class="text-danger small d-none" id="errorCuenta"></span>
             </div>
           </form>
         </div>
@@ -418,7 +421,15 @@ paneCuenta.innerHTML = `
         </div>
       </div>
     </div>
-  </div>`;
+  </div>
+
+  <hr class="my-5 border-light" />
+
+  <div class="panel-section-header mb-4">
+    <h2 class="fw-bold">Check-in y check-out</h2>
+    <p class="text-secondary mb-0">Registrá el ingreso y el egreso de cada mascota.</p>
+  </div>
+  <div id="listaGuarderia" class="d-grid gap-3"></div>`;
 
 const cuentaTipo = paneCuenta.querySelector("#cuentaTipo");
 const cuentaTitular = paneCuenta.querySelector("#cuentaTitular");
@@ -436,26 +447,37 @@ function mostrarCuenta() {
 
 async function guardarCuenta() {
   const ok = paneCuenta.querySelector("#okCuenta");
+  const error = paneCuenta.querySelector("#errorCuenta");
   ok.classList.add("d-none");
+  error.classList.add("d-none");
+
+  const datos = {
+    tipo: cuentaTipo.value,
+    titular: cuentaTitular.value.trim(),
+    cbu: cuentaCbu.value.trim(),
+    alias: cuentaAlias.value.trim(),
+  };
+
+  if (!datos.titular || (!datos.cbu && !datos.alias)) {
+    error.textContent = "Completá el titular y el CBU o alias de la cuenta.";
+    error.classList.remove("d-none");
+    return;
+  }
 
   try {
     const respuesta = await fetch("/api/users/me/cuenta-cobro", {
       method: "PUT",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tipo: cuentaTipo.value,
-        titular: cuentaTitular.value.trim(),
-        cbu: cuentaCbu.value.trim(),
-        alias: cuentaAlias.value.trim(),
-      }),
+      body: JSON.stringify(datos),
     });
     const resultado = await respuesta.json();
     if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo guardar");
     sesion.cuentaCobro = resultado.cuentaCobro;
     ok.classList.remove("d-none");
-  } catch (error) {
-    alert(error.message);
+  } catch (e) {
+    error.textContent = e.message;
+    error.classList.remove("d-none");
   }
 }
 
@@ -495,20 +517,20 @@ async function cargarLiquidaciones() {
   }
 }
 
-paneCuenta.querySelector("#guardarCuenta").addEventListener("click", guardarCuenta);
+paneCuenta.querySelector("#formCuentaCobro").addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  guardarCuenta();
+});
+
+[cuentaTitular, cuentaCbu, cuentaAlias].forEach((campo) => {
+  campo.addEventListener("input", () => {
+    paneCuenta.querySelector("#errorCuenta")?.classList.add("d-none");
+  });
+});
 
 /* ---------------------------------------------------------- */
 /* Guardería: check-in y check-out                             */
 /* ---------------------------------------------------------- */
-
-const paneGuarderia = paneCobros;
-paneGuarderia.innerHTML += `
-  <hr class="my-5 border-light" />
-  <div class="panel-section-header mb-4">
-    <h2 class="fw-bold">Check-in y check-out</h2>
-    <p class="text-secondary mb-0">Registrá el ingreso y el egreso de cada mascota.</p>
-  </div>
-  <div id="listaGuarderia" class="d-grid gap-3"></div>`;
 
 const listaGuarderia = paneGuarderia.querySelector("#listaGuarderia");
 
@@ -590,34 +612,41 @@ paneVehiculo.innerHTML = `
   </div>
   <div class="card panel-card">
     <div class="card-body p-4">
-      <div class="mb-3">
-        <label class="form-label fw-semibold" for="vehiculoSelect">
-          Tipo de vehículo
-        </label>
-        <select id="vehiculoSelect" class="form-select">
-          <option value="">— Sin vehículo —</option>
-          <option value="Auto">Auto</option>
-          <option value="Moto">Moto</option>
-          <option value="Camioneta">Camioneta</option>
-        </select>
-        <div class="form-text">
-          ¿Qué vehículo usás para los traslados de mascotas?
+      <form id="formVehiculo">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="vehiculoSelect">
+            Tipo de vehículo
+          </label>
+          <select id="vehiculoSelect" class="form-select">
+            <option value="">— Sin vehículo —</option>
+            <option value="Auto">Auto</option>
+            <option value="Moto">Moto</option>
+            <option value="Camioneta">Camioneta</option>
+          </select>
+          <div class="form-text">
+            ¿Qué vehículo usás para los traslados de mascotas?
+          </div>
         </div>
-      </div>
-      <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-pac" id="guardarVehiculo">Guardar vehículo</button>
-        <span class="text-success small d-none" id="okVehiculo">Vehículo guardado.</span>
-      </div>
+        <div class="d-flex align-items-center gap-3">
+          <button type="submit" class="btn btn-pac" id="guardarVehiculo">Guardar vehículo</button>
+          <span class="text-success small d-none" id="okVehiculo">Vehículo guardado.</span>
+          <span class="text-danger small d-none" id="errorVehiculo"></span>
+        </div>
+      </form>
     </div>
   </div>`;
 
 const vehiculoSelect = paneVehiculo.querySelector("#vehiculoSelect");
 
 paneVehiculo
-  .querySelector("#guardarVehiculo")
-  .addEventListener("click", async () => {
+  .querySelector("#formVehiculo")
+  .addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
     const ok = paneVehiculo.querySelector("#okVehiculo");
+    const error = paneVehiculo.querySelector("#errorVehiculo");
     ok.classList.add("d-none");
+    error.classList.add("d-none");
 
     try {
       const respuesta = await fetch("/api/users/me/vehiculo", {
@@ -630,8 +659,9 @@ paneVehiculo
       if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo guardar");
       sesion.vehiculo = resultado.vehiculo || null;
       ok.classList.remove("d-none");
-    } catch (error) {
-      alert(error.message);
+    } catch (e) {
+      error.textContent = e.message;
+      error.classList.remove("d-none");
     }
   });
 
@@ -811,5 +841,13 @@ cargarSolicitudes();
 cargarMisResenas();
 
 if (location.hash === "#solicitudes") abrirSolicitudes();
+
+/* En pantallas chicas el menú se abre como offcanvas: se cierra al elegir una sección. */
+document.getElementById("panelTabs")?.addEventListener("click", () => {
+  const menu = document.getElementById("panelMenuLateral");
+  if (!menu || typeof bootstrap === "undefined") return;
+  const offcanvas = bootstrap.Offcanvas.getInstance(menu);
+  if (offcanvas) offcanvas.hide();
+});
 
 setInterval(cargarSolicitudes, 20000);

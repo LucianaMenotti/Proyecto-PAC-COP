@@ -109,6 +109,60 @@ function escapar(texto) {
     return div.innerHTML;
 }
 
+const DIAS_PERFIL = [
+    ["lunes", "Lunes"],
+    ["martes", "Martes"],
+    ["miercoles", "Miércoles"],
+    ["jueves", "Jueves"],
+    ["viernes", "Viernes"],
+    ["sabado", "Sábado"],
+    ["domingo", "Domingo"]
+];
+
+function htmlDisponibilidad() {
+    const disponibilidad = usuario.disponibilidad && typeof usuario.disponibilidad === "object"
+        ? usuario.disponibilidad
+        : {};
+
+    const activos = DIAS_PERFIL.filter(([clave]) => disponibilidad[clave]?.activo);
+
+    if (activos.length === 0) {
+        return `<p class="text-secondary mb-0">Sin horarios cargados: se aceptan reservas cualquier día.</p>`;
+    }
+
+    return `<ul class="list-group list-group-flush">
+        ${activos.map(([clave, etiqueta]) => {
+            const regla = disponibilidad[clave];
+            return `
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                <strong>${etiqueta}</strong>
+                <span class="badge rounded-pill text-bg-light border fw-semibold">
+                    ${escapar(regla.desde)} a ${escapar(regla.hasta)}
+                </span>
+            </li>`;
+        }).join("")}
+    </ul>`;
+}
+
+function htmlPoliticas() {
+    const tamanos = Array.isArray(usuario.tamanosAceptados) ? usuario.tamanosAceptados : [];
+    const razas = Array.isArray(usuario.restricciones) ? usuario.restricciones : [];
+
+    const chipsTamanos = tamanos.length
+        ? tamanos.map((tamano) => `<span class="badge text-bg-light border fw-semibold me-1">${escapar(tamano)}</span>`).join("")
+        : `<span class="text-secondary">Cualquier tamaño</span>`;
+
+    const chipsRazas = razas.length
+        ? razas.map((raza) => `<span class="badge text-bg-warning-subtle border fw-semibold me-1">${escapar(raza)}</span>`).join("")
+        : `<span class="text-secondary">Sin razas excluidas</span>`;
+
+    return `
+        <p class="mb-2"><strong>Tamaños que acepta</strong></p>
+        <p class="mb-3">${chipsTamanos}</p>
+        <p class="mb-2"><strong>Razas que NO acepta</strong></p>
+        <p class="mb-0">${chipsRazas}</p>`;
+}
+
 async function guardar() {
     const respuesta = await fetch("/api/users/me/servicios", {
         method: "PUT",
@@ -149,6 +203,8 @@ function mostrarPerfil() {
             `).join("")}
            </ul>`
         : `<p class="text-secondary mb-0">Todavía no ofrecés ningún servicio. Agregalos desde el panel.</p>`;
+
+    const muestraVehiculo = servicios.includes("Traslado") || Boolean(usuario.vehiculo);
 
     contenedor.innerHTML = `
         <div class="card border-0 shadow-sm mb-4">
@@ -195,7 +251,34 @@ function mostrarPerfil() {
                         <p class="mb-2"><strong>Teléfono</strong></p>
                         <p class="text-secondary">${escapar(usuario.telefono || "No especificado")}</p>
                         <p class="mb-2"><strong>Zona</strong></p>
-                        <p class="text-secondary mb-0">${escapar(usuario.zona || "No especificada")}</p>
+                        <p class="text-secondary">${escapar(usuario.zona || "No especificada")}</p>
+                        ${muestraVehiculo ? `
+                        <p class="mb-2"><strong>Vehículo</strong></p>
+                        <p class="text-secondary mb-0">${escapar(usuario.vehiculo || "Sin vehículo cargado")}</p>` : ""}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold">Disponibilidad semanal</h4>
+                        <hr>
+                        ${htmlDisponibilidad()}
+                        <a href="panel-prestador.html" class="btn btn-outline-primary btn-sm mt-3">Editar disponibilidad</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold">Políticas de mascotas</h4>
+                        <hr>
+                        ${htmlPoliticas()}
+                        <a href="panel-prestador.html" class="btn btn-outline-primary btn-sm mt-3">Editar políticas</a>
                     </div>
                 </div>
             </div>

@@ -16,6 +16,8 @@
     --pac-ink: #2c3e50;
     --pac-gray: #64748b;
     --pac-line: #e2e8f0;
+    --pac-shadow: 0 14px 34px -22px rgba(21, 85, 81, 0.45);
+    --pac-shadow-soft: 0 8px 22px -18px rgba(21, 85, 81, 0.4);
 }
 
 
@@ -68,23 +70,68 @@ body {
    ENCABEZADOS
    ============================================================ */
 
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
 .panel-header h1 {
     font-family: "Fraunces", serif;
     font-size: clamp(1.7rem, 3vw, 2.1rem);
 }
 
+.panel-header-eyebrow {
+    display: block;
+    margin-bottom: 4px;
+
+    color: var(--pac-turquoise);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.panel-header-acciones {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    padding-top: 6px;
+}
+
 .panel-section-header {
-    max-width: 700px;
+    max-width: 720px;
+    margin-bottom: 1.5rem;
 }
 
 .panel-section-header h2 {
     font-family: "Fraunces", serif;
     font-size: clamp(1.4rem, 3vw, 1.7rem);
+
+    position: relative;
+    padding-left: 14px;
+}
+
+.panel-section-header h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.22em;
+    bottom: 0.22em;
+
+    width: 4px;
+    border-radius: 999px;
+
+    background: var(--pac-turquoise);
 }
 
 
 /* ============================================================
-   TABS
+   MENÚ LATERAL (offcanvas en pantallas chicas)
    ============================================================ */
 
 .panel-layout {
@@ -92,6 +139,21 @@ body {
     grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
     gap: 32px;
     align-items: start;
+}
+
+.panel-menu {
+    --bs-offcanvas-width: 300px;
+}
+
+.panel-menu-eyebrow {
+    padding-left: 14px;
+    margin-bottom: 8px;
+
+    color: var(--pac-gray);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
 .panel-menu-list {
@@ -102,6 +164,7 @@ body {
     background: var(--pac-card);
     border: 1px solid var(--pac-line);
     border-radius: 20px;
+    box-shadow: var(--pac-shadow-soft);
 
     position: sticky;
     top: 16px;
@@ -112,6 +175,8 @@ body {
 }
 
 .panel-menu-item {
+    position: relative;
+
     display: flex;
     align-items: center;
     width: 100%;
@@ -133,20 +198,51 @@ body {
 }
 
 .panel-menu-item span {
-    color: var(--pac-turquoise);
-    margin-right: 8px;
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 22px;
+    margin-right: 10px;
+    padding: 0 5px;
+
+    background: var(--pac-mint);
+    border-radius: 7px;
+
+    color: var(--pac-turquoise-dark);
+    font-size: 0.72rem;
     font-weight: 700;
 }
 
 .panel-menu-item:hover,
 .panel-menu-item:focus {
-    color: var(--pac-ink);
+    color: var(--pac-turquoise-dark);
     background: var(--pac-mint);
 }
 
 .panel-menu-item.active {
-    color: var(--pac-ink);
+    color: var(--pac-turquoise-dark);
     background: var(--pac-mint);
+}
+
+.panel-menu-item.active::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 10px;
+    bottom: 10px;
+
+    width: 3px;
+    border-radius: 999px;
+
+    background: var(--pac-turquoise);
+}
+
+.panel-menu-item.active span {
+    background: var(--pac-turquoise);
+    color: white;
 }
 
 
@@ -158,6 +254,11 @@ body {
     background: var(--pac-card);
     border: 1px solid var(--pac-line);
     border-radius: 20px;
+    box-shadow: var(--pac-shadow);
+}
+
+.tab-content {
+    min-height: 60vh;
 }
 
 
@@ -307,8 +408,9 @@ body {
     background: var(--pac-card);
 
     border: 1px solid var(--pac-line);
-
     border-radius: 16px;
+
+    box-shadow: var(--pac-shadow-soft);
 }
 
 .metric-number {
@@ -442,6 +544,34 @@ body {
    RESPONSIVE
    ============================================================ */
 
+/* El offcanvas deja de ser "caja" y pasa a flujo normal en desktop:
+   se anulan sus estilos y el menú vuelve a ser una columna fija. */
+@media (min-width: 992px) {
+
+    .panel-menu {
+        position: static !important;
+        transform: none !important;
+        visibility: visible !important;
+
+        background-color: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        z-index: auto;
+    }
+
+    .panel-menu .offcanvas-header {
+        display: none;
+    }
+
+    .panel-menu .offcanvas-body {
+        display: block;
+        flex-grow: 1;
+        padding: 0;
+        overflow: visible;
+        background-color: transparent !important;
+    }
+}
+
 @media (max-width: 992px) {
 
     .panel-layout {
@@ -449,20 +579,8 @@ body {
         gap: 20px;
     }
 
-    .panel-menu-list {
-        position: static;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .panel-menu-list li + li {
-        margin-top: 0;
-    }
-
-    .panel-menu-item {
-        width: auto;
-        justify-content: flex-start;
+    .tab-content {
+        min-height: auto;
     }
 }
 

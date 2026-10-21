@@ -200,7 +200,22 @@ function actualizarSugerenciaNivel() {
 // GUARDAR / MOSTRAR SERVICIOS
 // -----------------------------------------
 
+// Nombres canónicos que espera el backend. Se normalizan antes de guardar
+// por si la base tiene valores viejos con tildes ("Guardería") o duplicados.
+const SERVICIOS_VALIDOS = ["Paseo", "Guarderia", "Traslado"];
+
+const servicioCanonico = (valor) => {
+  const limpio = String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  return SERVICIOS_VALIDOS.find((servicio) => servicio.toLowerCase() === limpio);
+};
+
 async function guardarServicios() {
+  misServicios = [...new Set(misServicios.map(servicioCanonico).filter(Boolean))];
+
   const respuesta = await fetch("/api/users/me/servicios", {
     method: "PUT",
     credentials: "include",
@@ -219,6 +234,17 @@ async function guardarServicios() {
 
   misServicios = leerLista(resultado.usuario.servicios);
   misPrecios = resultado.usuario.preciosServicios || {};
+
+  // Reflejar el cambio en la sesión local (perfil, cabecera y otra pestaña).
+  usuario.servicios = misServicios;
+  usuario.preciosServicios = misPrecios;
+
+  try {
+    localStorage.setItem("usuario", JSON.stringify(usuario));
+  } catch {
+    /* sin localStorage igual sigue funcionando */
+  }
+
   renderizarServicios();
 }
 
@@ -365,7 +391,9 @@ if (usuario) {
   escribir("resenasPrestador", usuario.resenas || "0");
 
   renderizarServicios();
-  cargarPrecios();
+  cargarPrecios().catch(() => {
+    /* sin conexión con la API quedan los precios de referencia */
+  });
 
   // Formulario de publicación
   if (servicioSelect && precioInput) {
@@ -402,8 +430,23 @@ if (usuario) {
   }
 
   if (formulario) {
+    const okPublicar = document.getElementById("okPublicar");
+    const errorPublicar = document.getElementById("errorPublicar");
+
+    const ocultarMensajes = () => {
+      okPublicar?.classList.add("d-none");
+      errorPublicar?.classList.add("d-none");
+    };
+
+    const mostrarError = (texto) => {
+      if (!errorPublicar) return;
+      errorPublicar.textContent = texto;
+      errorPublicar.classList.remove("d-none");
+    };
+
     formulario.addEventListener("submit", async (event) => {
       event.preventDefault();
+      ocultarMensajes();
 
       const servicio = NOMBRE_SERVICIO[servicioSelect.value];
       const precio = Number(precioInput.value);
@@ -415,7 +458,12 @@ if (usuario) {
 
       precioError.classList.add("d-none");
 
-      if (servicio === "Traslado") {
+      // El backend exige vehículo para cualquier lista que incluya Traslado.
+      const incluyeTraslado =
+        servicio === "Traslado" || misServicios.includes("Traslado");
+      let aviso = "";
+
+      if (incluyeTraslado) {
         let vehiculoActual = usuario.vehiculo || null;
 
         try {
@@ -432,13 +480,20 @@ if (usuario) {
         }
 
         if (!vehiculoActual) {
-          const tabVehiculo = document.getElementById("tab-vehiculo");
-          if (tabVehiculo) tabVehiculo.click();
+          if (servicio === "Traslado") {
+            document.getElementById("tab-vehiculo")?.click();
+            mostrarError(
+              "Para publicar Traslado primero cargá tu vehículo en la sección Vehículo.",
+            );
+            return;
+          }
 
-          alert(
-            "Para publicar Traslado primero cargá tu vehículo en la pestaña Vehículo.",
-          );
-          return;
+          // La lista tenía Traslado publicado sin vehículo: se retira para poder guardar.
+          misServicios = misServicios.filter((item) => item !== "Traslado");
+          delete misPrecios["Traslado"];
+          renderizarServicios();
+          aviso =
+            "Quitamos Traslado de tu lista: necesitás cargar un vehículo para ofrecerlo (sección Vehículo).";
         }
       }
 
@@ -451,10 +506,16 @@ if (usuario) {
       try {
         await guardarServicios();
         formulario.reset();
+        adaptarCampos();
         actualizarSugerenciaNivel();
-        alert("Servicio publicado correctamente.");
-      } catch (error) {
-        alert(error.message);
+
+        if (aviso) {
+          mostrarError(aviso);
+        } else {
+          okPublicar?.classList.remove("d-none");
+        }
+      } catch (e) {
+        mostrarError(e.message);
       }
     });
   }

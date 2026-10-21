@@ -60,55 +60,87 @@
     <main class="container py-4 py-md-5">
       <!-- ENCABEZADO -->
 
-      <div class="panel-header mb-4">
-        <h1 class="fw-bold mb-2">Panel del prestador</h1>
+      <header class="panel-header mb-4">
+        <div>
+          <span class="panel-header-eyebrow">Tu espacio de trabajo</span>
+          <h1 class="fw-bold mb-2">Panel del prestador</h1>
+          <p class="text-secondary mb-0">
+            Administrá tus servicios, precios y rendimiento.
+          </p>
+        </div>
 
-        <p class="text-secondary mb-0">
-          Administrá tus servicios, precios y rendimiento.
-          
-        <a href="perfil-prestador.html" class="btn btn-outline-primary btn-sm mt-3">
+        <div class="panel-header-acciones">
+          <a href="perfil-prestador.html" class="btn btn-outline-primary btn-sm">
             Mi perfil y servicios
-        </a>
-        </p>
-      </div>
+          </a>
 
-      <!-- ===================================================== -->
-      <!-- TABS -->
-      <!-- ===================================================== -->
+          <button
+            type="button"
+            class="btn btn-pac btn-sm d-lg-none"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#panelMenuLateral"
+            aria-controls="panelMenuLateral"
+          >
+            <i class="bi bi-list me-1"></i> Secciones
+          </button>
+        </div>
+      </header>
 
       <!-- ===================================================== -->
       <!-- MENÚ LATERAL DEL PANEL                                 -->
+      <!-- En pantallas chicas se abre como offcanvas responsivo -->
       <!-- ===================================================== -->
 
       <div class="panel-layout">
-        <aside class="panel-menu mb-4 mb-md-0">
-          <ul class="panel-menu-list" id="panelTabs" role="tablist">
-            <li>
-              <button
-                class="panel-menu-item active"
-                id="tab-precios"
-                data-bs-toggle="tab"
-                data-bs-target="#precios"
-                type="button"
-                role="tab"
-              >
-                <span>01</span> Precios y publicación
-              </button>
-            </li>
+        <aside
+          class="panel-menu offcanvas offcanvas-lg offcanvas-start border-0"
+          tabindex="-1"
+          id="panelMenuLateral"
+          aria-labelledby="panelMenuTitulo"
+        >
+          <div class="offcanvas-header d-lg-none">
+            <h5 class="offcanvas-title fw-bold" id="panelMenuTitulo">
+              Secciones del panel
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="offcanvas"
+              aria-label="Cerrar"
+            ></button>
+          </div>
 
-            <li>
-              <button
-                class="panel-menu-item"
-                id="tab-rendimiento"
-                data-bs-toggle="tab"
-                data-bs-target="#rendimiento"
-                type="button"
-                role="tab"
-              >
-                <span>02</span> Rendimiento y reseñas
-              </button>
-            </li>
-          </ul>
+          <div class="offcanvas-body">
+            <p class="panel-menu-eyebrow d-none d-lg-block">Secciones</p>
+
+            <ul class="panel-menu-list" id="panelTabs" role="tablist">
+              <li>
+                <button
+                  class="panel-menu-item active"
+                  id="tab-precios"
+                  data-bs-toggle="tab"
+                  data-bs-target="#precios"
+                  type="button"
+                  role="tab"
+                >
+                  <span>01</span> Precios y publicación
+                </button>
+              </li>
+
+              <li>
+                <button
+                  class="panel-menu-item"
+                  id="tab-rendimiento"
+                  data-bs-toggle="tab"
+                  data-bs-target="#rendimiento"
+                  type="button"
+                  role="tab"
+                >
+                  <span>02</span> Rendimiento y reseñas
+                </button>
+              </li>
+            </ul>
+          </div>
         </aside>
 
       <!-- ===================================================== -->
@@ -317,6 +349,10 @@
                       <button type="submit" class="btn btn-pac">
                         Publicar servicio
                       </button>
+                      <span id="okPublicar" class="text-success small d-none">
+                        Servicio publicado correctamente.
+                      </span>
+                      <span id="errorPublicar" class="text-danger small d-none"></span>
                     </div>
                   </form>
                 </div>
