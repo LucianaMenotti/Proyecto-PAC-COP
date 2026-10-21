@@ -353,9 +353,18 @@ export const actualizarRestricciones = async (req, res) => {
         .json({ mensaje: "Los tamaños aceptados no son válidos" });
     }
 
+    // Acepta array o texto "pitbull, rottweiler" (formatos viejos en la base)
+    const listaRazas = Array.isArray(restricciones)
+      ? restricciones
+      : typeof restricciones === "string" && restricciones.trim()
+        ? restricciones.split(",")
+        : [];
+
     await req.user.update({
       tamanosAceptados,
-      restricciones: Array.isArray(restricciones) ? restricciones : [],
+      restricciones: listaRazas
+        .map((raza) => String(raza).trim().toLowerCase())
+        .filter(Boolean),
     });
 
     return res.status(200).json({

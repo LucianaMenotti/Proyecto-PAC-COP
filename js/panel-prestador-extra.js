@@ -314,10 +314,23 @@ const TAMANOS_MASCOTA = ["pequeño", "mediano", "grande"];
 const chequeosTamanos = paneRestricciones.querySelector("#tamanosChecks");
 const razasExcluidas = paneRestricciones.querySelector("#razasExcluidas");
 
+// Acepta array o texto "pitbull, rottweiler" (formatos viejos en la base)
+function listaDeRazas(valor) {
+  if (Array.isArray(valor)) {
+    return valor.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof valor === "string" && valor.trim()) {
+    return valor.split(",").map((item) => item.trim()).filter(Boolean);
+  }
+
+  return [];
+}
+
 function renderizarRestricciones() {
-  const aceptados = Array.isArray(sesion.tamanosAceptados)
-    ? sesion.tamanosAceptados
-    : [];
+  const aceptados = listaDeRazas(sesion.tamanosAceptados).filter((tamano) =>
+    TAMANOS_MASCOTA.includes(tamano),
+  );
 
   chequeosTamanos.innerHTML = TAMANOS_MASCOTA.map(
     (tamano) => `
@@ -330,9 +343,7 @@ function renderizarRestricciones() {
       </div>`,
   ).join("");
 
-  razasExcluidas.value = Array.isArray(sesion.restricciones)
-    ? sesion.restricciones.join(", ")
-    : "";
+  razasExcluidas.value = listaDeRazas(sesion.restricciones).join(", ");
 }
 
 async function guardarRestricciones() {

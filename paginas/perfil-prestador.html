@@ -144,17 +144,34 @@ function htmlDisponibilidad() {
     </ul>`;
 }
 
+function normalizarLista(valor) {
+    if (Array.isArray(valor)) {
+        return valor.map((item) => String(item).trim()).filter(Boolean);
+    }
+
+    // Datos guardados en formatos viejos pueden venir como "pitbull, rottweiler"
+    if (typeof valor === "string" && valor.trim()) {
+        return valor.split(",").map((item) => item.trim()).filter(Boolean);
+    }
+
+    return [];
+}
+
+function capitalizar(texto) {
+    return texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : texto;
+}
+
 function htmlPoliticas() {
-    const tamanos = Array.isArray(usuario.tamanosAceptados) ? usuario.tamanosAceptados : [];
-    const razas = Array.isArray(usuario.restricciones) ? usuario.restricciones : [];
+    const tamanos = normalizarLista(usuario.tamanosAceptados);
+    const razas = normalizarLista(usuario.restricciones);
 
     const chipsTamanos = tamanos.length
-        ? tamanos.map((tamano) => `<span class="badge text-bg-light border fw-semibold me-1">${escapar(tamano)}</span>`).join("")
+        ? tamanos.map((tamano) => `<span class="badge text-bg-light border fw-semibold me-1">${escapar(capitalizar(tamano))}</span>`).join("")
         : `<span class="text-secondary">Cualquier tamaño</span>`;
 
     const chipsRazas = razas.length
-        ? razas.map((raza) => `<span class="badge text-bg-warning-subtle border fw-semibold me-1">${escapar(raza)}</span>`).join("")
-        : `<span class="text-secondary">Sin razas excluidas</span>`;
+        ? razas.map((raza) => `<span class="badge text-bg-warning-subtle border fw-semibold me-1">${escapar(capitalizar(raza))}</span>`).join("")
+        : `<span class="text-secondary">Todavía no excluís ninguna raza. Podés cargarlas desde el panel.</span>`;
 
     return `
         <p class="mb-2"><strong>Tamaños que acepta</strong></p>
