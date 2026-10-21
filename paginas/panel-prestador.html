@@ -76,63 +76,62 @@
       <!-- TABS -->
       <!-- ===================================================== -->
 
-      <ul class="nav nav-tabs panel-tabs mb-4" id="panelTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link active"
-            id="tab-niveles"
-            data-bs-toggle="tab"
-            data-bs-target="#niveles"
-            type="button"
-            role="tab"
-          >
-            <span>01</span>
-            Niveles y precio mínimo
-          </button>
-        </li>
+      <!-- ===================================================== -->
+      <!-- MENÚ DEL PANEL                                        -->
+      <!-- ===================================================== -->
 
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="tab-publicar"
-            data-bs-toggle="tab"
-            data-bs-target="#publicar"
-            type="button"
-            role="tab"
-          >
-            <span>02</span>
-            Publicar servicio
-          </button>
-        </li>
+      <div class="dropdown panel-menu mb-4" id="panelMenu">
+        <button
+          class="btn btn-pac dropdown-toggle w-100 text-start"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          id="menuPanelBoton"
+        >
+          <span id="menuPanelActual">Niveles y precio mínimo</span>
+        </button>
 
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="tab-rendimiento"
-            data-bs-toggle="tab"
-            data-bs-target="#rendimiento"
-            type="button"
-            role="tab"
-          >
-            <span>03</span>
-            Rendimiento
-          </button>
-        </li>
+        <ul class="dropdown-menu w-100" id="panelTabs" aria-labelledby="menuPanelBoton">
+          <li>
+            <button
+              class="dropdown-item active"
+              id="tab-niveles"
+              data-bs-toggle="tab"
+              data-bs-target="#niveles"
+              type="button"
+              role="tab"
+            >
+              <span>01</span> Niveles y precio mínimo
+            </button>
+          </li>
 
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="tab-ruta"
-            data-bs-toggle="tab"
-            data-bs-target="#ruta"
-            type="button"
-            role="tab"
-          >
-            <span>04</span>
-            Ruta de hoy
-          </button>
-        </li>
-      </ul>
+          <li>
+            <button
+              class="dropdown-item"
+              id="tab-publicar"
+              data-bs-toggle="tab"
+              data-bs-target="#publicar"
+              type="button"
+              role="tab"
+            >
+              <span>02</span> Publicar servicio
+            </button>
+          </li>
+
+          <li>
+            <button
+              class="dropdown-item"
+              id="tab-rendimiento"
+              data-bs-toggle="tab"
+              data-bs-target="#rendimiento"
+              type="button"
+              role="tab"
+            >
+              <span>03</span> Rendimiento
+            </button>
+          </li>
+        </ul>
+      </div>
 
       <!-- ===================================================== -->
       <!-- CONTENIDO DE LOS TABS -->
@@ -517,49 +516,9 @@
               </div>
             </div>
           </div>
-        </section>
 
-        <!-- ================================================= -->
-        <!-- PANEL 4 - RUTA -->
-        <!-- ================================================= -->
-
-        <section
-          class="tab-pane fade"
-          id="ruta"
-          role="tabpanel"
-          aria-labelledby="tab-ruta"
-        >
-          <div class="panel-section-header mb-4">
-            <h2 class="fw-bold">Tu recorrido de hoy</h2>
-
-            <p class="text-secondary mb-0">
-              Orden sugerido según cercanía y horario.
-            </p>
-
-            <a
-              href="../seguimiento gps en tiempo real/seguimiento.html"
-              id="linkSeguimientoRuta"
-              class="btn btn-primary rounded-pill mt-3"
-            >
-              <i class="bi bi-geo-alt me-1"></i> Abrir seguimiento GPS
-            </a>
-          </div>
-
-          <!--
-                EL MAPA SE DEJA FUERA POR AHORA.
-
-                La integración original utilizaba Google Maps,
-                pero esa parte todavía no fue incorporada al proyecto.
-
-                Se agregará posteriormente sin modificar la lista
-                de recorridos.
-            -->
-
-          <!-- RECORRIDO -->
-
-          <div class="d-grid gap-3" id="listaRuta">
-            <p class="text-secondary">Calculando tu recorrido de hoy…</p>
-          </div>
+          <!-- RESEÑAS -->
+          <div id="panelResenas" class="mt-4"></div>
         </section>
       </div>
     </main>

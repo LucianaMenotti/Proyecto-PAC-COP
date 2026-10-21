@@ -87,42 +87,48 @@ body {
    TABS
    ============================================================ */
 
-.panel-tabs {
-    border-bottom: 1px solid var(--pac-line);
-    overflow-x: auto;
-    flex-wrap: nowrap;
+.panel-menu > .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    font-weight: 600;
 }
 
-.panel-tabs .nav-link {
+.panel-menu .dropdown-menu {
+    border: 1px solid var(--pac-line);
+    border-radius: 16px;
+    padding: 8px;
+}
+
+.panel-menu .dropdown-item {
     color: var(--pac-gray);
-    border: none;
-    border-bottom: 3px solid transparent;
+    border-radius: 10px;
 
-    padding: 12px 16px;
-
-    white-space: nowrap;
+    padding: 10px 14px;
 
     font-weight: 600;
 
     transition:
         color 0.15s ease,
-        border-color 0.15s ease;
+        background-color 0.15s ease;
 }
 
-.panel-tabs .nav-link span {
+.panel-menu .dropdown-item span {
     color: var(--pac-turquoise);
     margin-right: 6px;
     font-weight: 700;
 }
 
-.panel-tabs .nav-link:hover {
+.panel-menu .dropdown-item:hover,
+.panel-menu .dropdown-item:focus {
     color: var(--pac-ink);
+    background: var(--pac-mint);
 }
 
-.panel-tabs .nav-link.active {
+.panel-menu .dropdown-item.active {
     color: var(--pac-ink);
-    background: transparent;
-    border-bottom-color: var(--pac-turquoise);
+    background: var(--pac-mint);
 }
 
 
@@ -420,11 +426,6 @@ body {
 
 @media (max-width: 768px) {
 
-    .panel-tabs .nav-link {
-        padding: 10px 12px;
-        font-size: 0.85rem;
-    }
-
     .panel-card .card-body,
     .suggestion-card {
         padding: 20px !important;
@@ -450,14 +451,9 @@ body {
         height: 7px;
     }
 
-    .panel-tabs {
-        margin-left: -4px;
-        margin-right: -4px;
-    }
-
-    .panel-tabs .nav-link {
-        padding: 10px;
-        font-size: 0.8rem;
+    .panel-menu .dropdown-item {
+        padding: 9px 12px;
+        font-size: 0.9rem;
     }
 
     .nivel-badge {

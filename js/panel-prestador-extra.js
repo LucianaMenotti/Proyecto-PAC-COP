@@ -24,10 +24,8 @@ const formatearFecha = (valor) =>
 function crearTab(id, numero, titulo) {
   const panelTabs = document.getElementById("panelTabs");
   const item = document.createElement("li");
-  item.className = "nav-item";
-  item.setAttribute("role", "presentation");
   item.innerHTML = `
-    <button class="nav-link" id="tab-${id}" data-bs-toggle="tab"
+    <button class="dropdown-item" id="tab-${id}" data-bs-toggle="tab"
             data-bs-target="#${id}" type="button" role="tab">
       <span>${numero}</span> ${titulo}
     </button>`;
@@ -47,13 +45,26 @@ function crearTab(id, numero, titulo) {
 /* Solicitudes                                                 */
 /* ---------------------------------------------------------- */
 
-const paneSolicitudes = crearTab("solicitudes", "05", "Solicitudes");
+const paneSolicitudes = crearTab("solicitudes", "04", "Solicitudes");
 paneSolicitudes.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Reservas y servicios activos</h2>
     <p class="text-secondary mb-0">Aceptá o rechazá las reservas pendientes y accedé al chat de cada servicio activo.</p>
   </div>
-  <div id="listaSolicitudes" class="d-grid gap-3"></div>`;
+  <div id="listaSolicitudes" class="d-grid gap-3"></div>
+
+  <div class="panel-section-header mt-5 mb-3">
+    <h3 class="fw-bold h5 mb-1">Tu recorrido de hoy</h3>
+    <p class="text-secondary mb-2">Orden sugerido según cercanía y horario.</p>
+    <a href="../seguimiento gps en tiempo real/seguimiento.html"
+       id="linkSeguimientoRuta"
+       class="btn btn-primary rounded-pill btn-sm disabled">
+      <i class="bi bi-geo-alt me-1"></i> Abrir seguimiento GPS
+    </a>
+  </div>
+  <div class="d-grid gap-3" id="listaRuta">
+    <p class="text-secondary mb-0">Calculando tu recorrido de hoy…</p>
+  </div>`;
 
 const listaSolicitudes = paneSolicitudes.querySelector("#listaSolicitudes");
 
@@ -68,11 +79,28 @@ function abrirSolicitudes() {
   } else {
     tab.click();
   }
+  actualizarTituloMenu(tab);
   tab.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 window.addEventListener("hashchange", () => {
   if (location.hash === "#solicitudes") abrirSolicitudes();
+});
+
+/* El menú desplegable muestra el nombre de la sección abierta. */
+
+const menuPanelActual = document.getElementById("menuPanelActual");
+
+function actualizarTituloMenu(boton) {
+  if (!menuPanelActual || !boton) return;
+  const etiqueta = boton.cloneNode(true);
+  if (etiqueta.querySelector("span")) etiqueta.querySelector("span").remove();
+  menuPanelActual.textContent = etiqueta.textContent.trim();
+}
+
+document.getElementById("panelTabs")?.addEventListener("click", (evento) => {
+  const item = evento.target.closest(".dropdown-item");
+  if (item) actualizarTituloMenu(item);
 });
 
 async function cargarSolicitudes() {
@@ -188,7 +216,7 @@ listaSolicitudes.addEventListener("click", async (event) => {
 /* Disponibilidad                                              */
 /* ---------------------------------------------------------- */
 
-const paneDisponibilidad = crearTab("disponibilidad", "06", "Disponibilidad");
+const paneDisponibilidad = crearTab("disponibilidad", "05", "Disponibilidad");
 paneDisponibilidad.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Tu disponibilidad semanal</h2>
@@ -271,7 +299,7 @@ paneDisponibilidad.querySelector("#guardarDisponibilidad").addEventListener("cli
 
 const TAMANOS_MASCOTA = ["pequeño", "mediano", "grande"];
 
-const paneRestricciones = crearTab("restricciones", "07", "Restricciones");
+const paneRestricciones = crearTab("restricciones", "06", "Restricciones");
 paneRestricciones.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Qué mascotas aceptás</h2>
@@ -357,7 +385,7 @@ paneRestricciones.querySelector("#guardarRestricciones").addEventListener("click
 /* Cuenta de cobro y liquidaciones                             */
 /* ---------------------------------------------------------- */
 
-const paneCuenta = crearTab("cuenta", "08", "Cuenta de cobro");
+const paneCuenta = crearTab("cuenta", "07", "Cuenta de cobro");
 paneCuenta.innerHTML = `
   <div class="row g-4">
     <div class="col-lg-6">
@@ -488,7 +516,7 @@ paneCuenta.querySelector("#guardarCuenta").addEventListener("click", guardarCuen
 /* Guardería: check-in y check-out                             */
 /* ---------------------------------------------------------- */
 
-const paneGuarderia = crearTab("guarderia", "09", "Guardería");
+const paneGuarderia = crearTab("guarderia", "08", "Guardería");
 paneGuarderia.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Check-in y check-out</h2>
@@ -565,7 +593,7 @@ listaGuarderia.addEventListener("click", async (event) => {
 /* Vehículo                                                    */
 /* ---------------------------------------------------------- */
 
-const paneVehiculo = crearTab("vehiculo", "10", "Vehículo");
+const paneVehiculo = crearTab("vehiculo", "09", "Vehículo");
 paneVehiculo.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Tu vehículo</h2>
@@ -625,39 +653,43 @@ paneVehiculo
 /* Mis reseñas                                                 */
 /* ---------------------------------------------------------- */
 
-const paneResenas = crearTab("resenas", "11", "Mis reseñas");
-paneResenas.innerHTML = `
-  <div class="panel-section-header mb-4">
-    <h2 class="fw-bold">Calificaciones y reseñas</h2>
-    <p class="text-secondary mb-0">
-      Esto es lo que opinan los dueños que contrataron tus servicios.
-    </p>
-  </div>
-
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-4">
-      <div class="card metric-card h-100">
-        <div class="card-body text-center p-4">
-          <div class="metric-number" id="promedioResenas">0<span>★</span></div>
-          <div class="text-secondary">Calificación promedio</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="card metric-card h-100">
-        <div class="card-body text-center p-4">
-          <div class="metric-number" id="totalResenas">0</div>
-          <div class="text-secondary">Reseñas recibidas</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="listaResenasPrestador" class="d-grid gap-3"></div>`;
-
-const listaResenasPrestador = paneResenas.querySelector("#listaResenasPrestador");
+const panelResenas = document.getElementById("panelResenas");
 
 async function cargarMisResenas() {
+  if (!panelResenas) return;
+
+  panelResenas.innerHTML = `
+  <div class="card panel-card">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-1">Calificaciones y reseñas</h5>
+      <p class="text-secondary small mb-3">
+        Esto es lo que opinan los dueños que contrataron tus servicios.
+      </p>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+          <div class="card metric-card h-100">
+            <div class="card-body text-center p-4">
+              <div class="metric-number" id="promedioResenas">0<span>★</span></div>
+              <div class="text-secondary">Calificación promedio</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="card metric-card h-100">
+            <div class="card-body text-center p-4">
+              <div class="metric-number" id="totalResenas">0</div>
+              <div class="text-secondary">Reseñas recibidas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="listaResenasPrestador" class="d-grid gap-3"></div>
+    </div>
+  </div>`;
+
+  const listaResenasPrestador = panelResenas.querySelector("#listaResenasPrestador");
   listaResenasPrestador.innerHTML = `<p class="text-secondary mb-0">Cargando reseñas...</p>`;
 
   try {
@@ -675,8 +707,8 @@ async function cargarMisResenas() {
       ? resenas.reduce((suma, r) => suma + Number(r.puntuacion || 0), 0) / resenas.length
       : Number(sesion.calificacion) || 0;
 
-    const promedioEl = paneResenas.querySelector("#promedioResenas");
-    const totalEl = paneResenas.querySelector("#totalResenas");
+    const promedioEl = panelResenas.querySelector("#promedioResenas");
+    const totalEl = panelResenas.querySelector("#totalResenas");
     if (promedioEl) promedioEl.innerHTML = `${promedio.toFixed(1)}<span>★</span>`;
     if (totalEl) totalEl.textContent = total;
 
