@@ -87,46 +87,64 @@ body {
    TABS
    ============================================================ */
 
-.panel-menu > .dropdown-toggle {
+.panel-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.panel-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 10px;
+
+    background: var(--pac-card);
+    border: 1px solid var(--pac-line);
+    border-radius: 20px;
+
+    position: sticky;
+    top: 16px;
+}
+
+.panel-menu-list li + li {
+    margin-top: 4px;
+}
+
+.panel-menu-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    width: 100%;
 
-    font-weight: 600;
-}
+    padding: 12px 14px;
 
-.panel-menu .dropdown-menu {
-    border: 1px solid var(--pac-line);
-    border-radius: 16px;
-    padding: 8px;
-}
-
-.panel-menu .dropdown-item {
     color: var(--pac-gray);
-    border-radius: 10px;
-
-    padding: 10px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
 
     font-weight: 600;
+    text-align: left;
+    white-space: normal;
 
     transition:
         color 0.15s ease,
         background-color 0.15s ease;
 }
 
-.panel-menu .dropdown-item span {
+.panel-menu-item span {
     color: var(--pac-turquoise);
-    margin-right: 6px;
+    margin-right: 8px;
     font-weight: 700;
 }
 
-.panel-menu .dropdown-item:hover,
-.panel-menu .dropdown-item:focus {
+.panel-menu-item:hover,
+.panel-menu-item:focus {
     color: var(--pac-ink);
     background: var(--pac-mint);
 }
 
-.panel-menu .dropdown-item.active {
+.panel-menu-item.active {
     color: var(--pac-ink);
     background: var(--pac-mint);
 }
@@ -424,6 +442,30 @@ body {
    RESPONSIVE
    ============================================================ */
 
+@media (max-width: 992px) {
+
+    .panel-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .panel-menu-list {
+        position: static;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .panel-menu-list li + li {
+        margin-top: 0;
+    }
+
+    .panel-menu-item {
+        width: auto;
+        justify-content: flex-start;
+    }
+}
+
 @media (max-width: 768px) {
 
     .panel-card .card-body,
@@ -451,7 +493,7 @@ body {
         height: 7px;
     }
 
-    .panel-menu .dropdown-item {
+    .panel-menu-item {
         padding: 9px 12px;
         font-size: 0.9rem;
     }

@@ -25,7 +25,7 @@ function crearTab(id, numero, titulo) {
   const panelTabs = document.getElementById("panelTabs");
   const item = document.createElement("li");
   item.innerHTML = `
-    <button class="dropdown-item" id="tab-${id}" data-bs-toggle="tab"
+    <button class="panel-menu-item" id="tab-${id}" data-bs-toggle="tab"
             data-bs-target="#${id}" type="button" role="tab">
       <span>${numero}</span> ${titulo}
     </button>`;
@@ -45,7 +45,7 @@ function crearTab(id, numero, titulo) {
 /* Solicitudes                                                 */
 /* ---------------------------------------------------------- */
 
-const paneSolicitudes = crearTab("solicitudes", "04", "Solicitudes");
+const paneSolicitudes = crearTab("solicitudes", "03", "Solicitudes");
 paneSolicitudes.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Reservas y servicios activos</h2>
@@ -79,28 +79,11 @@ function abrirSolicitudes() {
   } else {
     tab.click();
   }
-  actualizarTituloMenu(tab);
   tab.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 window.addEventListener("hashchange", () => {
   if (location.hash === "#solicitudes") abrirSolicitudes();
-});
-
-/* El menú desplegable muestra el nombre de la sección abierta. */
-
-const menuPanelActual = document.getElementById("menuPanelActual");
-
-function actualizarTituloMenu(boton) {
-  if (!menuPanelActual || !boton) return;
-  const etiqueta = boton.cloneNode(true);
-  if (etiqueta.querySelector("span")) etiqueta.querySelector("span").remove();
-  menuPanelActual.textContent = etiqueta.textContent.trim();
-}
-
-document.getElementById("panelTabs")?.addEventListener("click", (evento) => {
-  const item = evento.target.closest(".dropdown-item");
-  if (item) actualizarTituloMenu(item);
 });
 
 async function cargarSolicitudes() {
@@ -216,7 +199,7 @@ listaSolicitudes.addEventListener("click", async (event) => {
 /* Disponibilidad                                              */
 /* ---------------------------------------------------------- */
 
-const paneDisponibilidad = crearTab("disponibilidad", "05", "Disponibilidad");
+const paneDisponibilidad = crearTab("trabajo", "04", "Mi trabajo");
 paneDisponibilidad.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Tu disponibilidad semanal</h2>
@@ -299,8 +282,9 @@ paneDisponibilidad.querySelector("#guardarDisponibilidad").addEventListener("cli
 
 const TAMANOS_MASCOTA = ["pequeño", "mediano", "grande"];
 
-const paneRestricciones = crearTab("restricciones", "06", "Restricciones");
-paneRestricciones.innerHTML = `
+const paneRestricciones = paneDisponibilidad;
+paneRestricciones.innerHTML += `
+  <hr class="my-5 border-light" />
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Qué mascotas aceptás</h2>
     <p class="text-secondary mb-0">
@@ -385,7 +369,8 @@ paneRestricciones.querySelector("#guardarRestricciones").addEventListener("click
 /* Cuenta de cobro y liquidaciones                             */
 /* ---------------------------------------------------------- */
 
-const paneCuenta = crearTab("cuenta", "07", "Cuenta de cobro");
+const paneCobros = crearTab("cobros", "05", "Cobros y guardería");
+const paneCuenta = paneCobros;
 paneCuenta.innerHTML = `
   <div class="row g-4">
     <div class="col-lg-6">
@@ -516,8 +501,9 @@ paneCuenta.querySelector("#guardarCuenta").addEventListener("click", guardarCuen
 /* Guardería: check-in y check-out                             */
 /* ---------------------------------------------------------- */
 
-const paneGuarderia = crearTab("guarderia", "08", "Guardería");
-paneGuarderia.innerHTML = `
+const paneGuarderia = paneCobros;
+paneGuarderia.innerHTML += `
+  <hr class="my-5 border-light" />
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Check-in y check-out</h2>
     <p class="text-secondary mb-0">Registrá el ingreso y el egreso de cada mascota.</p>
@@ -593,7 +579,7 @@ listaGuarderia.addEventListener("click", async (event) => {
 /* Vehículo                                                    */
 /* ---------------------------------------------------------- */
 
-const paneVehiculo = crearTab("vehiculo", "09", "Vehículo");
+const paneVehiculo = crearTab("vehiculo", "06", "Vehículo");
 paneVehiculo.innerHTML = `
   <div class="panel-section-header mb-4">
     <h2 class="fw-bold">Tu vehículo</h2>

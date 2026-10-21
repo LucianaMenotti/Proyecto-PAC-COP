@@ -77,76 +77,54 @@
       <!-- ===================================================== -->
 
       <!-- ===================================================== -->
-      <!-- MENÚ DEL PANEL                                        -->
+      <!-- MENÚ LATERAL DEL PANEL                                 -->
       <!-- ===================================================== -->
 
-      <div class="dropdown panel-menu mb-4" id="panelMenu">
-        <button
-          class="btn btn-pac dropdown-toggle w-100 text-start"
-          type="button"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          id="menuPanelBoton"
-        >
-          <span id="menuPanelActual">Niveles y precio mínimo</span>
-        </button>
+      <div class="panel-layout">
+        <aside class="panel-menu mb-4 mb-md-0">
+          <ul class="panel-menu-list" id="panelTabs" role="tablist">
+            <li>
+              <button
+                class="panel-menu-item active"
+                id="tab-precios"
+                data-bs-toggle="tab"
+                data-bs-target="#precios"
+                type="button"
+                role="tab"
+              >
+                <span>01</span> Precios y publicación
+              </button>
+            </li>
 
-        <ul class="dropdown-menu w-100" id="panelTabs" aria-labelledby="menuPanelBoton">
-          <li>
-            <button
-              class="dropdown-item active"
-              id="tab-niveles"
-              data-bs-toggle="tab"
-              data-bs-target="#niveles"
-              type="button"
-              role="tab"
-            >
-              <span>01</span> Niveles y precio mínimo
-            </button>
-          </li>
-
-          <li>
-            <button
-              class="dropdown-item"
-              id="tab-publicar"
-              data-bs-toggle="tab"
-              data-bs-target="#publicar"
-              type="button"
-              role="tab"
-            >
-              <span>02</span> Publicar servicio
-            </button>
-          </li>
-
-          <li>
-            <button
-              class="dropdown-item"
-              id="tab-rendimiento"
-              data-bs-toggle="tab"
-              data-bs-target="#rendimiento"
-              type="button"
-              role="tab"
-            >
-              <span>03</span> Rendimiento
-            </button>
-          </li>
-        </ul>
-      </div>
+            <li>
+              <button
+                class="panel-menu-item"
+                id="tab-rendimiento"
+                data-bs-toggle="tab"
+                data-bs-target="#rendimiento"
+                type="button"
+                role="tab"
+              >
+                <span>02</span> Rendimiento y reseñas
+              </button>
+            </li>
+          </ul>
+        </aside>
 
       <!-- ===================================================== -->
-      <!-- CONTENIDO DE LOS TABS -->
+      <!-- CONTENIDO DE LAS SECCIONES                             -->
       <!-- ===================================================== -->
 
       <div class="tab-content">
         <!-- ================================================= -->
-        <!-- PANEL 1 - NIVELES -->
+        <!-- SECCIÓN 1 - PRECIOS Y PUBLICACIÓN -->
         <!-- ================================================= -->
 
         <section
           class="tab-pane fade show active"
-          id="niveles"
+          id="precios"
           role="tabpanel"
-          aria-labelledby="tab-niveles"
+          aria-labelledby="tab-precios"
         >
           <div class="panel-section-header mb-4">
             <h2 class="fw-bold">Definí tu precio libremente</h2>
@@ -228,18 +206,11 @@
               </p>
             </div>
           </div>
-        </section>
 
-        <!-- ================================================= -->
-        <!-- PANEL 2 - PUBLICAR -->
-        <!-- ================================================= -->
+          <hr class="my-5 border-light" />
 
-        <section
-          class="tab-pane fade"
-          id="publicar"
-          role="tabpanel"
-          aria-labelledby="tab-publicar"
-        >
+          <!-- PUBLICAR SERVICIO -->
+
           <div class="panel-section-header mb-4">
             <h2 class="fw-bold">Publicá y administrá tus servicios</h2>
 
@@ -520,6 +491,7 @@
           <!-- RESEÑAS -->
           <div id="panelResenas" class="mt-4"></div>
         </section>
+      </div>
       </div>
     </main>
 
