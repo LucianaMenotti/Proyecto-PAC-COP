@@ -170,7 +170,7 @@ function htmlPoliticas() {
         : `<span class="text-secondary">Cualquier tamaño</span>`;
 
     const chipsRazas = razas.length
-        ? razas.map((raza) => `<span class="badge text-bg-warning-subtle border fw-semibold me-1">${escapar(capitalizar(raza))}</span>`).join("")
+        ? razas.map((raza) => `<span class="badge bg-warning-subtle text-warning-emphasis border fw-semibold me-1">${escapar(capitalizar(raza))}</span>`).join("")
         : `<span class="text-secondary">Todavía no excluís ninguna raza. Podés cargarlas desde el panel.</span>`;
 
     return `
