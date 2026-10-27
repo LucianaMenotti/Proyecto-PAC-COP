@@ -1,0 +1,21 @@
+{
+  "name": "pac-cop-backend",
+  "version": "1.0.0",
+  "description": "Servidor de PAC-COP, plataforma de gestion de servicios para mascotas",
+  "license": "ISC",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "multer": "^2.4.0",
+    "mysql2": "^3.24.2",
+    "sequelize": "^6.37.8"
+  }
+}
