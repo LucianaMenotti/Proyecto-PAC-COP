@@ -18,6 +18,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",
+    "dev:react": "npm --prefix prestador-react run dev",
+    "build:react": "npm --prefix prestador-react run build",
     "test": "node --test"
   },
   "dependencies": {
