@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+
+// Prestador Sections
 import PreciosSection from './components/sections/PreciosSection';
 import RendimientoSection from './components/sections/RendimientoSection';
 import SolicitudesSection from './components/sections/SolicitudesSection';
@@ -10,10 +12,15 @@ import VehiculoSection from './components/sections/VehiculoSection';
 import ChatReportesSection from './components/sections/ChatReportesSection';
 import PerfilSection from './components/sections/PerfilSection';
 
+// Dueño Sections
+import MisReservasSection from './components/dueno/MisReservasSection';
+import BuscarPrestadoresSection from './components/dueno/BuscarPrestadoresSection';
+import PagoSeguroSection from './components/dueno/PagoSeguroSection';
+import SeguimientoGpsSection from './components/dueno/SeguimientoGpsSection';
+
 import { getCurrentUser, logoutUser } from './api/auth';
 import { getServicios } from './api/prestador';
 
-// Mock/Default fallback en caso de navegar sin backend levantado para preview inmediato
 const DEFAULT_PRESTADOR = {
   id: 1,
   nombre: 'Maximiliano',
@@ -53,20 +60,26 @@ const DEFAULT_PRESTADOR = {
 
 export default function App() {
   const [user, setUser] = useState(DEFAULT_PRESTADOR);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [activeRole, setActiveRole] = useState('prestador'); // 'prestador' | 'dueno'
   const [currentSection, setCurrentSection] = useState('precios');
   const [servicios, setServicios] = useState(DEFAULT_PRESTADOR.servicios);
   const [precios, setPrecios] = useState(DEFAULT_PRESTADOR.preciosServicios);
-  const [chatServicioId, setChatServicioId] = useState(null);
+
+  // Cross-navigation context
+  const [activeServicioId, setActiveServicioId] = useState(null);
   const [pendingCount, setPendingCount] = useState(0);
 
-  // Cargar usuario autenticado real si existe en sesión
+  // Inicializar sesión real si existe
   useEffect(() => {
     async function initSession() {
       try {
         const currentUser = await getCurrentUser();
         if (currentUser) {
           setUser(currentUser);
+          if (currentUser.rol === 'dueño') {
+            setActiveRole('dueno');
+            setCurrentSection('mis-reservas');
+          }
           const rawServs = currentUser.servicios;
           const parsedServs = Array.isArray(rawServs)
             ? rawServs
@@ -77,22 +90,22 @@ export default function App() {
           setPrecios(currentUser.preciosServicios || {});
         }
       } catch (err) {
-        console.warn('Usando datos locales de prestador:', err);
-      } finally {
-        setLoadingUser(false);
+        console.warn('Usando usuario demo:', err);
       }
     }
 
     initSession();
 
-    // Detectar hash de URL (ej: #solicitudes, #chat)
     const hash = window.location.hash.replace('#', '');
     if (hash) {
+      if (['mis-reservas', 'buscar', 'pago', 'tracking'].includes(hash)) {
+        setActiveRole('dueno');
+      }
       setCurrentSection(hash);
     }
   }, []);
 
-  // Consultar periódicamente solicitudes pendientes para la alerta
+  // Consultar solicitudes pendientes
   useEffect(() => {
     async function checkPending() {
       try {
@@ -108,7 +121,6 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Calcular nivel dinámicamente
   const nivel = useMemo(() => {
     const cant = Number(user?.serviciosCompletados || 0);
     const calif = Number(user?.calificacion || 0);
@@ -117,6 +129,11 @@ export default function App() {
     if (cant >= 10 && calif >= 4.0) return 'establecido';
     return 'nuevo';
   }, [user]);
+
+  const handleToggleRole = (role) => {
+    setActiveRole(role);
+    setCurrentSection(role === 'prestador' ? 'precios' : 'mis-reservas');
+  };
 
   const handleServiciosUpdated = (nuevosServicios, nuevosPrecios) => {
     setServicios(nuevosServicios);
@@ -128,13 +145,24 @@ export default function App() {
     }));
   };
 
-  const handleUserDataUpdated = (updatedUser) => {
-    setUser(updatedUser);
+  const handleOpenChat = (servicioId) => {
+    setActiveServicioId(servicioId);
+    setCurrentSection('chat');
   };
 
-  const handleOpenChat = (servicioId) => {
-    setChatServicioId(servicioId);
-    setCurrentSection('chat');
+  const handleNavigateToPay = (servicioId) => {
+    setActiveServicioId(servicioId);
+    setCurrentSection('pago');
+  };
+
+  const handleNavigateToTracking = (servicioId) => {
+    setActiveServicioId(servicioId);
+    setCurrentSection('tracking');
+  };
+
+  const handleReservaCreada = (servicioId) => {
+    setActiveServicioId(servicioId);
+    setCurrentSection('pago');
   };
 
   const handleLogout = async () => {
@@ -148,6 +176,8 @@ export default function App() {
       <Navbar
         user={user}
         nivel={nivel}
+        activeRole={activeRole}
+        onToggleRole={handleToggleRole}
         onSelectSection={setCurrentSection}
         onLogout={handleLogout}
       />
@@ -155,69 +185,117 @@ export default function App() {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1">
         <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Lateral Navigation Sidebar */}
+          {/* Sidebar Navigation */}
           <Sidebar
+            activeRole={activeRole}
             currentSection={currentSection}
             onSelectSection={setCurrentSection}
             pendingCount={pendingCount}
           />
 
-          {/* Dynamic Section Content */}
+          {/* Section Dynamic View */}
           <div className="flex-1 w-full min-w-0">
-            {currentSection === 'precios' && (
-              <PreciosSection
-                user={user}
-                nivel={nivel}
-                servicios={servicios}
-                precios={precios}
-                onServiciosUpdated={handleServiciosUpdated}
-              />
+            {/* SECCIONES MODO PRESTADOR */}
+            {activeRole === 'prestador' && (
+              <>
+                {currentSection === 'precios' && (
+                  <PreciosSection
+                    user={user}
+                    nivel={nivel}
+                    servicios={servicios}
+                    precios={precios}
+                    onServiciosUpdated={handleServiciosUpdated}
+                  />
+                )}
+
+                {currentSection === 'rendimiento' && (
+                  <RendimientoSection user={user} />
+                )}
+
+                {currentSection === 'solicitudes' && (
+                  <SolicitudesSection onOpenChat={handleOpenChat} />
+                )}
+
+                {currentSection === 'trabajo' && (
+                  <MiTrabajoSection
+                    user={user}
+                    onUserDataUpdated={setUser}
+                  />
+                )}
+
+                {currentSection === 'cobros' && (
+                  <CobrosGuarderiaSection
+                    user={user}
+                    onUserDataUpdated={setUser}
+                  />
+                )}
+
+                {currentSection === 'vehiculo' && (
+                  <VehiculoSection
+                    user={user}
+                    onUserDataUpdated={setUser}
+                  />
+                )}
+
+                {currentSection === 'chat' && (
+                  <ChatReportesSection
+                    user={user}
+                    initialServicioId={activeServicioId}
+                  />
+                )}
+
+                {currentSection === 'perfil' && (
+                  <PerfilSection
+                    user={user}
+                    servicios={servicios}
+                    precios={precios}
+                    onSelectSection={setCurrentSection}
+                    onServiciosUpdated={handleServiciosUpdated}
+                  />
+                )}
+              </>
             )}
 
-            {currentSection === 'rendimiento' && (
-              <RendimientoSection user={user} />
-            )}
+            {/* SECCIONES MODO DUEÑO DE MASCOTA */}
+            {activeRole === 'dueno' && (
+              <>
+                {currentSection === 'mis-reservas' && (
+                  <MisReservasSection
+                    onNavigateToPay={handleNavigateToPay}
+                    onNavigateToTracking={handleNavigateToTracking}
+                    onNavigateToChat={handleOpenChat}
+                  />
+                )}
 
-            {currentSection === 'solicitudes' && (
-              <SolicitudesSection onOpenChat={handleOpenChat} />
-            )}
+                {currentSection === 'buscar' && (
+                  <BuscarPrestadoresSection
+                    user={user}
+                    onReservaCreada={handleReservaCreada}
+                  />
+                )}
 
-            {currentSection === 'trabajo' && (
-              <MiTrabajoSection
-                user={user}
-                onUserDataUpdated={handleUserDataUpdated}
-              />
-            )}
+                {currentSection === 'pago' && (
+                  <PagoSeguroSection
+                    servicioId={activeServicioId}
+                    onVolverReservas={() => setCurrentSection('mis-reservas')}
+                  />
+                )}
 
-            {currentSection === 'cobros' && (
-              <CobrosGuarderiaSection
-                user={user}
-                onUserDataUpdated={handleUserDataUpdated}
-              />
-            )}
+                {currentSection === 'tracking' && (
+                  <SeguimientoGpsSection
+                    servicioId={activeServicioId}
+                    onVolver={() => setCurrentSection('mis-reservas')}
+                    onOpenChat={handleOpenChat}
+                  />
+                )}
 
-            {currentSection === 'vehiculo' && (
-              <VehiculoSection
-                user={user}
-                onUserDataUpdated={handleUserDataUpdated}
-              />
-            )}
-
-            {currentSection === 'chat' && (
-              <ChatReportesSection
-                user={user}
-                initialServicioId={chatServicioId}
-              />
-            )}
-
-            {currentSection === 'perfil' && (
-              <PerfilSection
-                user={user}
-                servicios={servicios}
-                precios={precios}
-                onSelectSection={setCurrentSection}
-                onServiciosUpdated={handleServiciosUpdated}
-              />
+                {currentSection === 'chat' && (
+                  <ChatReportesSection
+                    user={user}
+                    initialServicioId={activeServicioId}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
@@ -226,7 +304,7 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-4 mt-auto">
         <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
-          Pac-Cop &copy; 2026 · Panel de Prestador de Servicios (React + Tailwind CSS v4)
+          Pac-Cop &copy; 2026 · Plataforma Integral de Servicios para Mascotas (React 19 + Vite 6 + Tailwind CSS v4)
         </div>
       </footer>
     </div>
