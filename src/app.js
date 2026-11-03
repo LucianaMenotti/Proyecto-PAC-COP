@@ -151,7 +151,21 @@ const iniciarServidor = async () => {
       console.log(`Servidor Pac-Cop ejecutándose en http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("No se pudo iniciar la aplicación:", error.message);
+    const detalle =
+      error?.message || error?.original?.message || error?.parent?.message;
+    const codigo = error?.original?.code || error?.parent?.code || error?.code;
+
+    console.error("No se pudo iniciar la aplicación:");
+    console.error(`Tipo de error: ${error?.name || "Error desconocido"}`);
+    if (codigo) console.error(`Código: ${codigo}`);
+    console.error(`Detalle: ${detalle || "El controlador no proporcionó un mensaje."}`);
+
+    if (error?.name === "SequelizeConnectionError" || codigo?.startsWith("ECONN")) {
+      console.error(
+        "Comprueba que MySQL esté iniciado y que DB_HOST, DB_PORT, DB_USER y DB_PASSWORD en .env sean correctos.",
+      );
+    }
+
     process.exitCode = 1;
   }
 };
