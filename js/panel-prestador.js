@@ -690,7 +690,7 @@ if (usuario) {
       const textoRecomendacion = document.getElementById("recomendacionTexto");
       const botonRecomendacion = document.getElementById("recomendacionBoton");
       const mercadoPromedio = window.__rangoSugerido?.promedio;
-      const misPreciosActuales = Object.values(usuario.preciosServicios || {}).map(Number);
+      const misPreciosActuales = Object.values(usuario.preciosServicios || {}).map((item) => normalizarConfigPrecio(item).precioBase);
 
       let titulo;
       let texto;

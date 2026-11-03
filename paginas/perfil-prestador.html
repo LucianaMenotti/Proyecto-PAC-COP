@@ -199,6 +199,36 @@ async function guardar() {
     mostrarPerfil();
 }
 
+function normalizarConfigPrecio(precioData) {
+    if (precioData === null || precioData === undefined) {
+        return { precioBase: 0, tipoDescuento: "ninguno", valorDescuento: 0 };
+    }
+    if (typeof precioData === "number" || typeof precioData === "string") {
+        return {
+            precioBase: Number(precioData) || 0,
+            tipoDescuento: "ninguno",
+            valorDescuento: 0,
+        };
+    }
+    return {
+        precioBase: Number(precioData.precioBase ?? precioData.precio ?? 0) || 0,
+        tipoDescuento: precioData.tipoDescuento || "ninguno",
+        valorDescuento: Number(precioData.valorDescuento) || 0,
+    };
+}
+
+function formatearResumenPrecio(precioData) {
+    const config = normalizarConfigPrecio(precioData);
+    if (!config.precioBase) return "Sin precio cargado";
+
+    if (config.tipoDescuento === "porcentaje" && config.valorDescuento > 0) {
+        return `${config.precioBase}/u (2da+ con ${config.valorDescuento}% desc)`;
+    }
+    if (config.tipoDescuento === "fijoIncremental" && config.valorDescuento >= 0) {
+        return `${config.precioBase}/u (+${config.valorDescuento} por extra)`;
+    }
+    return `${config.precioBase}/u`;
+}
 function mostrarPerfil() {
     const nombreCompleto = `${usuario.nombre || ""} ${usuario.apellido || ""}`.trim();
     const inicial = usuario.nombre ? usuario.nombre.charAt(0).toUpperCase() : "P";
@@ -210,7 +240,7 @@ function mostrarPerfil() {
                     <span>
                         <strong>${escapar(NOMBRES[servicio] || servicio)}</strong>
                         <span class="text-secondary ms-2">
-                            ${precios[servicio] ? "$" + precios[servicio] : "Sin precio cargado"}
+                            ${formatearResumenPrecio(precios[servicio])}
                         </span>
                     </span>
                     <button type="button" class="btn btn-outline-danger btn-sm" data-quitar="${escapar(servicio)}">
