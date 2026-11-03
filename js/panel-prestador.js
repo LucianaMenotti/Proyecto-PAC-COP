@@ -1,3 +1,33 @@
+function normalizarConfigPrecio(precioData) {
+  if (precioData === null || precioData === undefined) {
+    return { precioBase: 0, tipoDescuento: "ninguno", valorDescuento: 0 };
+  }
+  if (typeof precioData === "number" || typeof precioData === "string") {
+    return {
+      precioBase: Number(precioData) || 0,
+      tipoDescuento: "ninguno",
+      valorDescuento: 0,
+    };
+  }
+  return {
+    precioBase: Number(precioData.precioBase ?? precioData.precio ?? 0) || 0,
+    tipoDescuento: precioData.tipoDescuento || "ninguno",
+    valorDescuento: Number(precioData.valorDescuento) || 0,
+  };
+}
+
+function formatearResumenPrecio(precioData) {
+  const config = normalizarConfigPrecio(precioData);
+  if (!config.precioBase) return "Sin precio";
+
+  if (config.tipoDescuento === "porcentaje" && config.valorDescuento > 0) {
+    return `$${config.precioBase}/u (2da+ con ${config.valorDescuento}% desc)`;
+  }
+  if (config.tipoDescuento === "fijoIncremental" && config.valorDescuento >= 0) {
+    return `$${config.precioBase}/u (+$${config.valorDescuento} por extra)`;
+  }
+  return `$${config.precioBase}/u`;
+}
 // =========================================
 // PAC-COP - PANEL DEL PRESTADOR
 // =========================================
@@ -354,7 +384,7 @@ function renderizarServicios() {
           <span>
             <strong>${servicio}</strong>
             <span class="text-secondary ms-2">
-              ${misPrecios[servicio] ? "$" + misPrecios[servicio] : "Sin precio"}
+              ${formatearResumenPrecio(misPrecios[servicio])}
             </span>
           </span>
           <button type="button" class="btn btn-outline-danger btn-sm rounded-pill"
@@ -395,7 +425,28 @@ if (usuario) {
     /* sin conexión con la API quedan los precios de referencia */
   });
 
-  // Formulario de publicación
+  // Formulario de publicación y descuentos
+  const tipoDescuentoSelect = document.getElementById("tipoDescuentoSelect");
+  const campoDescuentoPorcentaje = document.getElementById("campoDescuentoPorcentaje");
+  const descuentoPorcentajeInput = document.getElementById("descuentoPorcentajeInput");
+  const campoDescuentoFijo = document.getElementById("campoDescuentoFijo");
+  const descuentoFijoInput = document.getElementById("descuentoFijoInput");
+
+  function actualizarVisibilidadDescuento() {
+    if (!tipoDescuentoSelect) return;
+    const valor = tipoDescuentoSelect.value;
+    if (campoDescuentoPorcentaje) {
+      campoDescuentoPorcentaje.classList.toggle("d-none", valor !== "porcentaje");
+    }
+    if (campoDescuentoFijo) {
+      campoDescuentoFijo.classList.toggle("d-none", valor !== "fijoIncremental");
+    }
+  }
+
+  if (tipoDescuentoSelect) {
+    tipoDescuentoSelect.addEventListener("change", actualizarVisibilidadDescuento);
+  }
+
   if (servicioSelect && precioInput) {
     adaptarCampos();
     actualizarSugerenciaNivel();
@@ -501,7 +552,22 @@ if (usuario) {
         misServicios.push(servicio);
       }
 
-      misPrecios[servicio] = precio;
+      const tipoDescuentoSelect = document.getElementById("tipoDescuentoSelect");
+      const descuentoPorcentajeInput = document.getElementById("descuentoPorcentajeInput");
+      const descuentoFijoInput = document.getElementById("descuentoFijoInput");
+      const tipoDescuento = tipoDescuentoSelect ? tipoDescuentoSelect.value : "ninguno";
+      let valorDescuento = 0;
+      if (tipoDescuento === "porcentaje") {
+        valorDescuento = Number(descuentoPorcentajeInput?.value) || 0;
+      } else if (tipoDescuento === "fijoIncremental") {
+        valorDescuento = Number(descuentoFijoInput?.value) || 0;
+      }
+
+      misPrecios[servicio] = {
+        precioBase: precio,
+        tipoDescuento,
+        valorDescuento,
+      };
 
       try {
         await guardarServicios();

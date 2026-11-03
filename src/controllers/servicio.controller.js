@@ -10,6 +10,7 @@ import {
 } from "./pago.controller.js";
 import { crearNotificacion } from "./notificacion.controller.js";
 import { publicarEvento } from "../helpers/realtime.helper.js";
+import { calcularPresupuesto, normalizarConfigPrecio } from "../helpers/precio.helper.js";
 
 const esAdministrador = (user) => ["admin", "administrador"].includes(user.rol);
 
@@ -226,21 +227,42 @@ export const crearServicio = async (req, res) => {
         .json({ mensaje: "Ese prestador no ofrece el servicio elegido" });
     }
 
-    const monto = Number(prestador.preciosServicios?.[tipo]);
+    const rawMascotaIds = Array.isArray(req.body.mascotaIds)
+      ? req.body.mascotaIds.map(Number).filter(Boolean)
+      : (req.body.mascotaId ? [Number(req.body.mascotaId)] : []);
 
-    if (!Number.isFinite(monto) || monto <= 0) {
+    if (rawMascotaIds.length === 0) {
+      return res
+        .status(400)
+        .json({ mensaje: "Elegí al menos una mascota para reservar" });
+    }
+
+    const mascotas = await Mascota.findAll({
+      where: { id: rawMascotaIds, userId: req.user.id },
+    });
+
+    if (mascotas.length !== rawMascotaIds.length) {
+      return res.status(404).json({
+        mensaje: "Una o más mascotas seleccionadas no fueron encontradas",
+      });
+    }
+
+    const configPrecio = normalizarConfigPrecio(
+      prestador.preciosServicios?.[tipo],
+    );
+
+    if (!Number.isFinite(configPrecio.precioBase) || configPrecio.precioBase <= 0) {
       return res.status(400).json({
         mensaje: "El prestador todavía no cargó el precio de este servicio",
       });
     }
 
-    const mascota = await Mascota.findOne({
-      where: { id: mascotaId, userId: req.user.id },
-    });
-
-    if (!mascota) {
-      return res.status(404).json({ mensaje: "Mascota no encontrada" });
-    }
+    const presupuesto = calcularPresupuesto(
+      configPrecio.precioBase,
+      mascotas.length,
+      configPrecio,
+    );
+    const monto = presupuesto.total;
 
     const disponibilidad = validarDisponibilidad(prestador, fecha);
 
@@ -248,11 +270,17 @@ export const crearServicio = async (req, res) => {
       return res.status(409).json({ mensaje: disponibilidad.mensaje });
     }
 
-    const restricciones = validarRestricciones(prestador, mascota);
-
-    if (!restricciones.ok) {
-      return res.status(409).json({ mensaje: restricciones.mensaje });
+    for (const m of mascotas) {
+      const restricciones = validarRestricciones(prestador, m);
+      if (!restricciones.ok) {
+        return res.status(409).json({
+          mensaje: `La mascota "${m.nombre}" no cumple las restricciones: ${restricciones.mensaje}`,
+        });
+      }
     }
+
+    const mascotaNombreCompleto = mascotas.map((m) => m.nombre).join(", ").slice(0, 100);
+    const mascota = mascotas[0];
 
     const servicio = await Servicio.create({
       ownerId: req.user.id,
@@ -260,7 +288,7 @@ export const crearServicio = async (req, res) => {
       mascotaId: mascota.id,
       prestadorNombre: `${prestador.nombre} ${prestador.apellido}`,
       tipo,
-      mascotaNombre: mascota.nombre,
+      mascotaNombre: mascotaNombreCompleto,
       monto,
       horaProgramada: fecha,
       origen: tipo === "Traslado" ? String(origen).trim() : null,
@@ -317,7 +345,7 @@ export const crearServicio = async (req, res) => {
       usuarioId: prestador.id,
       tipo: "reserva",
       titulo: "Nueva solicitud de reserva",
-      mensaje: `${req.user.nombre} reservó ${tipo} para ${mascota.nombre}.`,
+      mensaje: `${req.user.nombre} reservó ${tipo} para ${mascotaNombreCompleto}.`,
       servicioId: servicio.id,
     });
 
@@ -887,7 +915,7 @@ export const precioSugerido = async (req, res) => {
     const precios = prestadores
       .filter((prestador) => leerLista(prestador.servicios).includes(tipo))
       .map((prestador) => ({
-        valor: Number(prestador.preciosServicios?.[tipo]),
+        valor: normalizarConfigPrecio(prestador.preciosServicios?.[tipo]).precioBase,
         zona: String(prestador.zona ?? "").toLowerCase(),
       }))
       .filter(

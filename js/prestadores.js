@@ -1,3 +1,82 @@
+function normalizarConfigPrecio(precioData) {
+  if (precioData === null || precioData === undefined) {
+    return { precioBase: 0, tipoDescuento: "ninguno", valorDescuento: 0 };
+  }
+  if (typeof precioData === "number" || typeof precioData === "string") {
+    return {
+      precioBase: Number(precioData) || 0,
+      tipoDescuento: "ninguno",
+      valorDescuento: 0,
+    };
+  }
+  return {
+    precioBase: Number(precioData.precioBase ?? precioData.precio ?? 0) || 0,
+    tipoDescuento: precioData.tipoDescuento || "ninguno",
+    valorDescuento: Number(precioData.valorDescuento) || 0,
+  };
+}
+
+function calcularPresupuesto(precioBase, cantidadMascotas, reglaDescuento = {}) {
+  const base = Math.max(0, Number(precioBase) || 0);
+  const cantidad = Math.max(0, Math.floor(Number(cantidadMascotas) || 0));
+
+  if (cantidad === 0 || base === 0) {
+    return {
+      precioBase: base,
+      cantidadMascotas: cantidad,
+      subtotalSinDescuento: 0,
+      descuentoTotal: 0,
+      costoMascotasExtra: 0,
+      total: 0,
+      reglaAplicada: "Sin selección",
+    };
+  }
+
+  if (cantidad === 1) {
+    return {
+      precioBase: base,
+      cantidadMascotas: 1,
+      subtotalSinDescuento: base,
+      descuentoTotal: 0,
+      costoMascotasExtra: 0,
+      total: base,
+      reglaAplicada: "Precio base unitario",
+    };
+  }
+
+  const cantidadExtra = cantidad - 1;
+  const subtotalSinDescuento = base * cantidad;
+  const tipo = reglaDescuento?.tipoDescuento || "ninguno";
+  const valor = Number(reglaDescuento?.valorDescuento) || 0;
+
+  let costoMascotasExtra = 0;
+  let reglaAplicada = "Tarifa completa sin descuento";
+
+  if (tipo === "porcentaje" && valor > 0) {
+    const factorDescuento = Math.max(0, Math.min(100, valor)) / 100;
+    const precioUnitarioExtra = base * (1 - factorDescuento);
+    costoMascotasExtra = Math.round(precioUnitarioExtra * cantidadExtra * 100) / 100;
+    reglaAplicada = `${valor}% desc. a partir de la 2da mascota`;
+  } else if (tipo === "fijoIncremental" && valor >= 0) {
+    costoMascotasExtra = valor * cantidadExtra;
+    reglaAplicada = `+$${valor} por mascota adicional`;
+  } else {
+    costoMascotasExtra = base * cantidadExtra;
+  }
+
+  const total = Math.round((base + costoMascotasExtra) * 100) / 100;
+  const descuentoTotal = Math.max(0, Math.round((subtotalSinDescuento - total) * 100) / 100);
+
+  return {
+    precioBase: base,
+    cantidadMascotas: cantidad,
+    subtotalSinDescuento,
+    descuentoTotal,
+    costoMascotasExtra,
+    total,
+    reglaAplicada,
+  };
+}
 const contenedor = document.getElementById("resultados");
 
 const filtroServicio = document.getElementById("filtroServicio");
@@ -96,11 +175,17 @@ function mostrarPrestadores(lista) {
                         ${
                           servicios.length > 0
                             ? servicios
-                                .map((s) =>
-                                  prestador.preciosServicios?.[s]
-                                    ? `${s} ($${prestador.preciosServicios[s]})`
-                                    : s,
-                                )
+                                .map((s) => {
+                                  const cfg = normalizarConfigPrecio(prestador.preciosServicios?.[s]);
+                                  if (!cfg.precioBase) return s;
+                                  let extra = "";
+                                  if (cfg.tipoDescuento === "porcentaje" && cfg.valorDescuento > 0) {
+                                    extra = ` (2da+ con ${cfg.valorDescuento}% desc)`;
+                                  } else if (cfg.tipoDescuento === "fijoIncremental" && cfg.valorDescuento >= 0) {
+                                    extra = ` (+${cfg.valorDescuento} por extra)`;
+                                  }
+                                  return `${s} (${cfg.precioBase}/u${extra})`;
+                                })
                                 .join(", ")
                             : "Sin servicios registrados"
                         }
@@ -178,7 +263,7 @@ let modalReserva = null;
 
 const formReserva = document.getElementById("formReserva");
 const reservaServicio = document.getElementById("reservaServicio");
-const reservaMascota = document.getElementById("reservaMascota");
+// const reservaMascota = document.getElementById("reservaMascota");
 const reservaFecha = document.getElementById("reservaFecha");
 const reservaPrecio = document.getElementById("reservaPrecio");
 const reservaError = document.getElementById("reservaError");
@@ -217,12 +302,47 @@ function mostrarCamposTraslado() {
 }
 
 function precioDe(prestador, tipo) {
-  return Number(prestador.preciosServicios?.[tipo]) || 0;
+  const cfg = normalizarConfigPrecio(prestador.preciosServicios?.[tipo]);
+  return cfg.precioBase;
 }
 
 function actualizarPrecioReserva() {
-  const precio = precioDe(prestadorElegido, reservaServicio.value);
-  reservaPrecio.textContent = precio > 0 ? `$${precio}` : "Sin precio cargado";
+  if (!prestadorElegido || !reservaServicio.value) return;
+
+  const config = normalizarConfigPrecio(prestadorElegido.preciosServicios?.[reservaServicio.value]);
+  const checkboxes = document.querySelectorAll(".check-mascota-reserva:checked");
+  const cantidad = checkboxes.length;
+
+  const resultado = calcularPresupuesto(config.precioBase, cantidad, config);
+
+  const elPrecioBase = document.getElementById("desglosePrecioBase");
+  const elCantidad = document.getElementById("desgloseCantidad");
+  const elRegla = document.getElementById("desgloseRegla");
+  const filaDescuento = document.getElementById("filaDescuento");
+  const etiquetaDescuento = document.getElementById("etiquetaDescuento");
+  const desgloseDescuento = document.getElementById("desgloseDescuento");
+
+  if (elPrecioBase) elPrecioBase.textContent = `${resultado.precioBase}`;
+  if (elCantidad) elCantidad.textContent = `${resultado.cantidadMascotas}`;
+  if (elRegla) elRegla.textContent = resultado.reglaAplicada;
+
+  if (filaDescuento && etiquetaDescuento && desgloseDescuento) {
+    if (resultado.descuentoTotal > 0) {
+      filaDescuento.classList.remove("d-none");
+      etiquetaDescuento.textContent = "Descuento aplicado:";
+      desgloseDescuento.className = "text-success fw-bold";
+      desgloseDescuento.textContent = `-${resultado.descuentoTotal}`;
+    } else if (resultado.costoMascotasExtra > 0 && config.tipoDescuento === "fijoIncremental") {
+      filaDescuento.classList.remove("d-none");
+      etiquetaDescuento.textContent = "Adicional mascotas extra:";
+      desgloseDescuento.className = "text-primary fw-bold";
+      desgloseDescuento.textContent = `+${resultado.costoMascotasExtra}`;
+    } else {
+      filaDescuento.classList.add("d-none");
+    }
+  }
+
+  reservaPrecio.textContent = resultado.total > 0 ? `${resultado.total}` : "—";
 }
 
 async function abrirReserva(id) {
@@ -270,11 +390,29 @@ async function abrirReserva(id) {
     .map((servicio) => `<option value="${servicio}">${servicio}</option>`)
     .join("");
 
-  reservaMascota.innerHTML = mascotas
-    .map(
-      (mascota) => `<option value="${mascota.id}">${mascota.nombre}</option>`,
-    )
-    .join("");
+  const contenedorMascotas = document.getElementById("contenedorMascotasCheckboxes");
+  if (contenedorMascotas) {
+    contenedorMascotas.innerHTML = mascotas
+      .map(
+        (mascota, index) => `
+          <div class="form-check">
+            <input class="form-check-input check-mascota-reserva" type="checkbox" value="${mascota.id}" id="chk_mascota_${mascota.id}" ${index === 0 ? "checked" : ""}>
+            <label class="form-check-label d-flex justify-content-between" for="chk_mascota_${mascota.id}">
+              <span><strong>${escapar(mascota.nombre)}</strong> <small class="text-secondary">(${mascota.tipo || "Mascota"}${mascota.tamano ? " - " + mascota.tamano : ""})</small></span>
+            </label>
+          </div>
+        `
+      )
+      .join("");
+
+    contenedorMascotas.querySelectorAll(".check-mascota-reserva").forEach((chk) => {
+      chk.addEventListener("change", () => {
+        const errorElem = document.getElementById("errorMascotasSeleccion");
+        if (errorElem) errorElem.classList.add("d-none");
+        actualizarPrecioReserva();
+      });
+    });
+  }
 
   reservaFecha.value = "";
   actualizarPrecioReserva();
@@ -295,10 +433,22 @@ formReserva.addEventListener("submit", async (event) => {
   event.preventDefault();
   reservaError.classList.add("d-none");
 
+  const checkboxes = Array.from(document.querySelectorAll(".check-mascota-reserva:checked"));
+  const mascotaIds = checkboxes.map((chk) => Number(chk.value));
+  const errorElem = document.getElementById("errorMascotasSeleccion");
+
+  if (mascotaIds.length === 0) {
+    if (errorElem) errorElem.classList.remove("d-none");
+    reservaError.textContent = "Seleccioná al menos una mascota.";
+    reservaError.classList.remove("d-none");
+    return;
+  }
+
   const datos = {
     providerId: prestadorElegido.id,
     tipo: reservaServicio.value,
-    mascotaId: Number(reservaMascota.value),
+    mascotaIds: mascotaIds,
+    mascotaId: mascotaIds[0],
     horaProgramada: new Date(reservaFecha.value).toISOString(),
   };
 

@@ -315,11 +315,11 @@
                       />
                     </div>
 
-                    <!-- PRECIO -->
+                    <!-- PRECIO BASE UNITARIO -->
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                       <label class="form-label fw-semibold" for="precioInput">
-                        Tu precio
+                        Precio base unitario (por 1 mascota)
                       </label>
 
                       <div class="input-group">
@@ -340,6 +340,61 @@
                         class="text-danger small mt-2 d-none"
                       >
                         Indicá un precio mayor a 0.
+                      </div>
+                    </div>
+
+                    <!-- DESCUENTO POR VOLUMEN / MASCOTA ADICIONAL (OPCIONAL) -->
+                    <div class="card bg-light border p-3 mb-4 rounded-3">
+                      <label class="form-label fw-semibold mb-2" for="tipoDescuentoSelect">
+                        Descuento por mascota adicional (opcional)
+                      </label>
+                      <select id="tipoDescuentoSelect" class="form-select mb-3">
+                        <option value="ninguno">Sin descuento (cobrar precio completo por mascota extra)</option>
+                        <option value="porcentaje">Opción A: Porcentaje de descuento (2da mascota en adelante)</option>
+                        <option value="fijoIncremental">Opción B: Tarifa fija incremental por mascota extra</option>
+                      </select>
+
+                      <!-- Opción A: Porcentaje -->
+                      <div id="campoDescuentoPorcentaje" class="d-none">
+                        <label class="form-label small text-secondary" for="descuentoPorcentajeInput">
+                          Porcentaje de descuento para mascotas adicionales (%)
+                        </label>
+                        <div class="input-group">
+                          <input
+                            type="number"
+                            id="descuentoPorcentajeInput"
+                            class="form-control"
+                            min="1"
+                            max="100"
+                            step="1"
+                            placeholder="Ej: 15"
+                          />
+                          <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                          Ejemplo: 15% de descuento en la 2da, 3ra mascota, etc.
+                        </small>
+                      </div>
+
+                      <!-- Opción B: Fijo incremental -->
+                      <div id="campoDescuentoFijo" class="d-none">
+                        <label class="form-label small text-secondary" for="descuentoFijoInput">
+                          Precio fijo por cada mascota adicional ($)
+                        </label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input
+                            type="number"
+                            id="descuentoFijoInput"
+                            class="form-control"
+                            min="0"
+                            step="100"
+                            placeholder="Ej: 3000"
+                          />
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                          Ejemplo: La 1ra mascota cuesta el precio base y cada extra suma este valor.
+                        </small>
                       </div>
                     </div>
 
