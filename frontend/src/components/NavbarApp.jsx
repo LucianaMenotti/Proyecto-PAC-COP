@@ -27,8 +27,7 @@ function enlacesPara(usuario) {
   if (ROLES_ADMIN.includes(usuario.rol)) {
     return [
       { to: RUTAS.inicio, texto: "Inicio", icono: "bi-house", exacto: true },
-      { to: RUTAS.admin, texto: "Administración", icono: "bi-shield-lock" },
-      { to: RUTAS.adminReclamos, texto: "Reclamos", icono: "bi-flag" },
+      { to: RUTAS.admin, texto: "Panel de administración", icono: "bi-shield-lock" },
       { to: RUTAS.buscarPrestadores, texto: "Prestadores", icono: "bi-search" },
       { to: RUTAS.notificaciones, texto: "Notificaciones", icono: "bi-bell" }
     ];

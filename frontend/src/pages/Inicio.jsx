@@ -141,7 +141,7 @@ export default function Inicio() {
                     <i className="bi bi-shield-lock text-primary-pac fs-1 mb-3"></i>
                     <h3 className="h5 fw-bold">Panel de administración</h3>
                     <p className="text-secondary small mb-0">
-                      Métricas, usuarios y moderación de servicios.
+                      Métricas, aprobación de prestadores, usuarios y moderación.
                     </p>
                   </Link>
                 </div>
@@ -149,7 +149,7 @@ export default function Inicio() {
               {esAdmin && (
                 <div className="col-md-6 col-lg-3">
                   <Link
-                    to="/admin-reclamos"
+                    to={`${RUTAS.admin}/reclamos`}
                     className="card feature-card h-100 rounded-4 p-4 shadow-sm text-decoration-none text-dark"
                   >
                     <i className="bi bi-flag text-accent-pac fs-1 mb-3"></i>

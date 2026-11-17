@@ -13,6 +13,7 @@ import {
 } from "../helpers/auth.helper.js";
 import {
   condicionPrestadorVisible,
+  estaSuspendido,
   leerDocumentos,
   resumenDocumentacion,
 } from "../helpers/cuenta.helper.js";
@@ -184,6 +185,13 @@ export const iniciarSesion = async (req, res) => {
       return res
         .status(401)
         .json({ mensaje: "Correo o contraseña incorrectos" });
+    }
+
+    if (estaSuspendido(user)) {
+      return res.status(403).json({
+        mensaje: `Tu cuenta está suspendida${user.motivoSuspension ? `: ${user.motivoSuspension}` : ""}. Comunicate con la administración.`,
+        suspendida: true,
+      });
     }
 
     if (passwordResult.needsUpgrade) {

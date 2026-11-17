@@ -20,8 +20,10 @@ export const RUTAS = {
   seguimiento: "/seguimiento",
   chat: "/chat",
   notificaciones: "/notificaciones",
+  // Ruta anterior de reclamos: redirige a la sección del panel
   adminReclamos: "/admin-reclamos",
-  admin: "/admin"
+  admin: "/admin",
+  adminLegajo: "/admin/legajo"
 };
 
 export const ROLES_ADMIN = ["admin", "administrador"];

@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import ContadorNotificaciones from "../components/ContadorNotificaciones";
 import { enviarJson, apiJson } from "../config/api";
-import { RUTAS } from "../config/rutas";
 import { formatearFechaHora, obtenerEstadoReclamo } from "../helpers/reclamos";
-import { useBootstrap } from "../hooks/useBootstrap";
-import { useContadorNotificaciones } from "../hooks/useContadorNotificaciones";
-import { useEstilos } from "../hooks/useEstilos";
-import estilosBase from "../config/estilos/base";
 
 const INTERVALO_ACTUALIZACION = 20000;
 
@@ -48,15 +41,11 @@ function Acciones({ reclamo, alCambiar }) {
   return <span className="text-secondary small">Reclamo cerrado.</span>;
 }
 
-export default function AdminReclamos() {
+// Sección "Reclamos" del panel de administración (/admin/reclamos).
+export default function AdminReclamos({ alCambiar }) {
   const [reclamos, setReclamos] = useState(null);
   const [filtro, setFiltro] = useState("");
   const [error, setError] = useState("");
-  const { noLeidas, recargar: recargarContador } =
-    useContadorNotificaciones(INTERVALO_ACTUALIZACION);
-
-  useBootstrap();
-  useEstilos("base", estilosBase);
 
   const cargar = useCallback(async () => {
     try {
@@ -98,7 +87,7 @@ export default function AdminReclamos() {
       }
 
       await cargar();
-      await recargarContador();
+      alCambiar?.();
     } catch (fallo) {
       window.alert(fallo.message);
     }
@@ -108,10 +97,8 @@ export default function AdminReclamos() {
 
   return (
     <>
-      <main className="container py-5">
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-          <h1 className="mb-0">Gestión de reclamos</h1>
-
+      <section>
+        <div className="d-flex flex-wrap justify-content-end align-items-center gap-3 mb-4">
           <div className="d-flex gap-2">
             <select
               className="form-select"
@@ -207,7 +194,7 @@ export default function AdminReclamos() {
             );
           })}
         </div>
-      </main>
+      </section>
     </>
   );
 }

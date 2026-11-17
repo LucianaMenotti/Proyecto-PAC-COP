@@ -5,13 +5,13 @@ import RutaProtegida from "./components/RutaProtegida";
 import { ROLES_ADMIN, RUTAS } from "./config/rutas";
 import { useAuth } from "./hooks/useAuth";
 import Admin from "./pages/Admin";
-import AdminReclamos from "./pages/AdminReclamos";
 import Alertas from "./pages/Alertas";
 import BuscarPrestadores from "./pages/BuscarPrestadores";
 import Chat from "./pages/Chat";
 import FichaSalud from "./pages/FichaSalud";
 import Inicio from "./pages/Inicio";
 import Landing from "./pages/Landing";
+import LegajoUsuario from "./pages/LegajoUsuario";
 import Login from "./pages/Login";
 import Mach from "./pages/Mach";
 import MisMascotas from "./pages/MisMascotas";
@@ -88,8 +88,15 @@ export default function App() {
           />
           <Route path={RUTAS.chat} element={protegida(<Chat />)} />
           <Route path={RUTAS.notificaciones} element={protegida(<Notificaciones />)} />
-          <Route path={RUTAS.admin} element={protegida(<Admin />, ROLES_ADMIN)} />
-          <Route path={RUTAS.adminReclamos} element={protegida(<AdminReclamos />, ROLES_ADMIN)} />
+          <Route path={`${RUTAS.admin}/:seccion?`} element={protegida(<Admin />, ROLES_ADMIN)} />
+          <Route
+            path={`${RUTAS.adminLegajo}/:id`}
+            element={protegida(<LegajoUsuario />, ROLES_ADMIN)}
+          />
+          <Route
+            path={RUTAS.adminReclamos}
+            element={protegida(<Navigate to={`${RUTAS.admin}/reclamos`} replace />, ROLES_ADMIN)}
+          />
         </Route>
 
         <Route path="*" element={<Navigate to={RUTAS.inicio} replace />} />

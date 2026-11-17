@@ -1,13 +1,20 @@
 import { ROLES_ADMIN, RUTAS } from "../config/rutas";
 
-// A dónde lleva una notificación (tipos que genera el backend: reserva*, mensaje, pago-*, resena, reclamo-*)
+// A dónde lleva una notificación (tipos que genera el backend: reserva*, mensaje, pago-*, resena,
+// reclamo-*, cuenta-*, prestador-pendiente y reporte-nuevo)
 export function destinoDeNotificacion(notificacion, usuario) {
   const tipo = notificacion.tipo || "";
   const esPrestador = usuario?.rol === "prestador";
 
+  const esAdmin = ROLES_ADMIN.includes(usuario?.rol);
+
+  if (tipo === "prestador-pendiente" && esAdmin) {
+    return { ruta: `${RUTAS.admin}/prestadores`, texto: "Revisar documentación" };
+  }
+
   if (notificacion.reclamoId || tipo.startsWith("reclamo")) {
-    if (ROLES_ADMIN.includes(usuario?.rol)) {
-      return { ruta: RUTAS.adminReclamos, texto: "Ver reclamos" };
+    if (esAdmin) {
+      return { ruta: `${RUTAS.admin}/reclamos`, texto: "Ver reclamos" };
     }
 
     return {

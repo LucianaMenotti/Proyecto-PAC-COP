@@ -1,48 +1,50 @@
 import { useCallback, useEffect, useState } from "react";
+import { Navigate, NavLink, useParams } from "react-router-dom";
+import SeccionAuditoria from "../components/admin/SeccionAuditoria";
+import SeccionPrestadoresAdmin from "../components/admin/SeccionPrestadoresAdmin";
+import SeccionResumenAdmin from "../components/admin/SeccionResumenAdmin";
 import TablaServiciosAdmin from "../components/admin/TablaServiciosAdmin";
 import TablaUsuarios from "../components/admin/TablaUsuarios";
 import { apiDatos } from "../config/api";
-import { useBootstrap } from "../hooks/useBootstrap";
+import { RUTAS } from "../config/rutas";
+import { SECCIONES_ADMIN } from "../helpers/admin";
+import { useEventoTiempoReal } from "../hooks/useTiempoReal";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
+import AdminReclamos from "./AdminReclamos";
 
-function Tarjeta({ titulo, valor, detalle, claseDetalle = "text-secondary" }) {
-  return (
-    <div className="col-6 col-lg-3">
-      <div className="card border-0 shadow-sm h-100">
-        <div className="card-body">
-          <p className="text-secondary small mb-1">{titulo}</p>
-          <p className="fs-3 fw-bold mb-0">{valor}</p>
-          {detalle && <small className={claseDetalle}>{detalle}</small>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Panel de administración (rol admin): métricas, gestión de usuarios y moderación de servicios.
-// API: /api/admin/resumen, /api/admin/usuarios, /api/admin/servicios
+// Panel de administración. Cada sección es una ruta: /admin/:seccion
+// (resumen, prestadores, usuarios, servicios, reclamos, auditoria). Todas las acciones
+// se validan también en el backend (authMiddleware + adminMiddleware en /api/admin).
 export default function Admin() {
-  const [resumen, setResumen] = useState(null);
-  const [pestana, setPestana] = useState("usuarios");
+  const { seccion = "resumen" } = useParams();
+  const [contadores, setContadores] = useState({});
   const [aviso, setAviso] = useState(null);
 
-  useBootstrap(true);
   useEstilos("base", estilosBase);
 
   const avisar = useCallback((texto, tipo = "success") => setAviso({ texto, tipo }), []);
 
-  const cargarResumen = useCallback(async () => {
+  // Pendientes globales que se muestran como contador en la navegación
+  const cargarContadores = useCallback(async () => {
     try {
-      setResumen(await apiDatos("/api/admin/resumen"));
+      const resumen = await apiDatos("/api/admin/resumen");
+
+      setContadores({
+        prestadoresPendientes: resumen.prestadores.pendientes,
+        reclamosAbiertos: resumen.moderacion.reclamosAbiertos
+      });
     } catch (error) {
       avisar(error.message, "danger");
     }
   }, [avisar]);
 
   useEffect(() => {
-    cargarResumen();
-  }, [cargarResumen]);
+    cargarContadores();
+  }, [cargarContadores]);
+
+  // Un reclamo nuevo o un prestador que envía documentación llega como notificación
+  useEventoTiempoReal("notificacion", cargarContadores);
 
   useEffect(() => {
     if (!aviso) {
@@ -53,6 +55,12 @@ export default function Admin() {
 
     return () => clearTimeout(temporizador);
   }, [aviso]);
+
+  if (!SECCIONES_ADMIN.some((item) => item.id === seccion)) {
+    return <Navigate to={`${RUTAS.admin}/resumen`} replace />;
+  }
+
+  const propiedades = { alAvisar: avisar, alCambiar: cargarContadores };
 
   return (
     <div className="pac-seccion">
@@ -69,7 +77,9 @@ export default function Admin() {
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
             <h1 className="mb-1">Panel de administración</h1>
-            <p className="text-secondary mb-0">Métricas, usuarios y moderación de servicios.</p>
+            <p className="text-secondary mb-0">
+              Supervisión de prestadores, dueños, servicios, reclamos y moderación.
+            </p>
           </div>
 
           <span className="badge bg-white text-primary-pac border px-3 py-2 rounded-pill">
@@ -77,59 +87,32 @@ export default function Admin() {
           </span>
         </div>
 
-        <section className="row g-3 mb-4">
-          <Tarjeta titulo="Usuarios" valor={resumen ? resumen.usuarios : "-"} />
-          <Tarjeta
-            titulo="Prestadores"
-            valor={resumen ? resumen.prestadores : "-"}
-            detalle={resumen ? `${resumen.verificados} verificados` : "-"}
-            claseDetalle="text-success"
-          />
-          <Tarjeta
-            titulo="Servicios"
-            valor={resumen ? resumen.servicios : "-"}
-            detalle={
-              resumen
-                ? `${resumen.serviciosPorEstado.enCurso} en curso · ${resumen.serviciosPorEstado.finalizados} finalizados`
-                : "-"
-            }
-          />
-          <Tarjeta
-            titulo="Pagos retenidos"
-            valor={resumen ? resumen.pagos.retenidos : "-"}
-            detalle={
-              resumen ? `$${Number(resumen.pagos.recaudado).toLocaleString("es-AR")} recaudado` : "-"
-            }
-          />
-        </section>
+        <nav className="nav nav-pills flex-nowrap overflow-auto gap-2 mb-4 pb-1" aria-label="Secciones">
+          {SECCIONES_ADMIN.map((item) => {
+            const cantidad = item.contador ? contadores[item.contador] : 0;
 
-        <ul className="nav nav-pills gap-2 mb-3">
-          <li className="nav-item">
-            <button
-              type="button"
-              className={`nav-link rounded-pill${pestana === "usuarios" ? " active" : ""}`}
-              onClick={() => setPestana("usuarios")}
-            >
-              Usuarios
-            </button>
-          </li>
+            return (
+              <NavLink
+                key={item.id}
+                to={`${RUTAS.admin}/${item.id}`}
+                className={({ isActive }) =>
+                  `nav-link rounded-pill text-nowrap${isActive || (item.id === "resumen" && !seccion) ? " active" : ""}`
+                }
+              >
+                <i className={`bi ${item.icono} me-1`}></i>
+                {item.texto}
+                {cantidad > 0 && <span className="badge text-bg-warning ms-2">{cantidad}</span>}
+              </NavLink>
+            );
+          })}
+        </nav>
 
-          <li className="nav-item">
-            <button
-              type="button"
-              className={`nav-link rounded-pill${pestana === "servicios" ? " active" : ""}`}
-              onClick={() => setPestana("servicios")}
-            >
-              Servicios
-            </button>
-          </li>
-        </ul>
-
-        {pestana === "usuarios" ? (
-          <TablaUsuarios alAvisar={avisar} alCambiar={cargarResumen} />
-        ) : (
-          <TablaServiciosAdmin alAvisar={avisar} alCambiar={cargarResumen} />
-        )}
+        {seccion === "resumen" && <SeccionResumenAdmin {...propiedades} />}
+        {seccion === "prestadores" && <SeccionPrestadoresAdmin {...propiedades} />}
+        {seccion === "usuarios" && <TablaUsuarios {...propiedades} />}
+        {seccion === "servicios" && <TablaServiciosAdmin {...propiedades} />}
+        {seccion === "reclamos" && <AdminReclamos {...propiedades} />}
+        {seccion === "auditoria" && <SeccionAuditoria {...propiedades} />}
       </main>
     </div>
   );

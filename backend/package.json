@@ -8,7 +8,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "node --watch app.js",
-    "test": "node --test"
+    "test": "node --test",
+    "crear-admin": "node scripts/crearAdmin.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

@@ -1,4 +1,5 @@
-import { verifyAuthToken, parseCookies } from "../helpers/auth.helper.js";
+import { verifyAuthToken, parseCookies, clearAuthCookie } from "../helpers/auth.helper.js";
+import { estaSuspendido } from "../helpers/cuenta.helper.js";
 import User from "../models/user.model.js";
 import Mascota from "../models/mascota.model.js";
 
@@ -16,6 +17,15 @@ export const authMiddleware = async (req, res, next) => {
 
         if (!user) {
             return res.status(401).json({ mensaje: "La sesión ya no es válida" });
+        }
+
+        // Una suspensión corta también las sesiones abiertas
+        if (estaSuspendido(user)) {
+            clearAuthCookie(res);
+            return res.status(403).json({
+                mensaje: "Tu cuenta está suspendida. Comunicate con la administración.",
+                suspendida: true
+            });
         }
 
         req.user = user;

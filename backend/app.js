@@ -15,6 +15,7 @@ import Mensaje from "./models/mensaje.model.js";
 import Notificacion from "./models/notificacion.model.js";
 import Reserva from "./models/reserva.model.js";
 import Reclamo from "./models/reclamo.model.js";
+import AccionAdmin from "./models/accionAdmin.model.js";
 
 import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
@@ -119,7 +120,8 @@ const MODELOS = [
     Mensaje,
     Notificacion,
     Reserva,
-    Reclamo
+    Reclamo,
+    AccionAdmin
 ];
 
 // Migración idempotente: agrega las columnas nuevas que existan en el modelo
