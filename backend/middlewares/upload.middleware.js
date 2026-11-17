@@ -47,6 +47,73 @@ const subir = multer({
   },
 });
 
+// Documentación del prestador (historia de verificación de identidad).
+// Se guarda fuera de la carpeta pública: solo la entrega la administración con sesión.
+export const CARPETA_DOCUMENTOS = path.join(__dirname, "..", "uploads", "documentos");
+
+const TIPOS_DOCUMENTO = {
+  ...EXTENSIONES,
+  "application/pdf": ".pdf",
+};
+
+// documento y selfie son imágenes; el CV admite además PDF
+const CAMPOS_DOCUMENTACION = [
+  { name: "documento", maxCount: 1 },
+  { name: "selfie", maxCount: 1 },
+  { name: "cv", maxCount: 1 },
+];
+
+fs.mkdirSync(CARPETA_DOCUMENTOS, { recursive: true });
+
+const subirDocumentos = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, CARPETA_DOCUMENTOS),
+    filename: (req, file, cb) => {
+      const nombre = `${req.user.id}-${file.fieldname}-${Date.now()}-${randomBytes(6).toString("hex")}${TIPOS_DOCUMENTO[file.mimetype]}`;
+      cb(null, nombre);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    const permitido =
+      file.fieldname === "cv" ? TIPOS_DOCUMENTO[file.mimetype] : EXTENSIONES[file.mimetype];
+
+    if (permitido) {
+      cb(null, true);
+      return;
+    }
+
+    cb(
+      new Error(
+        file.fieldname === "cv"
+          ? "El CV debe ser PDF, JPG, PNG o WEBP"
+          : "El documento y la selfie deben ser imágenes JPG, PNG o WEBP",
+      ),
+    );
+  },
+  limits: {
+    fileSize: MAX_TAMANO,
+    files: CAMPOS_DOCUMENTACION.length,
+  },
+});
+
+export const subirDocumentacion = (req, res, next) => {
+  subirDocumentos.fields(CAMPOS_DOCUMENTACION)(req, res, (error) => {
+    if (!error) {
+      next();
+      return;
+    }
+
+    const mensaje =
+      error.code === "LIMIT_FILE_SIZE"
+        ? "Cada archivo puede pesar hasta 5 MB"
+        : error.code === "LIMIT_UNEXPECTED_FILE"
+          ? "Solo se aceptan los campos documento, selfie y cv"
+          : error.message;
+
+    res.status(400).json({ mensaje });
+  });
+};
+
 export const subirEvidencias = (req, res, next) => {
   subir.array("evidencias", MAX_ARCHIVOS)(req, res, (error) => {
     if (!error) {

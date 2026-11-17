@@ -1,4 +1,6 @@
 import { Op } from "sequelize";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { createHash, randomBytes } from "node:crypto";
 import User from "../models/user.model.js";
 import { hashPassword, verifyPassword } from "../helpers/password.helper.js";
@@ -9,6 +11,14 @@ import {
   createAuthToken,
   setAuthCookie,
 } from "../helpers/auth.helper.js";
+import {
+  condicionPrestadorVisible,
+  leerDocumentos,
+  resumenDocumentacion,
+} from "../helpers/cuenta.helper.js";
+import { CARPETA_DOCUMENTOS } from "../middlewares/upload.middleware.js";
+import { ROLES_ADMIN } from "../middlewares/admin.middleware.js";
+import { crearNotificacion } from "./notificacion.controller.js";
 
 const PUBLIC_USER_FIELDS = [
   "id",
@@ -30,7 +40,14 @@ const PUBLIC_USER_FIELDS = [
   "tamanosAceptados",
   "restricciones",
   "cuentaCobro",
+  "estadoAprobacion",
+  "motivoRechazo",
+  "experiencia",
+  "estadoCuenta",
 ];
+
+// documentos guarda nombres de archivo: se consulta pero nunca se devuelve tal cual
+const PROFILE_QUERY_FIELDS = [...PUBLIC_USER_FIELDS, "documentos"];
 
 const DIRECTORY_USER_FIELDS = [
   "id",
@@ -46,15 +63,22 @@ const DIRECTORY_USER_FIELDS = [
   "resenas",
   "tamanosAceptados",
   "restricciones",
+  "experiencia",
 ];
 
 const publicUser = (user) => {
   const data = user.toJSON ? user.toJSON() : user;
-  return Object.fromEntries(
+  const resultado = Object.fromEntries(
     PUBLIC_USER_FIELDS.filter((field) => data[field] !== undefined).map(
       (field) => [field, data[field]],
     ),
   );
+
+  if (data.rol === "prestador") {
+    resultado.documentacion = resumenDocumentacion(data.documentos);
+  }
+
+  return resultado;
 };
 
 export const crearUsuario = async (req, res) => {
@@ -112,6 +136,9 @@ export const crearUsuario = async (req, res) => {
       rol,
       servicios: rol === "prestador" ? servicios : null,
       vehiculo: rol === "prestador" ? (vehiculo ?? null) : null,
+      // Todo prestador nuevo espera la revisión de la administración
+      estadoAprobacion: rol === "prestador" ? "pendiente" : null,
+      estadoCuenta: "activa",
     });
 
     setAuthCookie(res, createAuthToken(user));
@@ -187,19 +214,19 @@ export const obtenerUsuarios = async (req, res) => {
   try {
     const { servicio, zona, q } = req.query;
 
-    // El directorio es público: solo expone prestadores, nunca dueños ni administradores
-    const where = { rol: "prestador" };
+    // El directorio es público: solo expone prestadores aprobados con la cuenta activa
+    const extra = {};
 
-    if (zona) where.zona = { [Op.like]: `%${zona}%` };
+    if (zona) extra.zona = { [Op.like]: `%${zona}%` };
     if (q) {
-      where[Op.or] = [
+      extra[Op.or] = [
         { nombre: { [Op.like]: `%${q}%` } },
         { apellido: { [Op.like]: `%${q}%` } },
       ];
     }
 
     const users = await User.findAll({
-      where,
+      where: condicionPrestadorVisible(extra),
       attributes: DIRECTORY_USER_FIELDS,
       order: [["nombre", "ASC"]],
     });
@@ -228,14 +255,14 @@ export const obtenerUsuarioPorId = async (req, res) => {
       ["admin", "administrador"].includes(req.user.rol);
 
     const user = await User.findByPk(req.params.id, {
-      attributes: esPropioOAdmin ? PUBLIC_USER_FIELDS : DIRECTORY_USER_FIELDS,
+      attributes: esPropioOAdmin ? PROFILE_QUERY_FIELDS : DIRECTORY_USER_FIELDS,
     });
 
     if (!user) {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
 
-    return res.status(200).json(user);
+    return res.status(200).json(esPropioOAdmin ? publicUser(user) : user);
   } catch (error) {
     console.error("Error al obtener usuario:", error);
     return res.status(500).json({ mensaje: "Error al obtener el usuario" });
@@ -449,6 +476,113 @@ export const actualizarCuentaCobro = async (req, res) => {
     return res
       .status(500)
       .json({ mensaje: "No se pudo actualizar la cuenta de cobro" });
+  }
+};
+
+const borrarArchivoDocumento = (nombre) =>
+  nombre
+    ? fs.unlink(path.join(CARPETA_DOCUMENTOS, path.basename(nombre))).catch(() => null)
+    : null;
+
+const MAX_EXPERIENCIA = 2000;
+
+// PUT /api/users/me/documentacion (multipart: documento, selfie, cv, experiencia)
+// Carga o reemplaza la documentación del prestador y lo deja pendiente de revisión.
+export const cargarDocumentacion = async (req, res) => {
+  const archivos = Object.values(req.files || {}).flat();
+  const descartarSubidos = () =>
+    Promise.all(archivos.map((archivo) => borrarArchivoDocumento(archivo.filename)));
+
+  try {
+    if (req.user.rol !== "prestador") {
+      await descartarSubidos();
+      return res
+        .status(403)
+        .json({ mensaje: "Solo un prestador carga documentación" });
+    }
+
+    const nuevos = Object.fromEntries(
+      Object.entries(req.files || {}).map(([campo, lista]) => [campo, lista[0]?.filename]),
+    );
+    const anteriores = leerDocumentos(req.user.documentos);
+    const aprobado = req.user.estadoAprobacion === "aprobado";
+
+    if (aprobado && (nuevos.documento || nuevos.selfie)) {
+      await descartarSubidos();
+      return res.status(409).json({
+        mensaje: "Tu identidad ya fue verificada. Solo podés actualizar el CV y la experiencia.",
+      });
+    }
+
+    const documentos = { ...anteriores, ...nuevos };
+
+    if (!aprobado && (!documentos.documento || !documentos.selfie)) {
+      await descartarSubidos();
+      return res.status(400).json({
+        mensaje: "Adjuntá la foto del documento y la selfie de validación",
+      });
+    }
+
+    const cambios = { documentos };
+
+    if (req.body.experiencia !== undefined) {
+      const experiencia = String(req.body.experiencia).trim();
+
+      if (experiencia.length > MAX_EXPERIENCIA) {
+        await descartarSubidos();
+        return res.status(400).json({
+          mensaje: `La experiencia puede tener hasta ${MAX_EXPERIENCIA} caracteres`,
+        });
+      }
+
+      cambios.experiencia = experiencia || null;
+    }
+
+    // Un rechazo previo vuelve a revisión cuando se envía documentación nueva
+    const vuelveARevision = !aprobado && (nuevos.documento || nuevos.selfie);
+
+    if (vuelveARevision) {
+      cambios.estadoAprobacion = "pendiente";
+      cambios.motivoRechazo = null;
+    }
+
+    await req.user.update(cambios);
+
+    // Los archivos reemplazados ya no se usan
+    await Promise.all(
+      Object.keys(nuevos)
+        .filter((campo) => anteriores[campo] && anteriores[campo] !== nuevos[campo])
+        .map((campo) => borrarArchivoDocumento(anteriores[campo])),
+    );
+
+    if (vuelveARevision) {
+      const administradores = await User.findAll({
+        where: { rol: { [Op.in]: ROLES_ADMIN } },
+        attributes: ["id"],
+      });
+
+      for (const administrador of administradores) {
+        await crearNotificacion({
+          usuarioId: administrador.id,
+          tipo: "prestador-pendiente",
+          titulo: "Prestador pendiente de aprobación",
+          mensaje: `${req.user.nombre} ${req.user.apellido} envió su documentación para revisión.`,
+        });
+      }
+    }
+
+    return res.status(200).json({
+      mensaje: vuelveARevision
+        ? "Documentación enviada. La administración la revisará."
+        : "Datos actualizados correctamente",
+      usuario: publicUser(req.user),
+    });
+  } catch (error) {
+    console.error("Error al cargar la documentación:", error);
+    await descartarSubidos();
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo guardar la documentación" });
   }
 };
 

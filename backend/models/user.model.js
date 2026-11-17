@@ -115,6 +115,51 @@ const User = sequelize.define("User", {
     resetExpira: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+
+    // Verificación del prestador: pendiente, aprobado o rechazado (null para otros roles)
+    estadoAprobacion: {
+        type: DataTypes.STRING(20),
+        allowNull: true
+    },
+
+    motivoRechazo: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+
+    aprobacionRevisadaEn: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+
+    // Nombres de archivo en uploads/documentos: { documento, selfie, cv }
+    documentos: {
+        type: DataTypes.JSON,
+        allowNull: true
+    },
+
+    experiencia: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+
+    // Cuenta activa o suspendida por la administración. Admite null para no fallar
+    // al migrar tablas con datos; app.js completa las filas anteriores con "activa".
+    estadoCuenta: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+        defaultValue: "activa"
+    },
+
+    motivoSuspension: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+
+    suspendidoEn: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 
 });

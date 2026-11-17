@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { enviarJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
+import { enviarDocumentacion, validarDocumentacion } from "../helpers/documentacion";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
@@ -30,7 +31,11 @@ const MASCOTA_INICIAL = {
 const PRESTADOR_INICIAL = {
   zona: "",
   servicios: [],
-  vehiculo: ""
+  vehiculo: "",
+  experiencia: "",
+  documento: null,
+  selfie: null,
+  cv: null
 };
 
 export default function Registro() {
@@ -41,7 +46,8 @@ export default function Registro() {
   const [completarFicha, setCompletarFicha] = useState(false);
   const [mascota, setMascota] = useState(MASCOTA_INICIAL);
   const [prestador, setPrestador] = useState(PRESTADOR_INICIAL);
-  const [aviso, setAviso] = useState(null);  useEstilos("base", estilosBase);
+  const [aviso, setAviso] = useState(null);
+  useEstilos("base", estilosBase);
 
   const mostrarMensaje = (texto, tipo = "danger") => {
     setAviso({ texto, tipo });
@@ -75,6 +81,11 @@ export default function Registro() {
     if (!valor) {
       setCompletarFicha(false);
     }
+  };
+
+  const cambiarArchivo = (campo) => (evento) => {
+    const archivo = evento.target.files?.[0] || null;
+    setPrestador((anterior) => ({ ...anterior, [campo]: archivo }));
   };
 
   const cambiarServicio = (servicio) => (evento) => {
@@ -147,6 +158,13 @@ export default function Registro() {
         }
 
         vehiculo = prestador.vehiculo;
+      }
+
+      const errorDocumentacion = validarDocumentacion(prestador, true);
+
+      if (errorDocumentacion) {
+        mostrarMensaje(errorDocumentacion);
+        return;
       }
     }
 
@@ -222,6 +240,24 @@ export default function Registro() {
 
       const usuarioCreado = resultadoUsuario.usuario;
 
+      // El registro deja la sesión iniciada, así que la documentación se sube a continuación
+      if (rol === "prestador") {
+        try {
+          await enviarDocumentacion({
+            documento: prestador.documento,
+            selfie: prestador.selfie,
+            cv: prestador.cv,
+            experiencia: prestador.experiencia.trim()
+          });
+        } catch (falloDocumentacion) {
+          mostrarMensaje(
+            `La cuenta se creó, pero no se pudo subir la documentación (${falloDocumentacion.message}). Podés cargarla desde Mi perfil en tu panel.`,
+            "warning"
+          );
+          return;
+        }
+      }
+
       if (datosMascotaRegistro) {
         const { ok: mascotaCreada } = await enviarJson("/api/mascotas", "POST", {
           ...datosMascotaRegistro,
@@ -238,7 +274,9 @@ export default function Registro() {
       }
 
       mostrarMensaje(
-        "¡Registro completado correctamente! Redirigiendo al inicio de sesión...",
+        rol === "prestador"
+          ? "¡Registro completado! Tu perfil queda pendiente hasta que la administración verifique tu documentación. Redirigiendo..."
+          : "¡Registro completado correctamente! Redirigiendo al inicio de sesión...",
         "success"
       );
 
@@ -259,7 +297,8 @@ export default function Registro() {
   const incluyeTraslado = prestador.servicios.includes("Traslado");
 
   return (
-    <>
+    <>
+
       <main className="container py-5">
         <div className="row justify-content-center">
           <div className="col-md-8">
@@ -725,6 +764,70 @@ export default function Registro() {
                           value={prestador.zona}
                           onChange={(evento) =>
                             setPrestador((anterior) => ({ ...anterior, zona: evento.target.value }))
+                          }
+                        />
+                      </div>
+
+                      <hr className="my-4" />
+                      <h4 className="mb-1">Verificación de identidad</h4>
+                      <p className="text-secondary small">
+                        Tu perfil aparece en el buscador cuando la administración revisa y aprueba esta
+                        documentación.
+                      </p>
+
+                      <div className="mb-3">
+                        <label htmlFor="documento" className="form-label">
+                          Foto del documento (DNI)
+                        </label>
+                        <input
+                          type="file"
+                          id="documento"
+                          className="form-control"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={cambiarArchivo("documento")}
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label htmlFor="selfie" className="form-label">
+                          Selfie de validación sosteniendo el documento
+                        </label>
+                        <input
+                          type="file"
+                          id="selfie"
+                          className="form-control"
+                          accept="image/jpeg,image/png,image/webp"
+                          capture="user"
+                          onChange={cambiarArchivo("selfie")}
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label htmlFor="cv" className="form-label">
+                          CV o certificados (opcional)
+                        </label>
+                        <input
+                          type="file"
+                          id="cv"
+                          className="form-control"
+                          accept="application/pdf,image/jpeg,image/png,image/webp"
+                          onChange={cambiarArchivo("cv")}
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label htmlFor="experiencia" className="form-label">
+                          Experiencia con mascotas (opcional)
+                        </label>
+                        <textarea
+                          id="experiencia"
+                          className="form-control"
+                          rows="3"
+                          maxLength={2000}
+                          placeholder="Años de experiencia, cursos, tipo de mascotas que cuidaste..."
+                          value={prestador.experiencia}
+                          onChange={(evento) =>
+                            setPrestador((anterior) => ({ ...anterior, experiencia: evento.target.value }))
                           }
                         />
                       </div>

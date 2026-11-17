@@ -32,6 +32,10 @@ export function destinoDeNotificacion(notificacion, usuario) {
       : { ruta: RUTAS.misServicios, texto: "Ver mis reservas" };
   }
 
+  if (tipo.startsWith("cuenta") && esPrestador) {
+    return { ruta: `${RUTAS.panelPrestador}/perfil`, texto: "Ver verificación" };
+  }
+
   if (tipo === "resena" && esPrestador) {
     return { ruta: `${RUTAS.panelPrestador}/rendimiento`, texto: "Ver reseñas" };
   }

@@ -11,6 +11,7 @@ import {
 import { crearNotificacion } from "./notificacion.controller.js";
 import { publicarEvento } from "../helpers/realtime.helper.js";
 import { calcularPresupuesto, normalizarConfigPrecio } from "../helpers/precio.helper.js";
+import { condicionPrestadorVisible } from "../helpers/cuenta.helper.js";
 
 const esAdministrador = (user) => ["admin", "administrador"].includes(user.rol);
 
@@ -226,12 +227,15 @@ export const crearServicio = async (req, res) => {
         .json({ mensaje: "Elegí una fecha y hora futuras" });
     }
 
+    // Solo se reserva a prestadores aprobados por la administración y con la cuenta activa
     const prestador = await User.findOne({
-      where: { id: providerId, rol: "prestador" },
+      where: condicionPrestadorVisible({ id: providerId }),
     });
 
     if (!prestador) {
-      return res.status(404).json({ mensaje: "Prestador no encontrado" });
+      return res
+        .status(404)
+        .json({ mensaje: "El prestador no está disponible para reservas" });
     }
 
     if (!leerLista(prestador.servicios).includes(tipo)) {
@@ -946,8 +950,9 @@ export const precioSugerido = async (req, res) => {
       return res.json({ rango: null, mensaje: "Servicio no válido" });
     }
 
+    // El rango de mercado se arma con los prestadores activos en la plataforma
     const prestadores = await User.findAll({
-      where: { rol: "prestador" },
+      where: condicionPrestadorVisible(),
       attributes: ["zona", "servicios", "preciosServicios"],
     });
 

@@ -4,6 +4,7 @@ import { RUTAS } from "../../config/rutas";
 import { leerLista, leerPrecios } from "../../helpers/listas";
 import { formatearResumenPrecio } from "../../helpers/precios";
 import { NOMBRES_SERVICIO } from "../../helpers/servicios";
+import TarjetaVerificacion from "./TarjetaVerificacion";
 
 const DIAS_PERFIL = [
   ["lunes", "Lunes"],
@@ -110,6 +111,8 @@ export default function SeccionPerfil({ usuario, alActualizar }) {
           </div>
         </div>
       </div>
+
+      <TarjetaVerificacion usuario={usuario} alActualizar={alActualizar} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">

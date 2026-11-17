@@ -13,6 +13,9 @@ export default function TarjetaPrestador({ prestador, alReservar, alVerResenas }
         <div className="card-body">
           <h5 className="card-title fw-bold">
             {prestador.nombre} {prestador.apellido}
+            {prestador.verificado && (
+              <i className="bi bi-patch-check-fill text-success ms-2" title="Identidad verificada"></i>
+            )}
           </h5>
 
           <p className="card-text">
@@ -39,6 +42,12 @@ export default function TarjetaPrestador({ prestador, alReservar, alVerResenas }
           <p className="card-text">
             <strong>Calificación:</strong> {prestador.calificacion || 0}
           </p>
+
+          {prestador.experiencia && (
+            <p className="card-text small text-secondary" style={{ whiteSpace: "pre-wrap" }}>
+              <strong className="text-body">Experiencia:</strong> {prestador.experiencia}
+            </p>
+          )}
 
           <button className="btn btn-primary w-100" onClick={() => alReservar(prestador.id)}>
             Reservar

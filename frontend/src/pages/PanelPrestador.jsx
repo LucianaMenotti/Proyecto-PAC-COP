@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import EncabezadoPanel from "../components/panel/EncabezadoPanel";
 import MenuLateralPanel, { SECCIONES_PANEL } from "../components/panel/MenuLateralPanel";
 import SeccionChat from "../components/panel/SeccionChat";
@@ -53,6 +53,23 @@ export default function PanelPrestador({ seccionFija = null }) {
     <div className="panel-tw flex flex-col text-slate-800">
       <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1">
         <EncabezadoPanel usuario={usuario} nivel={nivel} />
+
+        {usuario.estadoAprobacion !== "aprobado" && seccion !== "perfil" && (
+          <div className="mb-6 p-4 rounded-2xl border border-amber-200 bg-amber-50 text-amber-900 text-sm flex flex-wrap items-center justify-between gap-3">
+            <span>
+              <i className="bi bi-hourglass-split me-2"></i>
+              {usuario.estadoAprobacion === "rechazado"
+                ? "La administración rechazó tu documentación. Tu perfil no aparece en el buscador."
+                : "Tu perfil no aparece en el buscador hasta que la administración apruebe tu documentación."}
+            </span>
+            <Link
+              to={`${RUTAS.panelPrestador}/perfil`}
+              className="text-xs font-bold text-amber-900 bg-white border border-amber-200 px-3 py-1.5 rounded-lg"
+            >
+              Ver verificación
+            </Link>
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <MenuLateralPanel seccionActual={seccion} pendientes={pendientes} />

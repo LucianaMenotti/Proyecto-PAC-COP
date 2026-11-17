@@ -13,11 +13,13 @@ import {
     actualizarVehiculo,
     actualizarCuentaCobro,
     solicitarRecuperacion,
-    restablecerPassword
+    restablecerPassword,
+    cargarDocumentacion
 } from "../controllers/user.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { validateUser, validateActualizarServicios } from "../middlewares/validation.middleware.js";
 import { crearLimitador } from "../middlewares/rateLimit.middleware.js";
+import { subirDocumentacion } from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
@@ -50,5 +52,8 @@ router.put("/me/restricciones", authMiddleware, actualizarRestricciones);
 router.put("/me/vehiculo", authMiddleware, actualizarVehiculo);
 
 router.put("/me/cuenta-cobro", authMiddleware, actualizarCuentaCobro);
+
+// Documentación de identidad del prestador (multipart)
+router.put("/me/documentacion", authMiddleware, subirDocumentacion, cargarDocumentacion);
 
 export default router;

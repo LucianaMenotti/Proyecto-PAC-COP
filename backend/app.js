@@ -149,6 +149,20 @@ const asegurarColumnasFaltantes = async (modelo) => {
     }
 };
 
+// Completa los datos de filas creadas antes de las columnas de verificación y cuenta.
+// Un prestador ya verificado queda aprobado; el resto espera la revisión del administrador.
+const normalizarDatosHeredados = async () => {
+    await User.update(
+        { estadoAprobacion: "aprobado" },
+        { where: { rol: "prestador", estadoAprobacion: null, verificado: true } }
+    );
+    await User.update(
+        { estadoAprobacion: "pendiente" },
+        { where: { rol: "prestador", estadoAprobacion: null } }
+    );
+    await User.update({ estadoCuenta: "activa" }, { where: { estadoCuenta: null } });
+};
+
 const iniciarServidor = async () => {
     try {
         await sequelize.authenticate();
@@ -178,6 +192,8 @@ const iniciarServidor = async () => {
                 }
             );
         }
+
+        await normalizarDatosHeredados();
 
         console.log(
             actualizarEstructura
