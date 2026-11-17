@@ -3,6 +3,12 @@ import Mascota from "../models/mascota.model.js";
 export const crearMascota = async (req, res) => {
     try {
 
+        if (req.user.rol !== "dueño") {
+            return res.status(403).json({
+                mensaje: "Solo un dueño puede registrar mascotas"
+            });
+        }
+
         const {
             nombre,
             especie,

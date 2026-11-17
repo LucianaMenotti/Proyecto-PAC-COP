@@ -399,13 +399,15 @@ export default function Pago() {
                         marque como completado.
                       </p>
 
-                      <button
-                        type="button"
-                        className="btn btn-brand-soft px-4 py-2 fw-semibold rounded-3 text-brand"
-                        onClick={liberarPago}
-                      >
-                        <i className="bi bi-check2-circle me-1"></i> Marcar servicio como completado
-                      </button>
+                      {reserva?.estado === "finalizado" && (
+                        <button
+                          type="button"
+                          className="btn btn-brand-soft px-4 py-2 fw-semibold rounded-3 text-brand"
+                          onClick={liberarPago}
+                        >
+                          <i className="bi bi-check2-circle me-1"></i> Liberar el pago al prestador
+                        </button>
+                      )}
                     </div>
                   )}
 

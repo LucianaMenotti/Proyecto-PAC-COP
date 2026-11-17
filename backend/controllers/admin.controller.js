@@ -7,6 +7,9 @@ import { crearNotificacion } from "./notificacion.controller.js";
 
 const ROLES_VALIDOS = ["dueño", "prestador", "admin", "administrador"];
 
+// El administrador puede intervenir un servicio mientras no esté cerrado
+const ESTADOS_CANCELABLES_ADMIN = ["programado", "aceptado", "en-curso"];
+
 const ATRIBUTOS_USUARIO = [
   "id",
   "nombre",
@@ -216,9 +219,9 @@ export const cancelarServicioAdmin = async (req, res) => {
       return res.status(404).json({ mensaje: "Servicio no encontrado" });
     }
 
-    if (["finalizado", "cancelado"].includes(servicio.estado)) {
-      return res.status(400).json({
-        mensaje: "El servicio ya está finalizado o cancelado",
+    if (!ESTADOS_CANCELABLES_ADMIN.includes(servicio.estado)) {
+      return res.status(409).json({
+        mensaje: "Solo se cancelan servicios programados, aceptados o en curso",
       });
     }
 

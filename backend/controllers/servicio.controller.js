@@ -295,6 +295,30 @@ export const crearServicio = async (req, res) => {
     const mascotaNombreCompleto = mascotas.map((m) => m.nombre).join(", ").slice(0, 100);
     const mascota = mascotas[0];
 
+    const esIdaVuelta =
+      tipo === "Traslado" &&
+      String(motivoTraslado ?? "").trim() === "queda" &&
+      solicitarVuelta === true;
+
+    // La vuelta se valida antes de crear la ida para no dejar reservas a medias
+    const regreso = esIdaVuelta ? new Date(horaRegreso) : null;
+
+    if (esIdaVuelta) {
+      if (Number.isNaN(regreso.getTime()) || regreso <= fecha) {
+        return res.status(400).json({
+          mensaje: "La hora de regreso debe ser posterior a la salida",
+        });
+      }
+
+      const disponibilidadVuelta = validarDisponibilidad(prestador, regreso);
+
+      if (!disponibilidadVuelta.ok) {
+        return res.status(409).json({
+          mensaje: `La vuelta no se puede programar: ${disponibilidadVuelta.mensaje}`,
+        });
+      }
+    }
+
     const servicio = await Servicio.create({
       ownerId: req.user.id,
       providerId: prestador.id,
@@ -312,30 +336,9 @@ export const crearServicio = async (req, res) => {
           : null,
     });
 
-    const esIdaVuelta =
-      tipo === "Traslado" &&
-      String(motivoTraslado ?? "").trim() === "queda" &&
-      solicitarVuelta === true;
-
     let servicioVuelta = null;
 
     if (esIdaVuelta) {
-      const regreso = new Date(horaRegreso);
-
-      if (Number.isNaN(regreso.getTime()) || regreso <= fecha) {
-        return res.status(400).json({
-          mensaje: "La hora de regreso debe ser posterior a la salida",
-        });
-      }
-
-      const disponibilidadVuelta = validarDisponibilidad(prestador, regreso);
-
-      if (!disponibilidadVuelta.ok) {
-        return res.status(409).json({
-          mensaje: `La vuelta no se puede programar: ${disponibilidadVuelta.mensaje}`,
-        });
-      }
-
       servicioVuelta = await Servicio.create({
         ownerId: req.user.id,
         providerId: prestador.id,
@@ -739,17 +742,22 @@ export const cancelarServicio = async (req, res) => {
       await liberarPagoDelServicio(servicio.id);
     }
 
-    const destinatarioCancelacion = esDueno
-      ? servicio.providerId
-      : servicio.ownerId;
+    // Si cancela un administrador se avisa a las dos partes
+    const destinatarios = esDueno
+      ? [servicio.providerId]
+      : esPrestador
+        ? [servicio.ownerId]
+        : [servicio.ownerId, servicio.providerId];
 
-    await crearNotificacion({
-      usuarioId: destinatarioCancelacion,
-      tipo: "reserva-cancelada",
-      titulo: "Reserva cancelada",
-      mensaje: `Se canceló la reserva de ${servicio.tipo}.`,
-      servicioId: servicio.id,
-    });
+    for (const destinatario of destinatarios.filter(Boolean)) {
+      await crearNotificacion({
+        usuarioId: destinatario,
+        tipo: "reserva-cancelada",
+        titulo: "Reserva cancelada",
+        mensaje: `Se canceló la reserva de ${servicio.tipo}.`,
+        servicioId: servicio.id,
+      });
+    }
 
     return res.json({
       mensaje: reembolso

@@ -184,6 +184,17 @@ export const liberarPago = async (req, res) => {
     if (!pago) return res.status(404).json({ mensaje: "Pago no encontrado" });
     if (pago.estado !== "retenido") return res.status(409).json({ mensaje: "El pago no está retenido" });
 
+    // La custodia solo se libera con el servicio finalizado, salvo intervención del administrador
+    if (!esAdministrador(req.user)) {
+        const servicio = await Servicio.findByPk(pago.servicioId);
+
+        if (servicio?.estado !== "finalizado") {
+            return res.status(409).json({
+                mensaje: "El pago se libera cuando el servicio está finalizado"
+            });
+        }
+    }
+
     await pago.update({ estado: "liberado", liberadoEn: new Date() });
 
     await crearNotificacion({

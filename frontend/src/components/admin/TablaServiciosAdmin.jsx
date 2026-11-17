@@ -3,6 +3,9 @@ import { apiDatos, enviarDatos } from "../../config/api";
 
 const LIMITE = 10;
 
+// Mismos estados que acepta POST /api/admin/servicios/:id/cancelar
+const ESTADOS_CANCELABLES = ["programado", "aceptado", "en-curso"];
+
 const CLASES_ESTADO = {
   programado: "text-bg-secondary",
   aceptado: "text-bg-info",
@@ -124,7 +127,7 @@ export default function TablaServiciosAdmin({ alAvisar, alCambiar }) {
                     </span>
                   </td>
                   <td className="text-end">
-                    {!["finalizado", "cancelado"].includes(servicio.estado) && (
+                    {ESTADOS_CANCELABLES.includes(servicio.estado) && (
                       <button
                         type="button"
                         className="btn btn-outline-danger btn-sm"

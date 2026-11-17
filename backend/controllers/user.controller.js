@@ -185,10 +185,11 @@ export const obtenerSesion = (req, res) =>
 
 export const obtenerUsuarios = async (req, res) => {
   try {
-    const { rol, servicio, zona, q } = req.query;
-    const where = {};
+    const { servicio, zona, q } = req.query;
 
-    if (rol) where.rol = rol;
+    // El directorio es público: solo expone prestadores, nunca dueños ni administradores
+    const where = { rol: "prestador" };
+
     if (zona) where.zona = { [Op.like]: `%${zona}%` };
     if (q) {
       where[Op.or] = [

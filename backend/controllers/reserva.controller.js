@@ -6,8 +6,10 @@ export const crearReserva = async (req, res) => {
 
     try {
 
+        // El dueño sale de la sesión, nunca del cuerpo de la petición
+        const userId = req.user.id;
+
         const {
-            userId,
             mascotaId,
             prestadorId,
             servicio,
@@ -16,7 +18,6 @@ export const crearReserva = async (req, res) => {
         } = req.body;
 
         if (
-            !userId ||
             !mascotaId ||
             !prestadorId ||
             !servicio ||
@@ -28,11 +29,9 @@ export const crearReserva = async (req, res) => {
             });
         }
 
-        const dueno = await User.findByPk(userId);
-
-        if (!dueno || dueno.rol !== "dueño") {
-            return res.status(404).json({
-                mensaje: "El dueño no existe"
+        if (req.user.rol !== "dueño") {
+            return res.status(403).json({
+                mensaje: "Solo un dueño de mascota puede reservar"
             });
         }
 
