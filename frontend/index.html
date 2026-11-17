@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es" data-motor="bootstrap">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Pac-Cop - Servicios para mascotas</title>
+    <script>
+      // Aplica el tema guardado antes del primer pintado para evitar el parpadeo claro/oscuro.
+      (function () {
+        try {
+          var forzado = new URLSearchParams(location.search).get("tema");
+          var guardado = forzado === "dark" || forzado === "light" ? forzado : localStorage.getItem("pac-tema");
+          var tema =
+            guardado === "dark" || guardado === "light"
+              ? guardado
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.setAttribute("data-theme", tema);
+          document.documentElement.setAttribute("data-bs-theme", tema);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
