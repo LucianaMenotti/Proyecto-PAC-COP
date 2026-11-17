@@ -33,6 +33,7 @@ backend/
     admin.controller.js
     mascota.controller.js
     mensaje.controller.js
+    moderacion.controller.js
     notificacion.controller.js
     pago.controller.js
     reclamo.controller.js
@@ -40,10 +41,14 @@ backend/
     servicio.controller.js
     user.controller.js
   helpers/
+    auditoria.helper.js
     auth.helper.js
+    calificacion.helper.js
+    cuenta.helper.js
     email.helper.js
     email.templates.js
     imagen.helper.js
+    metricas.helper.js
     password.helper.js
     precio.helper.js
     realtime.helper.js
@@ -54,12 +59,14 @@ backend/
     upload.middleware.js
     validation.middleware.js
   models/
+    accionAdmin.model.js
     calificacion.model.js
     mascota.model.js
     mensaje.model.js
     notificacion.model.js
     pago.model.js
     reclamo.model.js
+    reporte.model.js
     reserva.model.js
     servicio.model.js
     ubicacion.model.js
@@ -72,11 +79,15 @@ backend/
     notificacion.routes.js
     pago.routes.js
     reclamo.routes.js
+    reporte.routes.js
     reserva.routes.js
     servicio.routes.js
     user.routes.js
+  scripts/
+    crearAdmin.js
   test/
     helpers.test.js
+    metricas.test.js
     precio.test.js
 ```
 
@@ -89,7 +100,7 @@ Responsabilidades:
 5. middlewares: sesión, rol de administrador, limitación de intentos, validación de datos y recepción de imágenes con multer.
 6. helpers: firma de sesión, hash de contraseñas, guardado de imágenes del chat, cálculo de precios, correo y canal de eventos en tiempo real.
 
-El servidor solo expone la API bajo /api, más las evidencias de reclamos en /uploads/reclamos. No sirve páginas. Cualquier ruta /api sin coincidencia responde JSON 404.
+El servidor solo expone la API bajo /api, más las evidencias de reclamos en /uploads/reclamos. No sirve páginas. Cualquier ruta /api sin coincidencia responde JSON 404. La documentación de identidad de los prestadores se guarda en backend/uploads/documentos y nunca se sirve como archivo estático: solo la entrega GET /api/admin/usuarios/:id/documentos/:tipo a un administrador.
 
 ### Frontend
 
@@ -106,7 +117,8 @@ frontend/
     helpers/       funciones puras (precios, niveles, servicios, notificaciones, mapas, PDF, tarjeta)
     hooks/         sesión, tiempo real (SSE), servicios, chat, seguimiento, estilos, Bootstrap
     components/
-      admin/       tablas del panel de administración
+      admin/       secciones del panel de administración y modal de motivos
+      reportes/    formulario y modal para reportar usuarios o reseñas
       chat/        conversación unificada
       panel/       secciones del panel del prestador
       pago/        piezas de la pantalla de pago
@@ -143,8 +155,9 @@ Criterios de la arquitectura de React:
 | /perfil-prestador | Prestador. Redirige a /panel-prestador/perfil |
 | /chat?servicioId= | Cualquier usuario con sesión |
 | /notificaciones | Cualquier usuario con sesión |
-| /admin | Administrador |
-| /admin-reclamos | Administrador |
+| /admin/:seccion? | Administrador. Secciones resumen (por defecto), prestadores, usuarios, servicios, reclamos, moderacion y auditoria |
+| /admin/legajo/:id | Administrador. Legajo de un usuario con descarga en PDF |
+| /admin-reclamos | Administrador. Redirige a /admin/reclamos |
 
 Cualquier otra ruta redirige a /. Son administradores los roles admin y administrador.
 
@@ -178,6 +191,21 @@ Secciones del panel del prestador (/panel-prestador/:seccion): precios (por defe
 13. Notificaciones por reservas, pagos, mensajes, reseñas y administración, con tipos reserva, reserva-aceptada, reserva-rechazada, reserva-cancelada, mensaje, pago-confirmado, pago-fallido, pago-liberado y resena.
 14. Niveles del prestador (nuevo, establecido, top) según servicios finalizados y calificación.
 
+### Panel de administración
+
+El administrador está por encima de dueños y prestadores. Todas las acciones se validan en el backend (authMiddleware y adminMiddleware) y quedan en el registro de acciones con el motivo.
+
+1. Resumen. Métricas de las reservas creadas en un rango de fechas configurable (por defecto los últimos 30 días), filtrables por tipo de servicio: reservas por estado, servicios más solicitados, ingresos liberados, montos en custodia y reembolsados, prestadores activos, usuarios nuevos, pendientes de aprobación, cuentas suspendidas, reclamos abiertos y reportes pendientes.
+2. Aprobaciones. Lista de prestadores pendientes, rechazados y aprobados con la foto del documento, la selfie de validación, el CV y la experiencia. Aprobar exige el documento y la selfie. Rechazar admite un motivo opcional. El prestador recibe la notificación del resultado. Solo los prestadores aprobados con la cuenta activa aparecen en el buscador, reciben reservas y entran en el rango de precios de mercado.
+3. Usuarios. Búsqueda por nombre, email o DNI, filtros por rol y estado de cuenta, cambio de rol y suspensión o reactivación. Una suspensión exige motivo, cierra las sesiones abiertas, impide iniciar sesión y, si se elige, cancela con reembolso las reservas programadas o aceptadas avisando a la otra parte. No se puede suspender a un administrador ni quitarse a uno mismo el rol, y siempre queda al menos un administrador.
+4. Legajo (/admin/legajo/:id). Datos personales, perfil profesional (servicios y precios, disponibilidad, tamaños, razas excluidas, vehículo, cuenta de cobro, experiencia), documentación, actividad, últimos servicios, reseñas (incluidas las ocultas), reclamos, reportes recibidos y decisiones de la administración. Se descarga en PDF con jsPDF, con el documento y la selfie incrustados.
+5. Servicios. Filtros por estado y tipo, estado del pago, acceso al chat del servicio y cancelación con motivo y reembolso de servicios programados, aceptados o en curso.
+6. Reclamos. Datos de contacto de las dos partes (solo visibles para la administración), enlace a sus legajos, lectura del chat del servicio aunque esté finalizado, mensajes a una o ambas partes (notificación y correo) y cierre obligatorio con una resolución que reciben las dos partes.
+7. Moderación. Reportes de usuarios y de reseñas enviados por dueños y prestadores. Una reseña se puede ocultar (deja de mostrarse y de contar en el promedio), volver a mostrar o eliminar. El contenido eliminado y el motivo quedan en el registro de acciones y el autor recibe una notificación.
+8. Registro de acciones. Quién hizo qué, sobre qué y por qué: cambios de rol, aprobaciones, rechazos, suspensiones, cancelaciones, estados y mensajes de reclamos, moderación de reseñas y resolución de reportes.
+
+Del lado de los usuarios, el prestador carga su documentación al registrarse o desde Mi perfil en su panel (sección Verificación y experiencia), y dueños y prestadores pueden reportar a la otra parte de un servicio desde Mis servicios o reportar una reseña desde la lista de reseñas.
+
 ### Combinación de ambas ramas
 
 1. Panel del prestador. Se conservó el de Maxi como base, reescrito en React con Tailwind, y se le agregaron las secciones de reclamos y de chat unificado de Luciana. Las pestañas estáticas de la versión de Luciana (niveles, publicar, rendimiento, ruta) se reemplazaron por secciones con datos reales.
@@ -190,16 +218,17 @@ Todas las rutas, salvo las marcadas como públicas, exigen sesión.
 
 | Recurso | Endpoints |
 | --- | --- |
-| Usuarios | POST /api/users (público), POST /api/users/login (público), POST /api/users/recuperar (público), POST /api/users/restablecer (público), POST /api/users/logout, GET /api/users/me, GET /api/users (filtros rol, servicio, zona, q), GET /api/users/:id, PUT /api/users/me/servicios, PUT /api/users/me/disponibilidad, PUT /api/users/me/restricciones, PUT /api/users/me/vehiculo, PUT /api/users/me/cuenta-cobro |
+| Usuarios | POST /api/users (público), POST /api/users/login (público), POST /api/users/recuperar (público), POST /api/users/restablecer (público), POST /api/users/logout, GET /api/users/me, GET /api/users (público, solo prestadores aprobados y activos, filtros servicio, zona, q), GET /api/users/:id, PUT /api/users/me/servicios, PUT /api/users/me/disponibilidad, PUT /api/users/me/restricciones, PUT /api/users/me/vehiculo, PUT /api/users/me/cuenta-cobro, PUT /api/users/me/documentacion (multipart: documento, selfie, cv, experiencia) |
 | Mascotas | POST /api/mascotas, GET /api/mascotas/usuario/:userId, GET /api/mascotas/:id, PUT /api/mascotas/:id |
 | Reservas | POST /api/reservas |
 | Servicios | POST /api/servicios, POST /api/servicios/demo, GET /api/servicios (filtros estado, servicio y paginación limite y pagina), GET /api/servicios/precios/sugerido, GET /api/servicios/prestador/ruta, GET /api/servicios/prestador/:id/resenas, GET /api/servicios/:id, POST /api/servicios/:id/{aceptar, rechazar, cancelar, check-in, check-out, iniciar, finalizar, ubicacion, calificacion}, GET /api/servicios/:id/ubicacion |
 | Pagos | POST /api/pagos, GET /api/pagos/liquidaciones, GET /api/pagos/servicio/:servicioId, GET /api/pagos/:id, POST /api/pagos/:id/{confirmar, liberar, fallido} |
 | Mensajes | GET /api/mensajes/:servicioId (parámetro desde), POST /api/mensajes/:servicioId, GET /api/mensajes/:servicioId/imagen/:archivo |
-| Reclamos | GET /api/reclamos, POST /api/reclamos (multipart), PATCH /api/reclamos/:id/estado |
+| Reclamos | GET /api/reclamos, POST /api/reclamos (multipart), PATCH /api/reclamos/:id/estado (resolucion obligatoria al finalizar), POST /api/reclamos/:id/contactar (administrador) |
+| Reportes | POST /api/reportes (tipo usuario con reportadoId o tipo resena con calificacionId, motivo, detalle) |
 | Notificaciones | GET /api/notificaciones, POST /api/notificaciones/leer-todas, POST /api/notificaciones/:id/leer |
 | Eventos | GET /api/eventos (SSE) |
-| Administración | GET /api/admin/resumen, GET /api/admin/usuarios, PUT /api/admin/usuarios/:id, GET /api/admin/servicios, POST /api/admin/servicios/:id/cancelar |
+| Administración | GET /api/admin/resumen (desde, hasta, tipo), GET /api/admin/usuarios (rol, estadoAprobacion, estadoCuenta, buscar), GET /api/admin/usuarios/:id (legajo), PUT /api/admin/usuarios/:id (rol), GET /api/admin/usuarios/:id/documentos/:tipo, POST /api/admin/usuarios/:id/aprobacion, POST /api/admin/usuarios/:id/suspension, GET /api/admin/servicios (estado, tipo, usuarioId), POST /api/admin/servicios/:id/cancelar, GET /api/admin/reportes, PATCH /api/admin/reportes/:id, GET /api/admin/resenas, PATCH /api/admin/resenas/:id, DELETE /api/admin/resenas/:id, GET /api/admin/acciones |
 | Archivos | GET /uploads/reclamos/:archivo (sin sesión) |
 
 ## 5. Requisitos
@@ -248,7 +277,7 @@ npm run dev
 
 Abrir http://localhost:5173.
 
-Scripts del backend: npm start (sin reinicio automático), npm run dev (reinicia al cambiar un archivo) y npm test (pruebas con node --test).
+Scripts del backend: npm start (sin reinicio automático), npm run dev (reinicia al cambiar un archivo), npm test (pruebas con node --test) y npm run crear-admin -- correo@ejemplo.com (otorga el rol de administrador a un usuario ya registrado).
 
 Scripts del frontend: npm run dev, npm run build (genera frontend/dist) y npm run preview.
 
@@ -273,11 +302,14 @@ No verificado, porque no hay MySQL con credenciales en el entorno de integració
 1. Las evidencias de reclamos y las imágenes del chat se guardan en el disco del servidor, en backend/uploads. Con varias instancias hace falta almacenamiento compartido.
 2. Los eventos en tiempo real y la limitación de intentos viven en la memoria del proceso. Con varias instancias no se comparten.
 3. Detrás del proxy de Vite todos los usuarios de desarrollo comparten una IP, por lo que el límite de intentos puede alcanzarse. Los valores están en backend/routes/user.routes.js.
-4. POST /api/reservas no exige sesión y toma userId del cuerpo. Es un endpoint heredado que el frontend no usa.
-5. Si el traslado de ida y vuelta tiene una hora de regreso inválida, el servicio de ida ya se creó cuando se devuelve el error 400.
-6. El panel de administración de reclamos (/admin-reclamos) y el de gestión general (/admin) son páginas distintas.
-7. El resumen de /api/admin/resumen incluye los servicios rechazados en el total.
+4. POST /api/reservas es un endpoint heredado que el frontend no usa. Exige sesión de dueño y toma el usuario de la sesión.
+5. El traslado de ida y vuelta valida la hora de regreso antes de crear la ida. Un prestador no puede tener dos paseos o traslados activos con menos de una hora de diferencia. La guardería queda fuera de ese control.
+6. Los reclamos se gestionan dentro del panel (/admin/reclamos). La ruta anterior /admin-reclamos redirige allí.
+7. Las métricas de /api/admin/resumen se calculan sobre las reservas creadas en el rango elegido. Los ingresos se toman de los pagos de esas reservas.
 8. Las columnas de las tablas existentes se agregan al iniciar. Una base creada solo con la rama de Maxi tiene una tabla Notificacions que este proyecto no usa. Las notificaciones viven en la tabla Notificaciones.
 9. Un servicio nace en estado programado. El prestador debe aceptarlo para poder iniciar el seguimiento, y el chat solo está disponible con el servicio aceptado o en curso.
 10. Pueden aparecer avisos de fin de línea (LF y CRLF) al confirmar cambios. Son inofensivos.
-11. El registro solo permite los roles dueño y prestador. Un administrador se crea cambiando a mano la columna rol de un usuario a admin en la tabla Users.
+11. El registro solo permite los roles dueño y prestador. El primer administrador se habilita con npm run crear-admin -- correo@ejemplo.com sobre un usuario ya registrado. Los siguientes se pueden asignar desde el panel.
+12. Al iniciar, el backend completa los datos de las filas anteriores al panel: los prestadores ya verificados quedan aprobados, el resto queda pendiente de aprobación y deja de aparecer en el buscador hasta que un administrador lo apruebe. Las cuentas quedan activas y las reseñas visibles.
+13. Sin SMTP configurado, los correos que envía la administración a las partes de un reclamo se muestran en la consola del backend, igual que el de recuperación de contraseña.
+14. El bloqueo personal entre usuarios (historia de reporte o bloqueo) no está implementado. Los reportes sí llegan al panel de moderación.

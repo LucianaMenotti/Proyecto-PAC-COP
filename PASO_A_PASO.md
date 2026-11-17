@@ -103,12 +103,20 @@ npm run build
 
 Recorrido manual sugerido:
 
-1. Registrar un dueño con una mascota y un prestador con sus servicios.
-2. Como prestador, cargar precios en el panel.
-3. Como dueño, buscar al prestador, reservar y pagar. Una tarjeta que termina en 0000 simula un rechazo.
-4. Como prestador, aceptar la solicitud, abrir el chat e iniciar el seguimiento.
-5. Finalizar el servicio y, como dueño, calificarlo o abrir un reclamo.
-6. Para probar la administración, el registro no permite crear administradores. Cambiar a mano la columna rol de un usuario a admin en la tabla Users de MySQL y revisar /admin y /admin-reclamos.
+1. Registrar un dueño con una mascota, un prestador con sus servicios (con foto del documento y selfie) y un tercer usuario que será administrador.
+2. Otorgar el rol de administrador a ese tercer usuario desde el backend:
+
+```text
+cd backend
+npm run crear-admin -- correo@ejemplo.com
+```
+
+3. Como administrador, abrir /admin, revisar la documentación del prestador en Aprobaciones y aprobarlo. Hasta que no se aprueba, no aparece en el buscador.
+4. Como prestador, cargar precios en el panel.
+5. Como dueño, buscar al prestador, reservar y pagar. Una tarjeta que termina en 0000 simula un rechazo.
+6. Como prestador, aceptar la solicitud, abrir el chat e iniciar el seguimiento.
+7. Finalizar el servicio y, como dueño, calificarlo, abrir un reclamo o reportar al prestador.
+8. Como administrador, gestionar el reclamo y el reporte desde /admin (Reclamos y Moderación) y revisar el legajo del prestador.
 
 ## 8. Antes de confirmar cambios
 

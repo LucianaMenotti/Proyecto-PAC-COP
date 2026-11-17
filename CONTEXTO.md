@@ -106,9 +106,16 @@ admin
 administrador
 ```
 
-Los roles `admin` y `administrador` se consideran administrativos en las validaciones existentes (`ROLES_ADMIN` en `frontend/src/config/rutas.js`).
+Los roles `admin` y `administrador` se consideran administrativos en las validaciones existentes (`ROLES_ADMIN` en `frontend/src/config/rutas.js` y en `backend/middlewares/admin.middleware.js`, que también exporta `esAdministrador`).
 
 No cambiar los nombres de los roles sin revisar todas las partes del proyecto.
+
+Además del rol, cada usuario tiene dos estados (`backend/helpers/cuenta.helper.js`):
+
+* `estadoCuenta`: `activa` o `suspendida`. Una cuenta suspendida no inicia sesión y `authMiddleware` responde 403 y borra la cookie en cualquier ruta protegida.
+* `estadoAprobacion` (solo prestadores): `pendiente`, `aprobado` o `rechazado`. Solo un prestador aprobado y activo aparece en `GET /api/users`, recibe reservas y entra en el rango de precios de mercado. Para filtrar prestadores visibles usar `condicionPrestadorVisible()` en lugar de `{ rol: "prestador" }`.
+
+El registro solo crea dueños y prestadores. El primer administrador se habilita con `npm run crear-admin -- correo@ejemplo.com` en `backend/`.
 
 ---
 
@@ -244,7 +251,7 @@ El rango de mercado para sugerir precios sale de `GET /api/servicios/precios/sug
 
 Niveles del prestador (nuevo, establecido, top) se calculan en `frontend/src/helpers/niveles.js` con servicios finalizados y calificación.
 
-Al reservar, el backend valida `User.disponibilidad` (días y horarios), `User.tamanosAceptados` y `User.restricciones` (razas excluidas) frente a la mascota. Responde 409 si no se cumplen. `Mascota.tamano` alimenta esa validación.
+Al reservar, el backend valida `User.disponibilidad` (días y horarios), `User.tamanosAceptados` y `User.restricciones` (razas excluidas) frente a la mascota. Responde 409 si no se cumplen. `Mascota.tamano` alimenta esa validación. También responde 409 si el prestador ya tiene un paseo o traslado activo a menos de una hora (`horarioOcupado`), y valida la vuelta de un traslado antes de crear la ida.
 
 ---
 
@@ -265,7 +272,7 @@ Reglas:
 * `POST /api/pagos` crea o reabre el pago de un servicio. Responde 409 si ya está retenido o liberado, o si el servicio está cancelado, rechazado o finalizado.
 * Un pago pendiente expira a los 15 minutos.
 * `POST /api/pagos/:id/confirmar` retiene el pago. Una tarjeta cuyos últimos cuatro dígitos son `0000` simula un rechazo (402, estado `fallido`).
-* Al finalizar el servicio se libera el pago al prestador.
+* Al finalizar el servicio se libera el pago al prestador. `POST /api/pagos/:id/liberar` solo lo acepta con el servicio finalizado, salvo que lo haga un administrador.
 * Al cancelar, el dueño recibe reembolso si faltan 12 horas o más (`HORAS_REEMBOLSO_COMPLETO` en `servicio.controller.js`). Si cancela con menos tiempo, el pago se libera al prestador. Si cancela el prestador o un administrador, siempre hay reembolso.
 * `GET /api/pagos/liquidaciones` alimenta la sección Cobros del panel del prestador.
 
@@ -409,6 +416,8 @@ rechazado   → no disponible
 
 El backend realiza esta comprobación. No eliminarla para solucionar problemas del frontend. Si se cambia la regla, modificar el backend y los botones del frontend (`chatDisponible` en `frontend/src/helpers/servicios.js`) de manera coherente.
 
+Excepción: un administrador puede leer (`GET`) el chat en cualquier estado para mediar en reclamos. Escribir sigue limitado a aceptado y en curso. La página `/chat` muestra la conversación en modo lectura en ese caso.
+
 La conversación se actualiza por SSE y, como respaldo, por sondeo cada 3 segundos.
 
 ---
@@ -434,8 +443,10 @@ Reglas:
 * Solo se reclaman servicios finalizados. Dueño y prestador pueden reclamar y el reclamo va dirigido a la otra parte.
 * Un reclamo por usuario y servicio. Descripción de 10 a 2000 caracteres. Hasta 5 imágenes jpeg, png o webp de hasta 5 MB.
 * El administrador no abre reclamos. Es el único que cambia el estado.
-* Estados: `pendiente`, `en-revision`, `finalizado`, en ese orden.
+* Estados: `pendiente`, `en-revision`, `finalizado`, en ese orden. Pasar a `finalizado` exige una `resolucion` (columna `Reclamo.resolucion`) que reciben las dos partes.
 * Cada alta o cambio de estado genera notificaciones para las partes (y para los administradores en el alta) y las emite por SSE.
+* `POST /api/reclamos/:id/contactar` (solo administrador) envía un mensaje a una o ambas partes como notificación `reclamo-mensaje` y por correo (`plantillaMensajeAdmin`).
+* El email y el teléfono de las partes solo se devuelven cuando quien consulta es administrador.
 
 Las imágenes se guardan en `backend/uploads/reclamos` y se entregan en `/uploads/reclamos/:archivo` sin pedir sesión.
 
@@ -461,7 +472,7 @@ frontend/src/helpers/notificaciones.js
 * `GET /api/eventos` es un canal SSE por usuario (requiere sesión). Eventos: `conectado`, `notificacion`, `mensaje`, `ubicacion`. El frontend abre una sola conexión (`ProveedorTiempoReal` en `main.jsx`) y las pantallas se suscriben con `useEventoTiempoReal`.
 * El canal vive en la memoria del proceso. Con varias instancias del backend haría falta un bus compartido.
 * Las pantallas conservan un sondeo periódico como respaldo.
-* Tipos de notificación: reserva, reserva-aceptada, reserva-rechazada, reserva-cancelada, mensaje, pago-confirmado, pago-fallido, pago-liberado, resena, reclamo-nuevo y reclamo-estado.
+* Tipos de notificación: reserva, reserva-aceptada, reserva-rechazada, reserva-cancelada, mensaje, pago-confirmado, pago-fallido, pago-liberado, resena, reclamo-nuevo, reclamo-estado, reclamo-mensaje, prestador-pendiente, cuenta-aprobada, cuenta-rechazada, cuenta-reactivada, reporte-nuevo, reporte-revisado y resena-moderada. El destino de cada una al tocarla se define en `frontend/src/helpers/notificaciones.js`.
 
 ---
 
@@ -487,8 +498,10 @@ cobros        SeccionCobros        cuenta de cobro, liquidaciones, check-in y ch
 vehiculo      SeccionVehiculo      vehículo (requerido para traslados)
 chat          SeccionChat          chat unificado del servicio
 reclamos      SeccionReclamos      reclamos emitidos y recibidos
-perfil        SeccionPerfil        datos de la cuenta y servicios ofrecidos
+perfil        SeccionPerfil        datos de la cuenta, servicios ofrecidos y verificación (TarjetaVerificacion)
 ```
+
+Mientras el prestador no está aprobado, el panel muestra un aviso arriba de cada sección. La documentación se carga con `PUT /api/users/me/documentacion` (multipart) desde el registro o desde `TarjetaVerificacion`.
 
 Este panel usa Tailwind y no Bootstrap. Al agregar una sección, crear un componente `Seccion*.jsx`, añadirlo a `MenuLateralPanel.jsx` y a `PanelPrestador.jsx`, y mantener la hoja de Tailwind limitada a estos archivos (`@source` en `tailwind.css`).
 
@@ -513,7 +526,36 @@ frontend/src/components/admin/TablaServiciosAdmin.jsx
 frontend/src/pages/AdminReclamos.jsx
 ```
 
-`/admin` muestra el resumen, los usuarios (cambio de rol y verificación) y los servicios (cancelación). `/admin-reclamos` gestiona los reclamos. Ambas son solo para roles administrativos.
+Archivos agregados para el panel:
+
+```text
+backend/controllers/moderacion.controller.js   reportes y moderación de reseñas
+backend/models/accionAdmin.model.js            tabla AccionesAdmin (registro de acciones)
+backend/models/reporte.model.js                tabla Reportes
+backend/helpers/auditoria.helper.js            registrarAccion
+backend/helpers/cuenta.helper.js               estados de cuenta y aprobación
+backend/helpers/calificacion.helper.js         promedio con reseñas visibles
+backend/helpers/metricas.helper.js             rango de fechas y resumen de reservas
+backend/scripts/crearAdmin.js                  npm run crear-admin
+
+frontend/src/pages/Admin.jsx                   estructura y navegación por secciones
+frontend/src/pages/AdminReclamos.jsx           sección de reclamos
+frontend/src/pages/LegajoUsuario.jsx           legajo y descarga en PDF
+frontend/src/components/admin/                 secciones y ModalMotivo
+frontend/src/helpers/admin.js                  secciones, textos y formatos
+frontend/src/helpers/legajo.js                 PDF del legajo con jsPDF
+```
+
+Rutas: `/admin/:seccion` (resumen, prestadores, usuarios, servicios, reclamos, moderacion, auditoria) y `/admin/legajo/:id`. `/admin-reclamos` redirige a `/admin/reclamos`. Son solo para roles administrativos y el backend lo vuelve a comprobar en cada endpoint (`router.use(authMiddleware, adminMiddleware)` en `admin.routes.js`).
+
+Reglas del panel:
+
+* Toda decisión (cambio de rol, aprobación, rechazo, suspensión, reactivación, cancelación, estado o mensaje de reclamo, moderación de reseñas y reportes) se guarda con `registrarAccion` en `AccionesAdmin`, con el motivo cuando corresponde. Una acción nueva del panel debe hacer lo mismo y sumar su texto en `TEXTO_ACCIONES` (`frontend/src/helpers/admin.js`).
+* Aprobar a un prestador exige que haya cargado documento y selfie. Al aprobar se marca `verificado = true`.
+* No se puede suspender a un administrador ni quitarse a uno mismo el rol, y siempre queda al menos un administrador.
+* Suspender exige motivo y, por defecto, cancela con reembolso las reservas programadas o aceptadas del usuario.
+* Una reseña oculta (`Calificacion.oculta`) no se lista en `GET /api/servicios/prestador/:id/resenas` ni cuenta para `User.calificacion`. Después de moderar, recalcular con `recalcularCalificacionPrestador`.
+* Los documentos de identidad están en `backend/uploads/documentos` y solo los entrega `GET /api/admin/usuarios/:id/documentos/:tipo`. No exponerlos como archivos estáticos.
 
 ---
 
@@ -521,7 +563,9 @@ frontend/src/pages/AdminReclamos.jsx
 
 `backend/app.js` registra los modelos, ejecuta una migración idempotente que agrega las columnas que falten en tablas existentes (como opcionales) y luego llama a `sequelize.sync()`. Con `DB_SYNC_ALTER` distinto de `false` y fuera de producción usa `alter: true`.
 
-Tablas: Users, Mascotas, Servicios, Ubicacions, Pagos, Calificacions, Mensajes, Notificaciones, Reservas, Reclamos.
+Tablas: Users, Mascotas, Servicios, Ubicacions, Pagos, Calificacions, Mensajes, Notificaciones, Reservas, Reclamos, AccionesAdmin y Reportes.
+
+Después de sincronizar, `normalizarDatosHeredados` completa las filas creadas antes del panel: prestadores verificados como aprobados y el resto como pendientes, cuentas activas y reseñas visibles. Las columnas nuevas admiten null para que la migración no falle con datos existentes.
 
 `Reservas` es un modelo heredado (POST /api/reservas) que el frontend no usa. El flujo real de contratación es Servicio.
 
@@ -556,6 +600,22 @@ frontend/src/pages/BuscarPrestadores.jsx
 frontend/src/components/ModalReserva.jsx
 frontend/src/components/TarjetaPrestador.jsx
 frontend/src/components/servicios/
+```
+
+Para modificar el panel de administración:
+
+```text
+backend/controllers/admin.controller.js
+backend/controllers/moderacion.controller.js
+backend/controllers/reclamo.controller.js
+backend/routes/admin.routes.js
+backend/helpers/cuenta.helper.js
+
+frontend/src/pages/Admin.jsx
+frontend/src/pages/AdminReclamos.jsx
+frontend/src/pages/LegajoUsuario.jsx
+frontend/src/components/admin/
+frontend/src/helpers/admin.js
 ```
 
 Para modificar el panel del prestador:
@@ -636,6 +696,9 @@ El mismo chat ya sirve para ambos roles.
 * La reserva admite varias mascotas y traslados con vuelta.
 * Se corrigió en `cancelarServicio` una variable no definida que producía un error 500 al cancelar.
 * `GET /api/servicios` informa `calificado` por servicio finalizado.
+* Se creó el panel de administración por secciones: métricas por rango y tipo, aprobación de prestadores con documentación, usuarios con suspensión, legajo en PDF, servicios, reclamos con contacto y resolución, moderación de reseñas y reportes, y registro de acciones.
+* Los prestadores cargan documento, selfie, CV y experiencia, y quedan pendientes hasta que un administrador los aprueba.
+* Se corrigieron: la reserva heredada sin sesión, la vuelta de traslado validada después de crear la ida, la liberación del pago antes de finalizar el servicio, la superposición de paseos y traslados, el directorio público que listaba a todos los roles y la creación de mascotas por roles que no son dueño.
 
 ---
 
