@@ -1,21 +1,21 @@
 const estilos = String.raw`
 .chat-app {
-  --chat-primario: #1f7a74;
-  --chat-primario-oscuro: #155551;
-  --chat-fondo: #f4fbf9;
-  --chat-propio: #1f7a74;
-  --chat-ajeno: #ffffff;
-  --chat-borde: #e5e7eb;
+  --chat-primario: var(--pac-primary);
+  --chat-primario-oscuro: var(--pac-primary-dark);
+  --chat-fondo: var(--bg);
+  --chat-propio: var(--pac-primary);
+  --chat-ajeno: var(--surface);
+  --chat-borde: var(--border);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh - var(--nav-alto));
+  height: calc(100dvh - var(--nav-alto));
   max-width: 800px;
   margin: 0 auto;
   background: var(--chat-fondo);
-  color: #2c3e50;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  font-family: var(--font-sans);
   border-left: 1px solid var(--chat-borde);
   border-right: 1px solid var(--chat-borde);
 }
@@ -43,7 +43,7 @@ const estilos = String.raw`
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: #ffffff;
+  background: var(--surface);
   border-bottom: 1px solid var(--chat-borde);
 }
 
@@ -54,13 +54,13 @@ const estilos = String.raw`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  color: #2c3e50;
+  color: var(--text);
   text-decoration: none;
   font-size: 1.25rem;
 }
 
 .chat-volver:hover {
-  background: #f3f4f6;
+  background: var(--surface-2);
 }
 
 .chat-avatar {
@@ -70,8 +70,8 @@ const estilos = String.raw`
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #e0e7ff;
-  color: var(--chat-primario);
+  background: var(--pac-primary-soft);
+  color: var(--pac-primary-text);
   font-weight: 700;
 }
 
@@ -90,7 +90,7 @@ const estilos = String.raw`
 
 .chat-contacto-detalle {
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .chat-hilo {
@@ -112,13 +112,13 @@ const estilos = String.raw`
 }
 
 .chat-vacio {
-  color: #64748b;
-  background: #ffffff;
+  color: var(--text-muted);
+  background: var(--surface);
 }
 
 .chat-error {
-  color: #991b1b;
-  background: #fee2e2;
+  color: var(--danger-text);
+  background: var(--danger-soft);
 }
 
 .chat-fila {
@@ -166,7 +166,7 @@ const estilos = String.raw`
   object-fit: cover;
   border-radius: 10px;
   cursor: zoom-in;
-  background: #e5e7eb;
+  background: var(--surface-2);
 }
 
 .chat-texto {
@@ -195,12 +195,14 @@ const estilos = String.raw`
   align-items: flex-end;
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
-  background: #ffffff;
+  background: var(--surface);
   border-top: 1px solid var(--chat-borde);
 }
 
 .chat-formulario textarea {
   flex: 1;
+  background: var(--surface-input);
+  color: var(--text-strong);
   resize: none;
   max-height: 110px;
   padding: 0.55rem 0.9rem;
@@ -225,12 +227,12 @@ const estilos = String.raw`
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: #4b5563;
+  color: var(--text-muted);
   cursor: pointer;
 }
 
 .chat-boton-icono:hover {
-  background: #f3f4f6;
+  background: var(--surface-2);
 }
 
 .chat-boton-icono.enviar {
@@ -309,7 +311,7 @@ const estilos = String.raw`
   height: 66px;
   border-radius: 50%;
   border: 4px solid rgba(255, 255, 255, 0.45);
-  background: #ffffff;
+  background: #fff;
   cursor: pointer;
 }
 
@@ -340,8 +342,8 @@ const estilos = String.raw`
   padding: 0.6rem 1.1rem;
   border: none;
   border-radius: 10px;
-  background: #ffffff;
-  color: #2c3e50;
+  background: #fff;
+  color: #17232d;
   font-weight: 600;
   cursor: pointer;
 }
@@ -360,6 +362,8 @@ const estilos = String.raw`
 }
 
 .chat-previa-pie input {
+  background: #fff;
+  color: #17232d;
   padding: 0.65rem 0.9rem;
   border: none;
   border-radius: 20px;
@@ -382,11 +386,11 @@ const estilos = String.raw`
 
 @media (min-width: 600px) {
   .chat-app {
-    height: calc(100vh - 2rem);
-    height: calc(100dvh - 2rem);
+    height: calc(100vh - var(--nav-alto) - 2rem);
+    height: calc(100dvh - var(--nav-alto) - 2rem);
     margin-top: 1rem;
     border-radius: 12px;
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-md);
     overflow: hidden;
   }
 }

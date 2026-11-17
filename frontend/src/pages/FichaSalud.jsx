@@ -121,6 +121,7 @@ export default function FichaSalud() {
   };
 
   return (
+    <div className="ficha-pagina">
     <div id="vista-dueno" className="dashboard-form">
       <header className="form-header">
         <h1>Ficha de Salud</h1>
@@ -224,6 +225,7 @@ export default function FichaSalud() {
       )}
 
       {!formularioVisible && <AvisoAlerta aviso={aviso} />}
+    </div>
     </div>
   );
 }

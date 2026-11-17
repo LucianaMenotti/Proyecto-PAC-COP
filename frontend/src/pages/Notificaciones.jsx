@@ -59,20 +59,9 @@ export default function Notificaciones() {
 
   return (
     <>
-      <nav className="navbar bg-white shadow-sm">
-        <div className="container">
-          <Link to={RUTAS.cuenta} className="navbar-brand fw-bold text-primary">
-            Pac-Cop
-          </Link>
-          <Link to={RUTAS.cuenta} className="btn btn-outline-primary">
-            Volver
-          </Link>
-        </div>
-      </nav>
-
       <main className="container py-5" style={{ maxWidth: "800px" }}>
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-          <h1 className="fw-bold mb-0">Notificaciones</h1>
+          <h1 className="mb-0">Notificaciones</h1>
 
           {hayNoLeidas && (
             <button type="button" className="btn btn-outline-primary" onClick={marcarTodas}>

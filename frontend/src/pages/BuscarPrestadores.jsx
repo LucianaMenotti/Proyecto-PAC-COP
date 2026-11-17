@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BarraMarca from "../components/BarraMarca";
 import ModalReserva from "../components/ModalReserva";
 import ModalResenas from "../components/ModalResenas";
 import TarjetaPrestador from "../components/TarjetaPrestador";
@@ -9,7 +8,6 @@ import { RUTAS } from "../config/rutas";
 import { leerLista } from "../helpers/listas";
 import { obtenerServicios, precioDe } from "../helpers/prestadores";
 import { useAuth } from "../hooks/useAuth";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
@@ -40,8 +38,6 @@ export default function BuscarPrestadores() {
   const [misMascotas, setMisMascotas] = useState([]);
   const [reserva, setReserva] = useState(null);
   const [resenas, setResenas] = useState(null);
-
-  useBootstrap();
   useEstilos("base", estilosBase);
 
   useEffect(() => {
@@ -153,11 +149,10 @@ export default function BuscarPrestadores() {
 
   return (
     <>
-      <BarraMarca />
 
       <main className="container py-5">
         <div className="text-center mb-5">
-          <h1 className="fw-bold">Buscar prestadores</h1>
+          <h1>Buscar prestadores</h1>
           <p className="text-secondary">Encontrá el servicio que tu mascota necesita.</p>
         </div>
 

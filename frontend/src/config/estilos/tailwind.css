@@ -20,15 +20,15 @@
 }
 
 .panel-tw {
-  font-family: "Inter", system-ui, sans-serif;
-  color: #2c3e50;
-  background-color: #f4fbf9;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--nav-alto));
 }
 
 .panel-tw .font-serif {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
 }
 
 @keyframes pac-fade-in {
@@ -46,21 +46,14 @@
   animation: pac-fade-in 0.25s ease-out both;
 }
 
-body {
-  background-color: #f4fbf9;
-}
-
 .panel-tw ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 .panel-tw ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--surface-2);
 }
 .panel-tw ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--border-strong);
   border-radius: 4px;
-}
-.panel-tw ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
 }

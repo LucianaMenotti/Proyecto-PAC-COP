@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import TablaServiciosAdmin from "../components/admin/TablaServiciosAdmin";
 import TablaUsuarios from "../components/admin/TablaUsuarios";
 import { apiDatos } from "../config/api";
-import { RUTAS } from "../config/rutas";
-import { useAuth } from "../hooks/useAuth";
 import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
@@ -26,8 +23,6 @@ function Tarjeta({ titulo, valor, detalle, claseDetalle = "text-secondary" }) {
 // Panel de administración (rol admin): métricas, gestión de usuarios y moderación de servicios.
 // API: /api/admin/resumen, /api/admin/usuarios, /api/admin/servicios
 export default function Admin() {
-  const { cerrarSesion } = useAuth();
-  const navegar = useNavigate();
   const [resumen, setResumen] = useState(null);
   const [pestana, setPestana] = useState("usuarios");
   const [aviso, setAviso] = useState(null);
@@ -59,38 +54,8 @@ export default function Admin() {
     return () => clearTimeout(temporizador);
   }, [aviso]);
 
-  const salir = async () => {
-    await cerrarSesion();
-    navegar(RUTAS.inicio);
-  };
-
   return (
-    <div className="bg-soft-pac min-vh-100">
-      <nav className="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
-        <div className="container">
-          <Link to={RUTAS.inicio} className="navbar-brand navbar-brand-pac d-flex align-items-center gap-2">
-            <i className="bi bi-shield-fill-check fs-3"></i>
-            <span>Pac-Cop</span>
-          </Link>
-
-          <div className="d-flex align-items-center gap-2">
-            <Link to={RUTAS.adminReclamos} className="btn btn-outline-primary btn-sm rounded-pill px-3">
-              <i className="bi bi-flag me-1"></i> Reclamos
-            </Link>
-            <Link to={RUTAS.cuenta} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i className="bi bi-arrow-left me-1"></i> Mi cuenta
-            </Link>
-            <button
-              type="button"
-              className="btn btn-outline-primary btn-sm rounded-pill px-3"
-              onClick={salir}
-            >
-              <i className="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-            </button>
-          </div>
-        </div>
-      </nav>
-
+    <div className="pac-seccion">
       {aviso && (
         <div
           className="position-fixed top-0 start-50 translate-middle-x mt-3"
@@ -103,7 +68,7 @@ export default function Admin() {
       <main className="container py-4 py-lg-5">
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h1 className="font-display fw-bold mb-1">Panel de administración</h1>
+            <h1 className="mb-1">Panel de administración</h1>
             <p className="text-secondary mb-0">Métricas, usuarios y moderación de servicios.</p>
           </div>
 

@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import BarraMarca from "../components/BarraMarca";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import { RUTAS } from "../config/rutas";
 import estilosBase from "../config/estilos/base";
@@ -13,8 +11,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [aviso, setAviso] = useState(null);
-
-  useBootstrap();
   useEstilos("base", estilosBase);
 
   const enviar = async (evento) => {
@@ -46,11 +42,10 @@ export default function Login() {
 
   return (
     <>
-      <BarraMarca />
       <main className="container">
         <div className="form-container">
           <div className="text-center mb-4">
-            <h1 className="fw-bold">Iniciar sesión</h1>
+            <h1>Iniciar sesión</h1>
             <p className="text-secondary">Ingresá a tu cuenta de Pac-Cop.</p>
           </div>
           <form onSubmit={enviar}>

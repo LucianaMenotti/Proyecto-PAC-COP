@@ -1,106 +1,25 @@
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ContadorNotificaciones from "../components/ContadorNotificaciones";
 import { useAuth } from "../hooks/useAuth";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useContadorNotificaciones } from "../hooks/useContadorNotificaciones";
 import { useEstilos } from "../hooks/useEstilos";
 import { RUTAS, ROLES_ADMIN } from "../config/rutas";
-import estilosBase from "../config/estilos/base";
 import estilosInicio from "../config/estilos/inicio";
 
 export default function Inicio() {
-  const { usuario, cerrarSesion } = useAuth();
-  const navegar = useNavigate();
+  const { usuario } = useAuth();
 
   const { noLeidas } = useContadorNotificaciones();
 
-  useBootstrap(true);
-  useEstilos("base", estilosBase);
   useEstilos("inicio", estilosInicio);
 
-  if (!usuario) {
-    return <Navigate to={RUTAS.login} replace />;
-  }
-
-  if (usuario.rol === "prestador") {
-    return <Navigate to={RUTAS.panelPrestador} replace />;
-  }
-
   const esAdmin = ROLES_ADMIN.includes(usuario.rol);
-  const etiquetaRol = esAdmin ? "Cuenta de administrador" : "Cuenta de dueño";
   const mensajeRol = esAdmin
     ? "Ingresaste como administrador."
     : "Ingresaste como dueño de mascota.";
 
-  const manejarCierre = async () => {
-    await cerrarSesion();
-    navegar(RUTAS.inicio);
-  };
-
   return (
     <>
-      <nav className="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
-        <div className="container">
-          <Link to="/" className="navbar-brand navbar-brand-pac d-flex align-items-center gap-2">
-            <i className="bi bi-shield-fill-check fs-3"></i>
-            <span>Pac-Cop</span>
-          </Link>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarCuenta"
-            aria-controls="navbarCuenta"
-            aria-expanded="false"
-            aria-label="Abrir menú"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarCuenta">
-            <ul className="navbar-nav me-auto ms-lg-4 gap-lg-2">
-              <li className="nav-item">
-                <Link to="/" className="nav-link">
-                  Inicio
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/buscar-prestadores" className="nav-link">
-                  Buscar prestadores
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/mis-mascotas" className="nav-link">
-                  Mis mascotas
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/mis-servicios" className="nav-link">
-                  Mis reservas
-                </Link>
-              </li>
-              {esAdmin && (
-                <li className="nav-item">
-                  <Link to={RUTAS.admin} className="nav-link">
-                    <i className="bi bi-shield-lock me-1"></i>Admin
-                  </Link>
-                </li>
-              )}
-            </ul>
-            <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0">
-              <span className="profile-chip rounded-pill px-3 py-2 small fw-semibold">
-                {etiquetaRol}
-              </span>
-              <button
-                type="button"
-                className="btn btn-outline-primary btn-sm rounded-pill px-3"
-                onClick={manejarCierre}
-              >
-                <i className="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
       <main>
         <section className="hero-cuenta py-5">
           <div className="container py-3 py-lg-5">
@@ -259,14 +178,6 @@ export default function Inicio() {
           </div>
         </section>
       </main>
-      <footer className="py-4 bg-dark text-white">
-        <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-          <span className="font-display text-primary-pac fs-4">
-            <i className="bi bi-shield-fill-check me-1"></i> Pac-Cop
-          </span>
-          <span className="text-white-50 small">Cuidado, paseo y traslado de mascotas.</span>
-        </div>
-      </footer>
     </>
   );
 }

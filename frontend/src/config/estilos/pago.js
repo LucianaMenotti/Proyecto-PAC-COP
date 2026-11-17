@@ -1,21 +1,17 @@
 const estilos = String.raw`
 :root {
-  --bs-turquesa: #1f7a74;
-  --bs-turquesa-soft: #e4f3f1;
-  --bs-crema: #f4fbf9;
-  --bs-coral: #ff6f52;
-  --bs-coral-hover: #e85b3e;
-  --bs-linea: #e2e8f0;
-  --bs-linea-subtle: #eef2f1;
-  --bs-tinta: #2c3e50;
-  --bs-tinta-suave: #64748b;
-  --fuente-display: "Fraunces", serif;
-  --fuente-texto: "Inter", sans-serif;
-}
-body {
-  background-color: var(--bs-crema);
-  color: var(--bs-tinta);
-  font-family: var(--fuente-texto);
+  --bs-turquesa: var(--pac-primary-text);
+  --bs-turquesa-fill: var(--pac-primary);
+  --bs-turquesa-soft: var(--pac-primary-soft);
+  --bs-crema: var(--bg);
+  --bs-coral: var(--pac-accent);
+  --bs-coral-hover: var(--pac-accent-dark);
+  --bs-linea: var(--border);
+  --bs-linea-subtle: var(--border);
+  --bs-tinta: var(--text);
+  --bs-tinta-suave: var(--text-muted);
+  --fuente-display: var(--font-display);
+  --fuente-texto: var(--font-sans);
 }
 .display-title {
   font-family: var(--fuente-display);
@@ -27,7 +23,7 @@ body {
   color: var(--bs-coral) !important;
 }
 .bg-brand {
-  background-color: var(--bs-turquesa) !important;
+  background-color: var(--bs-turquesa-fill) !important;
 }
 .bg-brand-soft {
   background-color: var(--bs-turquesa-soft) !important;
@@ -39,7 +35,7 @@ body {
   border-color: var(--bs-linea-subtle) !important;
 }
 .pago-wrap {
-  max-width: 820px;
+  max-width: 860px;
 }
 .min-panel-height {
   min-height: 380px;
@@ -59,7 +55,8 @@ body {
   border: none;
 }
 .btn-brand-soft:hover {
-  background-color: #d4ece9;
+  background-color: var(--pac-primary-soft);
+  filter: brightness(0.96);
 }
 .resumen-avatar-wrap {
   width: 46px;
@@ -98,8 +95,8 @@ body {
   background: var(--bs-coral);
 }
 .paso.hecho .paso-marca {
-  border-color: var(--bs-turquesa);
-  background: var(--bs-turquesa);
+  border-color: var(--bs-turquesa-fill);
+  background: var(--bs-turquesa-fill);
 }
 .paso.activo .paso-titulo {
   color: var(--bs-tinta);
@@ -108,7 +105,7 @@ body {
   color: var(--bs-turquesa);
 }
 .segmento.activo {
-  background-color: var(--bs-turquesa) !important;
+  background-color: var(--bs-turquesa-fill) !important;
   color: #fff !important;
 }
 .badge-billetera {

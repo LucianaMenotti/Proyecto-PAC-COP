@@ -1,60 +1,41 @@
 const estilos = String.raw`
 :root {
-  --bg-app: #f4fbf9;
-  --bg-card: #ffffff;
-  --bg-input: #f8fafc;
-  --primary: #1f7a74;
-  --primary-hover: #155551;
-  --text-main: #2c3e50;
-  --text-muted: #64748b;
-  --text-label: #475569;
-  --border-light: #e2e8f0;
-  --border-input: #cbd5e1;
-  --alert-bg: #fff1ec;
-  --alert-main: #ff6f52;
-  --alert-hover: #e85b3e;
-  --success-text: #15803d; 
-  --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.05);
-  --shadow-fab: 0 8px 20px rgba(255, 111, 82, 0.3); 
+  --bg-app: var(--bg);
+  --bg-card: var(--surface);
+  --bg-input: var(--surface-2);
+  --primary: var(--pac-primary-text);
+  --primary-hover: var(--pac-primary-dark);
+  --text-main: var(--text);
+  --text-label: var(--text-muted);
+  --border-light: var(--border);
+  --border-input: var(--border-strong);
+  --alert-bg: var(--danger-soft);
+  --alert-main: var(--pac-accent);
+  --alert-hover: var(--pac-accent-dark);
+  --shadow-card: var(--shadow-md);
+  --shadow-fab: 0 8px 20px rgba(255, 111, 82, 0.3);
   --radius-card: 12px;
   --radius-btn: 8px;
   --radius-input: 6px;
 }
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-body {
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-  background-color: var(--bg-app);
-  color: var(--text-main);
-  line-height: 1.5;
-}
-.dashboard {
-  padding: 40px 20px;
+.pagina-numero .dashboard {
+  padding: 2.25rem 1.25rem 3rem;
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
 }
-.dashboard h1 {
+.pagina-numero .dashboard h1 {
   color: var(--primary);
   font-size: 2rem;
   margin-bottom: 10px;
 }
-.dashboard p {
+.pagina-numero .dashboard p {
   color: var(--text-muted);
 }
-.fab-emergency {
+.pagina-numero .fab-emergency {
   position: fixed;
   bottom: 30px;
-  right: 30px;
+  left: 30px;
   background-color: var(--alert-main);
   color: #ffffff;
   border: none;
@@ -67,18 +48,18 @@ body {
   transition: all 0.3s ease;
   z-index: 1000;
 }
-.fab-emergency:hover {
+.pagina-numero .fab-emergency:hover {
   background-color: var(--alert-hover);
   transform: translateY(-3px);
   box-shadow: 0 12px 25px rgba(255, 111, 82, 0.4);
 }
-.modal-overlay {
+.pagina-numero .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(15, 23, 42, 0.6); 
+  background-color: var(--overlay);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -87,11 +68,11 @@ body {
   opacity: 1;
   transition: opacity 0.3s ease;
 }
-.modal-overlay.hidden {
+.pagina-numero .modal-overlay.hidden {
   display: none;
   opacity: 0;
 }
-.modal-content {
+.pagina-numero .modal-content {
   background-color: var(--bg-card);
   width: 90%;
   max-width: 450px;
@@ -112,20 +93,20 @@ body {
     opacity: 1;
   }
 }
-.modal-header {
+.pagina-numero .modal-header {
   background-color: var(--alert-main);
   padding: 16px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.modal-header h2 {
+.pagina-numero .modal-header h2 {
   margin: 0;
   font-size: 1.25rem;
   color: #ffffff;
   font-weight: 600;
 }
-.close-btn {
+.pagina-numero .close-btn {
   background: none;
   border: none;
   color: #ffffff;
@@ -135,19 +116,19 @@ body {
   opacity: 0.8;
   transition: opacity 0.2s;
 }
-.close-btn:hover {
+.pagina-numero .close-btn:hover {
   opacity: 1;
 }
-.modal-body {
+.pagina-numero .modal-body {
   padding: 24px;
 }
-.call-options {
+.pagina-numero .call-options {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 24px;
 }
-.btn {
+.pagina-numero .btn {
   display: block;
   text-align: center;
   padding: 14px;
@@ -158,35 +139,35 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
 }
-.btn-outline {
+.pagina-numero .btn-outline {
   background-color: transparent;
   color: var(--primary);
   border: 1px solid var(--primary);
 }
-.btn-outline:hover {
+.pagina-numero .btn-outline:hover {
   background-color: var(--bg-app);
 }
-.btn-solid {
+.pagina-numero .btn-solid {
   background-color: var(--alert-main);
   color: #ffffff;
   border: none;
   width: 100%;
 }
-.btn-solid:hover {
+.pagina-numero .btn-solid:hover {
   background-color: var(--alert-hover);
 }
-.btn-solid:disabled {
+.pagina-numero .btn-solid:disabled {
   background-color: var(--text-muted);
   cursor: not-allowed;
 }
-.location-section {
+.pagina-numero .location-section {
   background-color: var(--bg-input);
   border: 1px solid var(--border-input);
   padding: 16px;
   border-radius: var(--radius-input);
   margin-bottom: 24px;
 }
-.location-section h3 {
+.pagina-numero .location-section h3 {
   margin: 0 0 8px 0;
   font-size: 0.85rem;
   color: var(--text-label);
@@ -194,20 +175,20 @@ body {
   letter-spacing: 0.5px;
   font-weight: 600;
 }
-.location-box {
+.pagina-numero .location-box {
   color: var(--text-main);
   margin: 0;
   font-size: 0.95rem;
 }
-.location-box a {
+.pagina-numero .location-box a {
   color: var(--primary);
   text-decoration: none;
   font-weight: 600;
 }
-.location-box a:hover {
+.pagina-numero .location-box a:hover {
   text-decoration: underline;
 }
-.status-msg {
+.pagina-numero .status-msg {
   text-align: center;
   font-size: 0.9rem;
   margin-top: 12px;

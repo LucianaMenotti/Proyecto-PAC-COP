@@ -1,6 +1,7 @@
 export const RUTAS = {
   inicio: "/",
-  cuenta: "/inicio",
+  cuenta: "/",
+  inicioAnterior: "/inicio",
   login: "/login",
   registro: "/registro",
   recuperar: "/recuperar",

@@ -1,136 +1,124 @@
 const estilos = String.raw`
 :root {
-  --bg-app: #f4fbf9;
-  --bg-card: #ffffff;
-  --bg-input: #f8fafc;
-  --primary: #1f7a74;
-  --primary-hover: #155551;
-  --primary-focus: rgba(31, 122, 116, 0.15);
-  --primary-border: #1f7a74;
-  --text-main: #2c3e50;
-  --text-muted: #64748b;
-  --text-label: #475569;
-  --border-light: #e2e8f0;
-  --border-input: #cbd5e1;
-  --alert-bg: #fff1ec;
-  --alert-border: #ffd6c9;
-  --alert-text: #b23a2a;
-  --alert-main: #ff6f52;
-  --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.05);
+  --bg-app: var(--bg);
+  --bg-card: var(--surface);
+  --bg-input: var(--surface-input);
+  --primary: var(--pac-primary);
+  --primary-hover: var(--pac-primary-dark);
+  --primary-focus: var(--pac-primary-ring);
+  --primary-border: var(--pac-primary);
+  --text-main: var(--text);
+  --text-label: var(--text-muted);
+  --border-light: var(--border);
+  --border-input: var(--border-strong);
+  --alert-bg: var(--danger-soft);
+  --alert-border: var(--danger-border);
+  --alert-text: var(--danger-text);
+  --alert-main: var(--pac-accent);
+  --shadow-card: var(--shadow-md);
   --radius-card: 12px;
   --radius-btn: 8px;
   --radius-input: 6px;
 }
-body {
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-  background-color: var(--bg-app);
-  color: var(--text-main);
-}
-.header-app h2 {
+.pagina-alertas .header-app h2 {
   font-family: "Fraunces", serif;
 }
-.header-app {
+.pagina-alertas .header-app {
   background-color: var(--primary);
   box-shadow: var(--shadow-card);
 }
-.card-custom {
+.pagina-alertas .card-custom {
   background-color: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   overflow: hidden;
 }
-.header-teal {
+.pagina-alertas .header-teal {
   background-color: var(--primary);
 }
-.card-alert-danger {
+.pagina-alertas .card-alert-danger {
   background-color: var(--alert-bg);
   border-color: var(--alert-border);
 }
-.card-alert-danger .card-header {
+.pagina-alertas .card-alert-danger .card-header {
   background-color: var(--alert-main);
   color: #ffffff;
 }
-.card-alert-danger #mostrar-alerta {
+.pagina-alertas .card-alert-danger #mostrar-alerta {
   color: var(--alert-text);
 }
-.label-custom {
+.pagina-alertas .label-custom {
   color: var(--text-label);
   font-weight: 600;
 }
-.form-control {
+.pagina-alertas .form-control {
   background-color: var(--bg-input);
   border: 1px solid var(--border-input);
   border-radius: var(--radius-input);
   color: var(--text-main);
   font-family: inherit;
 }
-.form-control:focus {
-  background-color: #ffffff;
+.pagina-alertas .form-control:focus {
+  background-color: var(--surface);
   border-color: var(--primary-border);
   box-shadow: 0 0 0 3px var(--primary-focus);
 }
-.input-danger {
+.pagina-alertas .input-danger {
   border-color: var(--alert-border);
 }
-.input-danger:focus {
+.pagina-alertas .input-danger:focus {
   border-color: var(--alert-main);
   box-shadow: 0 0 0 3px rgba(255, 111, 82, 0.15);
 }
-.custom-radio,
-.custom-checkbox {
+.pagina-alertas .custom-radio,
+.pagina-alertas .custom-checkbox {
   border-color: var(--border-input);
   background-color: var(--bg-input);
 }
-.custom-radio:checked,
-.custom-checkbox:checked {
+.pagina-alertas .custom-radio:checked,
+.pagina-alertas .custom-checkbox:checked {
   background-color: var(--primary);
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-focus);
 }
-.btn-teal {
+.pagina-alertas .btn-teal {
   background-color: var(--primary);
   color: #ffffff;
   border: none;
   border-radius: var(--radius-btn);
 }
-.btn-teal:hover {
+.pagina-alertas .btn-teal:hover {
   background-color: var(--primary-hover);
   color: #ffffff;
 }
-.btn-danger-custom {
+.pagina-alertas .btn-danger-custom {
   background-color: var(--alert-main);
   color: #ffffff;
   border: none;
   border-radius: var(--radius-btn);
 }
-.btn-danger-custom:hover {
-  background-color: #e85b3e;
+.pagina-alertas .btn-danger-custom:hover {
+  background-color: var(--pac-accent-dark);
   color: #ffffff;
 }
-.list-group-item {
+.pagina-alertas .list-group-item {
   border-color: var(--border-light);
   color: var(--text-main);
   padding: 12px 20px;
 }
-.list-group-item strong {
+.pagina-alertas .list-group-item strong {
   color: var(--text-label);
 }
-#motivo-rechazo-container {
+.pagina-alertas #motivo-rechazo-container {
   transition: all 0.3s ease-in-out;
 }
-.transition-btn {
+.pagina-alertas .transition-btn {
   transition:
     background-color 0.2s ease,
     transform 0.1s ease;
 }
-.transition-btn:active {
+.pagina-alertas .transition-btn:active {
   transform: translateY(2px);
 }
 `;

@@ -4,7 +4,6 @@ import { RUTAS } from "../config/rutas";
 import { borrarGuardado, leerGuardado } from "../helpers/almacenamiento";
 import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
-import estilosBase from "../config/estilos/base";
 import estilosAlertas from "../config/estilos/alertas";
 
 const leerMascota = () => {
@@ -29,7 +28,6 @@ export default function Alertas() {
 
   useBootstrap();
   useEstilos("alertas", estilosAlertas);
-  useEstilos("base", estilosBase);
 
   useEffect(() => {
     if (!mascota) {
@@ -62,9 +60,9 @@ export default function Alertas() {
   };
 
   return (
-    <>
-      <header className="header-app text-white text-center py-3 sticky-top">
-        <h2 className="mb-0 fw-bold">PANEL DE ALERTAS Y DECISIÓN</h2>
+    <div className="pagina-alertas">
+      <header className="header-app text-white text-center py-3">
+        <h2 className="mb-0 text-white">Panel de alertas y decisión</h2>
         <p className="mb-0 opacity-75">Uso exclusivo para el prestador del servicio</p>
       </header>
 
@@ -210,6 +208,6 @@ export default function Alertas() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

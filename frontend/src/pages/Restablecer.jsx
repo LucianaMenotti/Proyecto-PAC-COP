@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import BarraMarca from "../components/BarraMarca";
 import { enviarJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
@@ -19,8 +17,6 @@ export default function Restablecer() {
   );
   const [enviando, setEnviando] = useState(false);
   const [listo, setListo] = useState(false);
-
-  useBootstrap();
   useEstilos("base", estilosBase);
 
   const enviar = async (evento) => {
@@ -52,12 +48,11 @@ export default function Restablecer() {
 
   return (
     <>
-      <BarraMarca />
 
       <main className="container">
         <div className="form-container">
           <div className="text-center mb-4">
-            <h1 className="fw-bold">Restablecer contraseña</h1>
+            <h1>Restablecer contraseña</h1>
             <p className="text-secondary">Elegí una nueva contraseña para tu cuenta.</p>
           </div>
 

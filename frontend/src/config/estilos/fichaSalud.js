@@ -1,49 +1,27 @@
 const estilos = String.raw`
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-body {
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-  background-color: #f4fbf9;
-  color: #2c3e50;
-  line-height: 1.5;
-  padding: 40px 20px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start; 
-  min-height: 100vh;
-}
-#vista-dueno {
-  background-color: #ffffff;
+.ficha-pagina #vista-dueno {
+  background-color: var(--surface);
   width: 100%;
   max-width: 900px; 
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
-h1 {
-  color: #1f7a74;
+.ficha-pagina h1 {
+  color: var(--pac-primary-text);
   margin-bottom: 8px;
   font-size: 1.75rem;
   text-align: center;
 }
-p {
-  color: #64748b;
+.ficha-pagina p {
+  color: var(--text-muted);
   margin-bottom: 25px;
   font-size: 0.95rem;
   text-align: center;
 }
-fieldset {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+.ficha-pagina fieldset {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
@@ -51,8 +29,8 @@ fieldset {
   flex-direction: column;
   gap: 15px;
 }
-legend {
-  background-color: #1f7a74;
+.ficha-pagina legend {
+  background-color: var(--pac-primary);
   color: #ffffff;
   padding: 4px 14px;
   border-radius: 20px;
@@ -60,58 +38,58 @@ legend {
   font-size: 0.85rem;
   letter-spacing: 0.5px;
 }
-label {
+.ficha-pagina label {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--text-muted);
   margin-bottom: 6px;
   display: block;
 }
-input[type="text"],
-input[type="number"],
-select,
-textarea {
+.ficha-pagina input[type="text"],
+.ficha-pagina input[type="number"],
+.ficha-pagina select,
+.ficha-pagina textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.95rem;
-  background-color: #f8fafc;
+  background-color: var(--surface-2);
   transition: all 0.2s ease;
 }
-input:focus,
-select:focus,
-textarea:focus {
+.ficha-pagina input:focus,
+.ficha-pagina select:focus,
+.ficha-pagina textarea:focus {
   outline: none;
-  border-color: #1f7a74;
-  background-color: #ffffff;
+  border-color: var(--pac-primary);
+  background-color: var(--surface);
   box-shadow: 0 0 0 3px rgba(31, 122, 116, 0.15);
 }
-textarea {
+.ficha-pagina textarea {
   min-height: 80px;
   resize: vertical;
 }
-.alert-fieldset {
-  background-color: #fff1ec;
-  border-color: #ffd6c9;
+.ficha-pagina .alert-fieldset {
+  background-color: var(--danger-soft);
+  border-color: var(--danger-border);
 }
-.alert-fieldset legend {
-  background-color: #ff6f52;
+.ficha-pagina .alert-fieldset legend {
+  background-color: var(--pac-accent);
   color: #ffffff;
 }
-.alert-fieldset label {
-  color: #b23a2a;
+.ficha-pagina .alert-fieldset label {
+  color: var(--danger-text);
 }
-.alert-fieldset textarea {
-  border-color: #ffb4a0;
+.ficha-pagina .alert-fieldset textarea {
+  border-color: var(--danger-border);
 }
-.alert-fieldset textarea:focus {
-  border-color: #ff6f52;
+.ficha-pagina .alert-fieldset textarea:focus {
+  border-color: var(--pac-accent);
   box-shadow: 0 0 0 3px rgba(255, 111, 82, 0.15);
 }
-button[type="submit"] {
-  background-color: #1f7a74;
+.ficha-pagina button[type="submit"] {
+  background-color: var(--pac-primary);
   color: #ffffff;
   border: none;
   padding: 14px 20px;
@@ -125,64 +103,64 @@ button[type="submit"] {
     transform 0.1s ease;
   margin-top: 10px;
 }
-button[type="submit"]:hover {
-  background-color: #155551;
+.ficha-pagina button[type="submit"]:hover {
+  background-color: var(--pac-primary-dark);
 }
-button[type="submit"]:active {
+.ficha-pagina button[type="submit"]:active {
   transform: translateY(2px);
 }
-.hidden {
+.ficha-pagina .hidden {
   display: none !important;
 }
-#resumen-pantalla {
-  background-color: #ffffff;
+.ficha-pagina #resumen-pantalla {
+  background-color: var(--surface);
   width: 100%;
   max-width: 600px;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
-#resumen-contenido {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+.ficha-pagina #resumen-contenido {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
 }
-#resumen-contenido p {
+.ficha-pagina #resumen-contenido p {
   text-align: left;
   margin-bottom: 12px;
-  color: #2c3e50;
+  color: var(--text);
   font-size: 1rem;
 }
-#resumen-contenido span.label-resumen {
+.ficha-pagina #resumen-contenido span.label-resumen {
   font-weight: bold;
-  color: #1f7a74;
+  color: var(--pac-primary-text);
   display: inline-block;
   min-width: 130px;
 }
 @media (min-width: 768px) {
-  .normal-fieldset {
+  .ficha-pagina .normal-fieldset {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
   }
-  .normal-fieldset legend {
+  .ficha-pagina .normal-fieldset legend {
     grid-column: 1 / -1;
   }
-  .normal-fieldset .form-group:nth-child(4), 
-  .normal-fieldset .form-group:nth-child(5) {
+  .ficha-pagina .normal-fieldset .form-group:nth-child(4),
+.ficha-pagina .normal-fieldset .form-group:nth-child(5) {
     grid-column: 1 / -1;
   }
 }
-.botones-acciones {
+.ficha-pagina .botones-acciones {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 10px;
 }
-.btn-secondary {
-  background-color: #64748b;
+.ficha-pagina .btn-secondary {
+  background-color: var(--text-muted);
   color: #ffffff;
   border: none;
   padding: 14px 20px;
@@ -195,17 +173,42 @@ button[type="submit"]:active {
     background-color 0.2s ease,
     transform 0.1s ease;
 }
-.btn-secondary:hover {
-  background-color: #475569;
+.ficha-pagina .btn-secondary:hover {
+  background-color: var(--text-muted);
 }
-.btn-secondary:active {
+.ficha-pagina .btn-secondary:active {
   transform: translateY(2px);
 }
-#btn-finalizar {
+.ficha-pagina #btn-finalizar {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 10px;
+}
+
+.ficha-pagina {
+  padding: 2.25rem 1.25rem 3rem;
+  line-height: 1.5;
+}
+.ficha-pagina #vista-dueno,
+.ficha-pagina #resumen-pantalla {
+  margin: 0 auto;
+}
+.ficha-pagina legend {
+  float: none;
+  width: auto;
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+.ficha-pagina h1 {
+  color: var(--pac-primary-text);
+}
+.ficha-pagina fieldset {
+  min-width: 0;
+}
+.ficha-pagina button[type="submit"],
+.ficha-pagina .btn-secondary {
+  color: #fff;
 }
 `;
 

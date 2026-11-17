@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import BarraMarca from "../components/BarraMarca";
 import { enviarJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
@@ -13,8 +11,6 @@ export default function Recuperar() {
   const [email, setEmail] = useState("");
   const [aviso, setAviso] = useState(null);
   const [enviando, setEnviando] = useState(false);
-
-  useBootstrap();
   useEstilos("base", estilosBase);
 
   const enviar = async (evento) => {
@@ -41,12 +37,11 @@ export default function Recuperar() {
 
   return (
     <>
-      <BarraMarca />
 
       <main className="container">
         <div className="form-container">
           <div className="text-center mb-4">
-            <h1 className="fw-bold">Recuperar contraseña</h1>
+            <h1>Recuperar contraseña</h1>
             <p className="text-secondary">
               Ingresá tu correo y te enviaremos un enlace para restablecer tu contraseña.
             </p>

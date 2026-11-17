@@ -60,7 +60,7 @@ export default function Numero() {
   };
 
   return (
-    <>
+    <div className="pagina-numero">
       <main className="dashboard">
         <h1>Panel del Prestador</h1>
         <p>Servicios de cuidado en curso. La mascota se encuentra en buen estado.</p>
@@ -153,6 +153,6 @@ export default function Numero() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

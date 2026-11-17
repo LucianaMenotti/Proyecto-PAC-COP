@@ -189,31 +189,9 @@ export default function MisServicios() {
 
   return (
     <>
-      <nav className="navbar bg-white shadow-sm">
-        <div className="container">
-          <Link to={RUTAS.cuenta} className="navbar-brand fw-bold text-primary">
-            Pac-Cop
-          </Link>
-
-          <div className="d-flex gap-2">
-            <Link to={RUTAS.notificaciones} className="btn btn-outline-primary">
-              Notificaciones
-              <ContadorNotificaciones cantidad={noLeidas} />
-            </Link>
-
-            <Link
-              to={esPrestador ? RUTAS.panelPrestador : RUTAS.cuenta}
-              className="btn btn-outline-primary"
-            >
-              Volver
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       <main className="container py-5">
         <div className="text-center mb-5">
-          <h1 className="fw-bold">Mis servicios</h1>
+          <h1>Mis servicios</h1>
           <p className="text-secondary">
             Consultá tus reservas, pagalas, cancelalas, accedé al chat, calificá al prestador y abrí
             reclamos de servicios finalizados.

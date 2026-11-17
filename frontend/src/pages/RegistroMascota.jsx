@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AvisoAlerta from "../components/AvisoAlerta";
-import BarraMarca from "../components/BarraMarca";
 import { enviarJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
 import { useAuth } from "../hooks/useAuth";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
@@ -29,8 +27,6 @@ export default function RegistroMascota() {
   const [formulario, setFormulario] = useState(FORMULARIO_INICIAL);
   const [completarFicha, setCompletarFicha] = useState(false);
   const [aviso, setAviso] = useState(null);
-
-  useBootstrap();
   useEstilos("base", estilosBase);
 
   const cambiar = (campo) => (evento) => {
@@ -124,7 +120,6 @@ export default function RegistroMascota() {
 
   return (
     <>
-      <BarraMarca />
 
       <main className="container py-5">
         <div className="row justify-content-center">
@@ -132,7 +127,7 @@ export default function RegistroMascota() {
             <div className="card border-0 shadow-sm">
               <div className="card-body p-4">
                 <div className="text-center mb-4">
-                  <h1 className="fw-bold">Registrar mascota</h1>
+                  <h1>Registrar mascota</h1>
                   <p className="text-secondary">Agregá información de tu mascota.</p>
                 </div>
 

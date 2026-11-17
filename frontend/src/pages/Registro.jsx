@@ -2,8 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { enviarJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
-import BarraMarca from "../components/BarraMarca";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
@@ -43,10 +41,7 @@ export default function Registro() {
   const [completarFicha, setCompletarFicha] = useState(false);
   const [mascota, setMascota] = useState(MASCOTA_INICIAL);
   const [prestador, setPrestador] = useState(PRESTADOR_INICIAL);
-  const [aviso, setAviso] = useState(null);
-
-  useBootstrap();
-  useEstilos("base", estilosBase);
+  const [aviso, setAviso] = useState(null);  useEstilos("base", estilosBase);
 
   const mostrarMensaje = (texto, tipo = "danger") => {
     setAviso({ texto, tipo });
@@ -264,16 +259,14 @@ export default function Registro() {
   const incluyeTraslado = prestador.servicios.includes("Traslado");
 
   return (
-    <>
-      <BarraMarca />
-
+    <>
       <main className="container py-5">
         <div className="row justify-content-center">
           <div className="col-md-8">
             <div className="card border-0 shadow-sm">
               <div className="card-body p-4">
                 <div className="text-center mb-4">
-                  <h1 className="fw-bold">Crear cuenta</h1>
+                  <h1>Crear cuenta</h1>
                   <p className="text-secondary">Completá tus datos para registrarte en Pac-Cop.</p>
                 </div>
 

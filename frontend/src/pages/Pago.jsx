@@ -107,18 +107,24 @@ export default function Pago() {
 
   if (!servicioId) {
     return (
-      <div className="alert alert-warning m-4">
-        Para pagar una reserva tenés que ingresar desde tus reservas.{" "}
-        <Link to={RUTAS.misServicios} className="alert-link">
-          Ir a Mis reservas
-        </Link>
-        .
+      <div className="pac-pagina pac-pagina-estrecha">
+        <div className="alert alert-warning">
+          Para pagar una reserva tenés que ingresar desde tus reservas.{" "}
+          <Link to={RUTAS.misServicios} className="alert-link">
+            Ir a Mis reservas
+          </Link>
+          .
+        </div>
       </div>
     );
   }
 
   if (errorCarga) {
-    return <div className="alert alert-danger m-4">{errorCarga}</div>;
+    return (
+      <div className="pac-pagina pac-pagina-estrecha">
+        <div className="alert alert-danger">{errorCarga}</div>
+      </div>
+    );
   }
 
   if (!reserva) {
@@ -250,22 +256,11 @@ export default function Pago() {
 
   return (
     <>
-      <nav className="navbar bg-white border-bottom shadow-sm mb-3">
-        <div className="container py-2">
-          <Link to={RUTAS.inicio} className="navbar-brand fw-bold text-primary fs-4">
-            Pac-Cop
-          </Link>
-
-          <div className="d-flex gap-2">
-            <Link to={RUTAS.misServicios} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i className="bi bi-arrow-left me-1"></i> Mis reservas
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       <main className="container py-3 py-md-4 pago-wrap">
         <header className="mb-4">
+          <Link to={RUTAS.misServicios} className="pac-volver">
+            <i className="bi bi-arrow-left"></i> Mis reservas
+          </Link>
           <p className="text-secondary small fw-medium mb-1">Reserva #{reserva.id}</p>
           <h1 className="h2 display-title text-brand mb-0">Pagar el servicio</h1>
         </header>

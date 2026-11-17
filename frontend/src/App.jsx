@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import CampanaNotificaciones from "./components/CampanaNotificaciones";
+import LayoutApp from "./components/LayoutApp";
 import RutaProtegida from "./components/RutaProtegida";
 import { ROLES_ADMIN, RUTAS } from "./config/rutas";
+import { useAuth } from "./hooks/useAuth";
 import Admin from "./pages/Admin";
 import AdminReclamos from "./pages/AdminReclamos";
 import Alertas from "./pages/Alertas";
@@ -24,136 +26,71 @@ import RegistroMascota from "./pages/RegistroMascota";
 import Restablecer from "./pages/Restablecer";
 import Seguimiento from "./pages/Seguimiento";
 
+// "/" es el único inicio: presenta el sitio a los visitantes, lleva al panel a los prestadores
+// y muestra el resumen de la cuenta a dueños y administradores.
+function Inicial() {
+  const { usuario, cargando } = useAuth();
+
+  if (cargando) {
+    return null;
+  }
+
+  if (!usuario) {
+    return <Landing />;
+  }
+
+  if (usuario.rol === "prestador") {
+    return <Navigate to={RUTAS.panelPrestador} replace />;
+  }
+
+  return <Inicio />;
+}
+
+function protegida(elemento, roles = []) {
+  return <RutaProtegida roles={roles}>{elemento}</RutaProtegida>;
+}
+
 export default function App() {
   return (
     <>
       <Routes>
-        <Route path={RUTAS.inicio} element={<Landing />} />
-        <Route path={RUTAS.login} element={<Login />} />
-        <Route path={RUTAS.registro} element={<Registro />} />
-        <Route path={RUTAS.recuperar} element={<Recuperar />} />
-        <Route path={RUTAS.restablecer} element={<Restablecer />} />
-        <Route path={RUTAS.buscarPrestadores} element={<BuscarPrestadores />} />
-        <Route path={RUTAS.alertas} element={<Alertas />} />
-        <Route path={RUTAS.mach} element={<Mach />} />
-        <Route path={RUTAS.numero} element={<Numero />} />
+        <Route element={<LayoutApp />}>
+          <Route path={RUTAS.inicio} element={<Inicial />} />
+          <Route path={RUTAS.inicioAnterior} element={<Navigate to={RUTAS.inicio} replace />} />
+          <Route path={RUTAS.login} element={<Login />} />
+          <Route path={RUTAS.registro} element={<Registro />} />
+          <Route path={RUTAS.recuperar} element={<Recuperar />} />
+          <Route path={RUTAS.restablecer} element={<Restablecer />} />
+          <Route path={RUTAS.buscarPrestadores} element={<BuscarPrestadores />} />
+          <Route path={RUTAS.alertas} element={<Alertas />} />
+          <Route path={RUTAS.mach} element={<Mach />} />
+          <Route path={RUTAS.numero} element={<Numero />} />
 
-        <Route
-          path={RUTAS.pago}
-          element={
-            <RutaProtegida>
-              <Pago />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.seguimiento}
-          element={
-            <RutaProtegida>
-              <Seguimiento />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.cuenta}
-          element={
-            <RutaProtegida>
-              <Inicio />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.misMascotas}
-          element={
-            <RutaProtegida roles={["dueño"]}>
-              <MisMascotas />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.registroMascota}
-          element={
-            <RutaProtegida roles={["dueño"]}>
-              <RegistroMascota />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.fichaSalud}
-          element={
-            <RutaProtegida roles={["dueño"]}>
-              <FichaSalud />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.misServicios}
-          element={
-            <RutaProtegida roles={["dueño", "prestador"]}>
-              <MisServicios />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={`${RUTAS.panelPrestador}/:seccion?`}
-          element={
-            <RutaProtegida roles={["prestador"]}>
-              <PanelPrestador />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.perfilPrestador}
-          element={
-            <RutaProtegida roles={["prestador"]}>
-              <Navigate to={`${RUTAS.panelPrestador}/perfil`} replace />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.chat}
-          element={
-            <RutaProtegida>
-              <Chat />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.notificaciones}
-          element={
-            <RutaProtegida>
-              <Notificaciones />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.admin}
-          element={
-            <RutaProtegida roles={ROLES_ADMIN}>
-              <Admin />
-            </RutaProtegida>
-          }
-        />
-
-        <Route
-          path={RUTAS.adminReclamos}
-          element={
-            <RutaProtegida roles={ROLES_ADMIN}>
-              <AdminReclamos />
-            </RutaProtegida>
-          }
-        />
+          <Route path={RUTAS.pago} element={protegida(<Pago />)} />
+          <Route path={RUTAS.seguimiento} element={protegida(<Seguimiento />)} />
+          <Route path={RUTAS.misMascotas} element={protegida(<MisMascotas />, ["dueño"])} />
+          <Route path={RUTAS.registroMascota} element={protegida(<RegistroMascota />, ["dueño"])} />
+          <Route path={RUTAS.fichaSalud} element={protegida(<FichaSalud />, ["dueño"])} />
+          <Route
+            path={RUTAS.misServicios}
+            element={protegida(<MisServicios />, ["dueño", "prestador"])}
+          />
+          <Route
+            path={`${RUTAS.panelPrestador}/:seccion?`}
+            element={protegida(<PanelPrestador />, ["prestador"])}
+          />
+          <Route
+            path={RUTAS.perfilPrestador}
+            element={protegida(
+              <Navigate to={`${RUTAS.panelPrestador}/perfil`} replace />,
+              ["prestador"]
+            )}
+          />
+          <Route path={RUTAS.chat} element={protegida(<Chat />)} />
+          <Route path={RUTAS.notificaciones} element={protegida(<Notificaciones />)} />
+          <Route path={RUTAS.admin} element={protegida(<Admin />, ROLES_ADMIN)} />
+          <Route path={RUTAS.adminReclamos} element={protegida(<AdminReclamos />, ROLES_ADMIN)} />
+        </Route>
 
         <Route path="*" element={<Navigate to={RUTAS.inicio} replace />} />
       </Routes>

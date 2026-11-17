@@ -108,28 +108,9 @@ export default function AdminReclamos() {
 
   return (
     <>
-      <nav className="navbar bg-white shadow-sm">
-        <div className="container">
-          <Link to={RUTAS.cuenta} className="navbar-brand fw-bold text-primary">
-            Pac-Cop
-          </Link>
-
-          <div className="d-flex gap-2">
-            <Link to={RUTAS.notificaciones} className="btn btn-outline-primary">
-              Notificaciones
-              <ContadorNotificaciones cantidad={noLeidas} />
-            </Link>
-
-            <Link to={RUTAS.cuenta} className="btn btn-outline-primary">
-              Volver
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       <main className="container py-5">
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-          <h1 className="fw-bold mb-0">Gestión de reclamos</h1>
+          <h1 className="mb-0">Gestión de reclamos</h1>
 
           <div className="d-flex gap-2">
             <select

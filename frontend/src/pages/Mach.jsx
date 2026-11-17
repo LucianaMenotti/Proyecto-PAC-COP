@@ -71,7 +71,7 @@ export default function Mach() {
   };
 
   return (
-    <>
+    <div className="pagina-mach">
       <main className="dashboard">
         <header className="search-header">
           <h1>Búsqueda de Prestadores</h1>
@@ -163,6 +163,6 @@ export default function Mach() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

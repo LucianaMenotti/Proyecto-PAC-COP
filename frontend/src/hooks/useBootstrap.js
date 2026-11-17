@@ -1,8 +1,3 @@
-import { useEstilos } from "./useEstilos";
-import estilosBootstrap from "../config/estilos/bootstrap";
-import estilosIconos from "../config/estilos/iconos";
-
-export function useBootstrap(conIconos = false) {
-  useEstilos("bootstrap", estilosBootstrap);
-  useEstilos("iconos", conIconos ? estilosIconos : "");
-}
+// Bootstrap y los iconos se cargan una sola vez en styles/tema.css (capa "bootstrap").
+// Se conserva el hook para no tocar cada página, pero ya no inyecta nada.
+export function useBootstrap() {}

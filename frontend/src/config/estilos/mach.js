@@ -1,47 +1,38 @@
 const estilos = String.raw`
 :root {
-  --bg-dark: #f4fbf9; 
-  --panel-bg: #ffffff; 
-  --celeste: #1f7a74; 
-  --celeste-hover: #155551; 
-  --text-main: #2c3e50; 
-  --text-muted: #64748b; 
-  --border-color: #e2e8f0;
-  --warning-border: #d97706; 
+  --panel-bg: var(--surface);
+  --celeste: var(--pac-primary-text);
+  --celeste-hover: var(--pac-primary-dark);
+  --text-main: var(--text);
+  --border-color: var(--border);
 }
-body {
-  font-family: "Segoe UI", system-ui, sans-serif;
-  background-color: #ffffff;
-  color: var(--text-main);
-  margin: 0;
-  padding: 20px;
-}
-.dashboard {
+.pagina-mach .dashboard {
   max-width: 800px;
   margin: 0 auto;
+  padding: 2.25rem 1.25rem 3rem;
 }
-.search-header {
+.pagina-mach .search-header {
   margin-bottom: 30px;
 }
-.search-header h1 {
+.pagina-mach .search-header h1 {
   font-family: "Fraunces", serif;
   font-weight: 600;
   color: var(--celeste);
   margin-bottom: 8px;
 }
-.search-header p {
+.pagina-mach .search-header p {
   color: var(--text-muted);
   font-size: 0.95rem;
   margin-top: 0;
 }
-.search-bar {
+.pagina-mach .search-bar {
   display: flex;
   gap: 10px;
   margin-top: 15px;
 }
-.search-bar input {
+.pagina-mach .search-bar input {
   flex: 1;
-  background-color: #ffffff;
+  background-color: var(--surface);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 12px 16px;
@@ -50,10 +41,10 @@ body {
   outline: none;
   transition: border-color 0.2s;
 }
-.search-bar input:focus {
+.pagina-mach .search-bar input:focus {
   border-color: var(--celeste);
 }
-.results-header {
+.pagina-mach .results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -61,21 +52,21 @@ body {
   padding-bottom: 12px;
   margin-bottom: 20px;
 }
-.results-header h2 {
+.pagina-mach .results-header h2 {
   font-size: 1.1rem;
   font-weight: 500;
   margin: 0;
 }
-.results-count {
+.pagina-mach .results-count {
   color: var(--text-muted);
   font-size: 0.85rem;
 }
-.providers-list {
+.pagina-mach .providers-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-.provider-card {
+.pagina-mach .provider-card {
   background-color: var(--panel-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -87,15 +78,15 @@ body {
     transform 0.2s,
     box-shadow 0.2s;
 }
-.provider-card:hover {
+.pagina-mach .provider-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(31, 122, 116, 0.15);
 }
-.provider-card.certified {
+.pagina-mach .provider-card.certified {
   border-color: var(--celeste);
   box-shadow: 0 2px 10px rgba(31, 122, 116, 0.08);
 }
-.provider-info h3 {
+.pagina-mach .provider-info h3 {
   margin: 0 0 6px 0;
   font-size: 1.1rem;
   font-weight: 600;
@@ -103,12 +94,12 @@ body {
   align-items: center;
   gap: 10px;
 }
-.provider-service {
+.pagina-mach .provider-service {
   color: var(--text-muted);
   font-size: 0.9rem;
   margin: 0 0 10px 0;
 }
-.badge {
+.pagina-mach .badge {
   font-size: 0.75rem;
   padding: 4px 8px;
   border-radius: 4px;
@@ -116,17 +107,17 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.badge-certified {
+.pagina-mach .badge-certified {
   background-color: rgba(31, 122, 116, 0.12);
   color: var(--celeste);
   border: 1px solid var(--celeste);
 }
-.badge-uncertified {
+.pagina-mach .badge-uncertified {
   background-color: rgba(217, 119, 6, 0.15);
-  color: #f59e0b;
+  color: var(--warning-text);
   border: 1px solid var(--warning-border);
 }
-.btn {
+.pagina-mach .btn {
   display: inline-block;
   text-align: center;
   padding: 10px 18px;
@@ -138,47 +129,47 @@ body {
   font-size: 0.9rem;
   border: none;
 }
-.btn-solid {
-  background-color: var(--celeste);
-  color: var(--bg-dark);
+.pagina-mach .btn-solid {
+  background-color: var(--pac-primary);
+  color: #fff;
 }
-.btn-solid:hover {
-  background-color: var(--celeste-hover);
+.pagina-mach .btn-solid:hover {
+  background-color: var(--pac-primary-dark);
 }
-.btn-outline {
+.pagina-mach .btn-outline {
   background-color: transparent;
   color: var(--celeste);
   border: 1px solid var(--celeste);
 }
-.btn-outline:hover {
+.pagina-mach .btn-outline:hover {
   background-color: rgba(31, 122, 116, 0.1);
 }
-.modal-overlay {
+.pagina-mach .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: var(--overlay);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
 }
-.modal-overlay.hidden {
+.pagina-mach .modal-overlay.hidden {
   display: none;
 }
-.modal-content {
+.pagina-mach .modal-content {
   background-color: var(--panel-bg);
   width: 90%;
   max-width: 480px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
-.modal-header {
+.pagina-mach .modal-header {
   background-color: var(--panel-bg);
   padding: 18px 24px;
   display: flex;
@@ -186,13 +177,13 @@ body {
   align-items: center;
   border-bottom: 1px solid var(--border-color);
 }
-.modal-header h2 {
+.pagina-mach .modal-header h2 {
   margin: 0;
   font-size: 1.2rem;
   color: var(--celeste);
   font-weight: 500;
 }
-.close-btn {
+.pagina-mach .close-btn {
   background: none;
   border: none;
   color: var(--text-muted);
@@ -200,32 +191,32 @@ body {
   cursor: pointer;
   transition: color 0.2s;
 }
-.close-btn:hover {
+.pagina-mach .close-btn:hover {
   color: var(--text-main);
 }
-.modal-body {
+.pagina-mach .modal-body {
   padding: 24px;
 }
-.alert-box {
-  background-color: #fff7ed;
-  border-left: 3px solid #f59e0b;
+.pagina-mach .alert-box {
+  background-color: var(--warning-soft);
+  border-left: 3px solid var(--warning-text);
   padding: 16px;
   border-radius: 4px;
   margin-bottom: 24px;
 }
-.alert-title {
+.pagina-mach .alert-title {
   margin: 0 0 8px 0;
-  color: #b45309;
+  color: var(--warning-text);
   font-weight: 600;
   font-size: 0.95rem;
 }
-.alert-desc {
+.pagina-mach .alert-desc {
   margin: 0;
   color: var(--text-muted);
   font-size: 0.9rem;
   line-height: 1.4;
 }
-.modal-actions {
+.pagina-mach .modal-actions {
   display: flex;
   flex-direction: column;
   gap: 12px;

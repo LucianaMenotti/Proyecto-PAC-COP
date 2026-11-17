@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import BarraMarca from "../components/BarraMarca";
 import { apiJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
 import { useAuth } from "../hooks/useAuth";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
 export default function MisMascotas() {
   const { usuario } = useAuth();
   const [mascotas, setMascotas] = useState([]);
-  const [aviso, setAviso] = useState(null);
-
-  useBootstrap();
-  useEstilos("base", estilosBase);
+  const [aviso, setAviso] = useState(null);  useEstilos("base", estilosBase);
 
   useEffect(() => {
     const cargarMascotas = async () => {
@@ -46,12 +41,10 @@ export default function MisMascotas() {
   }, [usuario.id]);
 
   return (
-    <>
-      <BarraMarca />
-
+    <>
       <main className="container py-5">
         <div className="text-center mb-5">
-          <h1 className="fw-bold">Mis mascotas</h1>
+          <h1>Mis mascotas</h1>
           <p className="text-secondary">Administrá las mascotas de tu cuenta.</p>
         </div>
 

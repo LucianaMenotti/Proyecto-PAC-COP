@@ -121,13 +121,13 @@ Criterios de la arquitectura de React:
 2. La sesión se concentra en el proveedor ProveedorAuth y el hook useAuth. El acceso por rol, en RutaProtegida.
 3. Vite hace de proxy de /api y /uploads hacia el backend (puerto 3000). Navegador y API comparten origen y las cookies httpOnly funcionan sin configuración adicional.
 4. Bootstrap, los iconos de Bootstrap, Leaflet y jsPDF se instalan por npm.
-5. Estilos. Las páginas con Bootstrap inyectan su hoja CSS mientras están montadas. El panel del prestador usa Tailwind 4 en lugar de Bootstrap. Su hoja se carga solo mientras ese panel está montado, de modo que el Preflight de Tailwind no afecta a las demás páginas.
+5. Estilos. `src/styles/tema.css` define tipografía (Inter y Fraunces), colores y modo oscuro. Todas las páginas comparten la barra `NavbarApp` y el pie `PieApp` a través de `LayoutApp`. Bootstrap se inyecta en todas las rutas menos el panel del prestador, que usa Tailwind 4 (ver `hooks/useMotorEstilos.js`). Detalle del rediseño en README_FUSION.md.
 
 ## 2. Rutas del frontend
 
 | Ruta | Acceso |
 | --- | --- |
-| / | Público |
+| / | Público. Landing para visitantes, resumen de cuenta para dueños y administradores, redirige al panel si es prestador |
 | /login | Público |
 | /registro | Público |
 | /recuperar | Público |
@@ -136,7 +136,7 @@ Criterios de la arquitectura de React:
 | /alertas, /mach, /numero | Público |
 | /pago?servicioId= | Cualquier usuario con sesión |
 | /seguimiento?servicioId= | Cualquier usuario con sesión |
-| /inicio | Cualquier usuario con sesión. El prestador pasa a su panel |
+| /inicio | Redirige a / |
 | /mis-mascotas, /registro-mascota, /ficha-salud | Dueño |
 | /mis-servicios | Dueño y prestador |
 | /panel-prestador/:seccion? | Prestador |

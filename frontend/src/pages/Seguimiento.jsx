@@ -104,19 +104,11 @@ export default function Seguimiento() {
 
   return (
     <>
-      <nav className="seg-nav">
-        <div className="seg-nav-container">
-          <Link to={RUTAS.inicio} className="seg-nav-brand">
-            Pac-Cop
-          </Link>
-          <Link to={rutaVolver} className="seg-nav-back">
-            ← Volver
-          </Link>
-        </div>
-      </nav>
-
       <div className="seg-wrap">
         <header className="seg-header">
+          <Link to={rutaVolver} className="pac-volver">
+            <i className="bi bi-arrow-left"></i> Volver
+          </Link>
           <p className="seg-eyebrow">Servicio #{servicio ? servicio.id : "—"}</p>
           <h1>Seguimiento del paseo en vivo</h1>
         </header>

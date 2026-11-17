@@ -1,25 +1,20 @@
 import { Link } from "react-router-dom";
-import NavbarInicio from "../components/NavbarInicio";
-import PieInicio from "../components/PieInicio";
-import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
 export default function Landing() {
-  useBootstrap(true);
   useEstilos("base", estilosBase);
 
   return (
     <>
-      <NavbarInicio />
       <section className="hero py-5">
         <div className="container">
           <div className="row align-items-center">
             <div className="col-lg-6">
-              <span className="badge bg-primary-subtle text-primary mb-3">
+              <span className="badge bg-primary-subtle rounded-pill px-3 py-2 mb-3">
                 La mejor red de servicios para mascotas en Formosa
               </span>
-              <h1 className="display-4 fw-bold">El cuidado que tu mascota necesita.</h1>
+              <h1 className="display-4">El cuidado que tu mascota necesita.</h1>
               <p className="lead text-secondary mt-3">
                 Encontrá paseadores y prestadores de servicios confiables para cuidar a tu mascota
                 cuando vos no podés.
@@ -63,7 +58,7 @@ export default function Landing() {
       <section id="como-funciona" className="py-5">
         <div className="container">
           <div className="text-center mb-5">
-            <h2 className="fw-bold">¿Cómo funciona?</h2>
+            <h2 className="display-6">¿Cómo funciona?</h2>
             <p className="text-secondary">Encontrar un servicio para tu mascota es muy sencillo.</p>
           </div>
           <div className="row g-4">
@@ -109,7 +104,7 @@ export default function Landing() {
       <section id="servicios" className="py-5 bg-light">
         <div className="container">
           <div className="text-center mb-5">
-            <h2 className="fw-bold">Nuestros servicios</h2>
+            <h2 className="display-6">Nuestros servicios</h2>
             <p className="text-secondary">Encontrá el servicio adecuado para tu mascota.</p>
           </div>
           <div className="row g-4">
@@ -161,7 +156,7 @@ export default function Landing() {
       <section className="py-5">
         <div className="container">
           <div className="text-center mb-5">
-            <h2 className="fw-bold">También contamos con</h2>
+            <h2 className="display-6">También contamos con</h2>
             <p className="text-secondary">Herramientas adicionales para mejorar la experiencia.</p>
           </div>
           <div className="row g-4">
@@ -213,7 +208,7 @@ export default function Landing() {
       <section className="py-5">
         <div className="container">
           <div className="cta-box text-center p-5">
-            <h2 className="fw-bold">¿Necesitás ayuda con tu mascota?</h2>
+            <h2 className="display-6">¿Necesitás ayuda con tu mascota?</h2>
             <p className="mt-3">Encontrá un prestador de servicios en tu zona.</p>
             <div className="d-flex justify-content-center flex-wrap gap-2 mt-4">
               <Link to="/buscar-prestadores" className="btn btn-primary btn-lg">
@@ -228,7 +223,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-      <PieInicio />
     </>
   );
 }
