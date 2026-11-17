@@ -191,6 +191,27 @@ const validarRestricciones = (prestador, mascota) => {
   return { ok: true };
 };
 
+// Paseos y traslados ocupan al prestador: no se superponen reservas activas dentro de esta ventana.
+// La guardería admite varias mascotas a la vez y queda fuera de este control.
+const MINUTOS_VENTANA_RESERVA = 60;
+
+const horarioOcupado = async (providerId, fecha) => {
+  const margen = (MINUTOS_VENTANA_RESERVA - 1) * 60 * 1000;
+
+  const ocupado = await Servicio.count({
+    where: {
+      providerId,
+      estado: { [Op.in]: ["programado", "aceptado", "en-curso"] },
+      tipo: { [Op.notLike]: "Guarderia%" },
+      horaProgramada: {
+        [Op.between]: [new Date(fecha.getTime() - margen), new Date(fecha.getTime() + margen)],
+      },
+    },
+  });
+
+  return ocupado > 0;
+};
+
 export const crearServicio = async (req, res) => {
   try {
     if (req.user.rol !== "dueño") {
@@ -291,6 +312,12 @@ export const crearServicio = async (req, res) => {
       return res.status(409).json({ mensaje: disponibilidad.mensaje });
     }
 
+    if (tipo !== "Guarderia" && (await horarioOcupado(prestador.id, fecha))) {
+      return res.status(409).json({
+        mensaje: "El prestador ya tiene una reserva en ese horario. Elegí otro.",
+      });
+    }
+
     for (const m of mascotas) {
       const restricciones = validarRestricciones(prestador, m);
       if (!restricciones.ok) {
@@ -323,6 +350,12 @@ export const crearServicio = async (req, res) => {
       if (!disponibilidadVuelta.ok) {
         return res.status(409).json({
           mensaje: `La vuelta no se puede programar: ${disponibilidadVuelta.mensaje}`,
+        });
+      }
+
+      if (await horarioOcupado(prestador.id, regreso)) {
+        return res.status(409).json({
+          mensaje: "La vuelta no se puede programar: el prestador ya tiene una reserva en ese horario",
         });
       }
     }
