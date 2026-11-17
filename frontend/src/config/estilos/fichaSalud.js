@@ -12,8 +12,8 @@ body {
     "Segoe UI",
     Roboto,
     sans-serif;
-  background-color: #f0fdf4;
-  color: #334155;
+  background-color: #f4fbf9;
+  color: #2c3e50;
   line-height: 1.5;
   padding: 40px 20px;
   display: flex;
@@ -30,7 +30,7 @@ body {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 h1 {
-  color: #0f766e;
+  color: #1f7a74;
   margin-bottom: 8px;
   font-size: 1.75rem;
   text-align: center;
@@ -52,7 +52,7 @@ fieldset {
   gap: 15px;
 }
 legend {
-  background-color: #0f766e;
+  background-color: #1f7a74;
   color: #ffffff;
   padding: 4px 14px;
   border-radius: 20px;
@@ -84,34 +84,34 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #14b8a6;
+  border-color: #1f7a74;
   background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+  box-shadow: 0 0 0 3px rgba(31, 122, 116, 0.15);
 }
 textarea {
   min-height: 80px;
   resize: vertical;
 }
 .alert-fieldset {
-  background-color: #fff1f2;
-  border-color: #fecdd3;
+  background-color: #fff1ec;
+  border-color: #ffd6c9;
 }
 .alert-fieldset legend {
-  background-color: #0f766e;
+  background-color: #ff6f52;
   color: #ffffff;
 }
 .alert-fieldset label {
-  color: #000000;
+  color: #b23a2a;
 }
 .alert-fieldset textarea {
-  border-color: #000000;
+  border-color: #ffb4a0;
 }
 .alert-fieldset textarea:focus {
-  border-color: #e11d48;
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+  border-color: #ff6f52;
+  box-shadow: 0 0 0 3px rgba(255, 111, 82, 0.15);
 }
 button[type="submit"] {
-  background-color: #0f766e;
+  background-color: #1f7a74;
   color: #ffffff;
   border: none;
   padding: 14px 20px;
@@ -126,7 +126,7 @@ button[type="submit"] {
   margin-top: 10px;
 }
 button[type="submit"]:hover {
-  background-color: #115e59;
+  background-color: #155551;
 }
 button[type="submit"]:active {
   transform: translateY(2px);
@@ -152,12 +152,12 @@ button[type="submit"]:active {
 #resumen-contenido p {
   text-align: left;
   margin-bottom: 12px;
-  color: #334155;
+  color: #2c3e50;
   font-size: 1rem;
 }
 #resumen-contenido span.label-resumen {
   font-weight: bold;
-  color: #0f766e;
+  color: #1f7a74;
   display: inline-block;
   min-width: 130px;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useEstilos } from "../hooks/useEstilos";
+import estilosBase from "../config/estilos/base";
 import estilosNumero from "../config/estilos/numero";
 
 export default function Numero() {
@@ -9,6 +10,7 @@ export default function Numero() {
   const temporizador = useRef(null);
 
   useEstilos("numero", estilosNumero);
+  useEstilos("base", estilosBase);
 
   useEffect(() => {
     return () => clearTimeout(temporizador.current);

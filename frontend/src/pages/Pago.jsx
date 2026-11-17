@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import ComprobantePago from "../components/pago/ComprobantePago";
 import FormularioTarjeta from "../components/pago/FormularioTarjeta";
 import PasosPago from "../components/pago/PasosPago";
@@ -15,9 +15,20 @@ import {
 } from "../helpers/tarjeta";
 import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
+import estilosBase from "../config/estilos/base";
 import estilosPago from "../config/estilos/pago";
 
 const TARJETA_INICIAL = { numero: "", nombre: "", vencimiento: "", cvv: "" };
+
+const textoMetodo = (pago) =>
+  pago.metodo === "tarjeta" ? `Tarjeta terminada en ${pago.ultimosDigitos}` : "Billetera virtual";
+
+const crearTransaccion = (pago, estado) => ({
+  id: pago.transaccionId,
+  fecha: new Date(pago.confirmadoEn),
+  metodo: textoMetodo(pago),
+  estado
+});
 
 export default function Pago() {
   const [reserva, setReserva] = useState(null);
@@ -31,10 +42,14 @@ export default function Pago() {
   const [datosTarjeta, setDatosTarjeta] = useState(null);
   const [pago, setPago] = useState(null);
   const [transaccion, setTransaccion] = useState(null);
+  const [motivoFallo, setMotivoFallo] = useState("");
+  const [parametros] = useSearchParams();
+  const servicioId = parametros.get("servicioId") || parametros.get("servicio");
   const cargaIniciada = useRef(false);
 
   useBootstrap(true);
   useEstilos("pago", estilosPago);
+  useEstilos("base", estilosBase);
 
   useEffect(() => {
     if (cargaIniciada.current) {
@@ -43,22 +58,64 @@ export default function Pago() {
 
     cargaIniciada.current = true;
 
+    if (!servicioId) {
+      return;
+    }
+
     const cargarReserva = async () => {
       try {
-        const { ok, datos } = await apiJson("/api/servicios/demo", { method: "POST" });
+        const { ok, datos } = await apiJson(`/api/servicios/${servicioId}`);
 
         if (!ok) {
           throw new Error(datos.mensaje || "No se pudo cargar la reserva.");
         }
 
         setReserva(datos.servicio);
+
+        // Pago existente de la reserva: retenido, liberado, fallido o expirado
+        const respuestaPago = await apiJson(`/api/pagos/servicio/${datos.servicio.id}`);
+        const existente = respuestaPago.ok ? respuestaPago.datos.pago : null;
+
+        if (existente && existente.estado !== "pendiente") {
+          setPago(existente);
+          setMetodo(existente.metodo);
+
+          if (existente.estado === "retenido") {
+            setTransaccion(crearTransaccion(existente, "Retenido (escrow)"));
+            setPaso("confirmar");
+            setEstado("retenido");
+          } else if (existente.estado === "liberado") {
+            setTransaccion(crearTransaccion(existente, "Liberado al prestador"));
+            setPaso("confirmar");
+            setEstado("liberado");
+          } else if (existente.estado === "fallido") {
+            setMotivoFallo(existente.motivoFallo || "");
+            setPaso("confirmar");
+            setEstado("fallido");
+          } else if (existente.estado === "expirado") {
+            setPaso("confirmar");
+            setEstado("expirado");
+          }
+        }
       } catch (error) {
         setErrorCarga(error.message || "Iniciá sesión para continuar con el pago.");
       }
     };
 
     cargarReserva();
-  }, []);
+  }, [servicioId]);
+
+  if (!servicioId) {
+    return (
+      <div className="alert alert-warning m-4">
+        Para pagar una reserva tenés que ingresar desde tus reservas.{" "}
+        <Link to={RUTAS.misServicios} className="alert-link">
+          Ir a Mis reservas
+        </Link>
+        .
+      </div>
+    );
+  }
 
   if (errorCarga) {
     return <div className="alert alert-danger m-4">{errorCarga}</div>;
@@ -125,19 +182,22 @@ export default function Pago() {
       const { ok, datos } = await apiJson(`/api/pagos/${pago.id}/confirmar`, { method: "POST" });
 
       if (!ok) {
+        if (datos.estado === "expirado") {
+          setEstado("expirado");
+          return;
+        }
+
+        if (datos.estado === "fallido") {
+          setMotivoFallo(datos.mensaje || "");
+          setEstado("fallido");
+          return;
+        }
+
         throw new Error(datos.mensaje || "No se pudo confirmar el pago.");
       }
 
       setPago(datos.pago);
-      setTransaccion({
-        id: datos.pago.transaccionId,
-        fecha: new Date(datos.pago.confirmadoEn),
-        metodo:
-          datos.pago.metodo === "tarjeta"
-            ? `Tarjeta terminada en ${datos.pago.ultimosDigitos}`
-            : "Billetera virtual",
-        estado: "Retenido (escrow)"
-      });
+      setTransaccion(crearTransaccion(datos.pago, "Retenido (escrow)"));
       setEstado("retenido");
     } catch (error) {
       alert(error.message);
@@ -161,6 +221,17 @@ export default function Pago() {
     }
   };
 
+  // Pago fallido o expirado: se vuelve a elegir el medio y se reinicia el pago (el backend lo reabre)
+  const reintentarPago = () => {
+    setPago(null);
+    setMotivoFallo("");
+    setTarjeta(TARJETA_INICIAL);
+    setErrores({});
+    setValidado(false);
+    setEstado("previo");
+    setPaso("metodo");
+  };
+
   const fechaTexto = transaccion
     ? transaccion.fecha.toLocaleString("es-AR", {
         day: "2-digit",
@@ -171,8 +242,9 @@ export default function Pago() {
       })
     : "";
 
-  const metodoElegido =
-    metodo === "tarjeta" && datosTarjeta
+  const metodoElegido = pago
+    ? textoMetodo(pago)
+    : metodo === "tarjeta" && datosTarjeta
       ? `Tarjeta terminada en ${datosTarjeta.ultimosDigitos}`
       : "Billetera virtual";
 
@@ -185,8 +257,8 @@ export default function Pago() {
           </Link>
 
           <div className="d-flex gap-2">
-            <Link to={RUTAS.inicio} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i className="bi bi-arrow-left me-1"></i> Volver al Inicio
+            <Link to={RUTAS.misServicios} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <i className="bi bi-arrow-left me-1"></i> Mis reservas
             </Link>
           </div>
         </div>
@@ -338,6 +410,46 @@ export default function Pago() {
                         onClick={liberarPago}
                       >
                         <i className="bi bi-check2-circle me-1"></i> Marcar servicio como completado
+                      </button>
+                    </div>
+                  )}
+
+                  {estado === "fallido" && (
+                    <div>
+                      <span className="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle px-3 py-2 rounded-pill fw-bold mb-3">
+                        <i className="bi bi-x-octagon-fill me-1"></i> Pago rechazado
+                      </span>
+
+                      <p className="text-secondary mb-4">
+                        {motivoFallo || "No pudimos procesar tu pago. Probá con otro medio."}
+                      </p>
+
+                      <button
+                        type="button"
+                        className="btn btn-accent px-4 py-2 fw-semibold rounded-3 shadow-sm"
+                        onClick={reintentarPago}
+                      >
+                        <i className="bi bi-arrow-clockwise me-1"></i> Reintentar pago
+                      </button>
+                    </div>
+                  )}
+
+                  {estado === "expirado" && (
+                    <div>
+                      <span className="badge bg-secondary-subtle text-secondary-emphasis border px-3 py-2 rounded-pill fw-bold mb-3">
+                        <i className="bi bi-clock-history me-1"></i> Pago expirado
+                      </span>
+
+                      <p className="text-secondary mb-4">
+                        El tiempo para confirmar el pago venció. Podés iniciar el pago nuevamente.
+                      </p>
+
+                      <button
+                        type="button"
+                        className="btn btn-accent px-4 py-2 fw-semibold rounded-3 shadow-sm"
+                        onClick={reintentarPago}
+                      >
+                        <i className="bi bi-arrow-clockwise me-1"></i> Volver a pagar
                       </button>
                     </div>
                   )}

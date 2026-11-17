@@ -3,6 +3,8 @@ export const RUTAS = {
   cuenta: "/inicio",
   login: "/login",
   registro: "/registro",
+  recuperar: "/recuperar",
+  restablecer: "/restablecer",
   misMascotas: "/mis-mascotas",
   registroMascota: "/registro-mascota",
   fichaSalud: "/ficha-salud",
@@ -17,7 +19,8 @@ export const RUTAS = {
   seguimiento: "/seguimiento",
   chat: "/chat",
   notificaciones: "/notificaciones",
-  adminReclamos: "/admin-reclamos"
+  adminReclamos: "/admin-reclamos",
+  admin: "/admin"
 };
 
 export const ROLES_ADMIN = ["admin", "administrador"];

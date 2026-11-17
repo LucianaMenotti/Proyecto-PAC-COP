@@ -6,6 +6,7 @@ import Notificacion from "../models/notificacion.model.js";
 import Servicio from "../models/servicio.model.js";
 import User from "../models/user.model.js";
 import { RUTA_PUBLICA_EVIDENCIAS } from "../middlewares/upload.middleware.js";
+import { emitirNotificacion } from "./notificacion.controller.js";
 
 const ROLES_ADMIN = ["admin", "administrador"];
 const ESTADOS = ["pendiente", "en-revision", "finalizado"];
@@ -146,6 +147,8 @@ export const crearReclamo = async (req, res) => {
 
     const nombre = nombreCompleto(req.user);
 
+    let notificacionesParaEmitir = [];
+
     const reclamo = await sequelize.transaction(async (transaccion) => {
       const nuevo = await Reclamo.create(
         {
@@ -186,8 +189,14 @@ export const crearReclamo = async (req, res) => {
         transaction: transaccion,
       });
 
+      notificacionesParaEmitir = notificaciones;
+
       return nuevo;
     });
+
+    notificacionesParaEmitir.forEach((notificacion) =>
+      emitirNotificacion(notificacion.userId, notificacion),
+    );
 
     const completo = await Reclamo.findByPk(reclamo.id, {
       include: INCLUDE_RECLAMO,
@@ -262,23 +271,30 @@ export const actualizarEstadoReclamo = async (req, res) => {
       });
     }
 
+    let notificacionesParaEmitir = [];
+
     await sequelize.transaction(async (transaccion) => {
       await reclamo.update({ estado }, { transaction: transaccion });
 
       const destinatarios = [reclamo.reclamanteId, reclamo.reclamadoId];
 
-      await Notificacion.bulkCreate(
-        destinatarios.map((userId) => ({
-          userId,
-          tipo: "reclamo-estado",
-          titulo: `Actualización del reclamo #${reclamo.id}`,
-          mensaje: `El reclamo #${reclamo.id} ${TEXTO_ESTADOS[estado]}.`,
-          reclamoId: reclamo.id,
-          servicioId: reclamo.servicioId,
-        })),
-        { transaction: transaccion },
-      );
+      notificacionesParaEmitir = destinatarios.map((userId) => ({
+        userId,
+        tipo: "reclamo-estado",
+        titulo: `Actualización del reclamo #${reclamo.id}`,
+        mensaje: `El reclamo #${reclamo.id} ${TEXTO_ESTADOS[estado]}.`,
+        reclamoId: reclamo.id,
+        servicioId: reclamo.servicioId,
+      }));
+
+      await Notificacion.bulkCreate(notificacionesParaEmitir, {
+        transaction: transaccion,
+      });
     });
+
+    notificacionesParaEmitir.forEach((notificacion) =>
+      emitirNotificacion(notificacion.userId, notificacion),
+    );
 
     const completo = await Reclamo.findByPk(reclamo.id, {
       include: INCLUDE_RECLAMO,

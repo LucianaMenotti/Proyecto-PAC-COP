@@ -1,17 +1,17 @@
 const estilos = String.raw`
 :root {
-  --bg-dark: #121212; 
-  --panel-bg: #1e1e1e; 
-  --celeste: #48cae4; 
-  --celeste-hover: #00b4d8; 
-  --text-main: #e0e0e0; 
-  --text-muted: #888888; 
-  --border-color: #333333;
+  --bg-dark: #f4fbf9; 
+  --panel-bg: #ffffff; 
+  --celeste: #1f7a74; 
+  --celeste-hover: #155551; 
+  --text-main: #2c3e50; 
+  --text-muted: #64748b; 
+  --border-color: #e2e8f0;
   --warning-border: #d97706; 
 }
 body {
   font-family: "Segoe UI", system-ui, sans-serif;
-  background-color: var(--bg-dark);
+  background-color: #ffffff;
   color: var(--text-main);
   margin: 0;
   padding: 20px;
@@ -24,8 +24,9 @@ body {
   margin-bottom: 30px;
 }
 .search-header h1 {
-  font-weight: 500;
-  color: var(--text-main);
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  color: var(--celeste);
   margin-bottom: 8px;
 }
 .search-header p {
@@ -40,7 +41,7 @@ body {
 }
 .search-bar input {
   flex: 1;
-  background-color: #161616;
+  background-color: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 12px 16px;
@@ -88,11 +89,11 @@ body {
 }
 .provider-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(31, 122, 116, 0.15);
 }
 .provider-card.certified {
   border-color: var(--celeste);
-  box-shadow: 0 2px 10px rgba(72, 202, 228, 0.08);
+  box-shadow: 0 2px 10px rgba(31, 122, 116, 0.08);
 }
 .provider-info h3 {
   margin: 0 0 6px 0;
@@ -116,7 +117,7 @@ body {
   letter-spacing: 0.5px;
 }
 .badge-certified {
-  background-color: rgba(72, 202, 228, 0.15);
+  background-color: rgba(31, 122, 116, 0.12);
   color: var(--celeste);
   border: 1px solid var(--celeste);
 }
@@ -150,7 +151,7 @@ body {
   border: 1px solid var(--celeste);
 }
 .btn-outline:hover {
-  background-color: rgba(72, 202, 228, 0.1);
+  background-color: rgba(31, 122, 116, 0.1);
 }
 .modal-overlay {
   position: fixed;
@@ -158,7 +159,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
+  background-color: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -178,7 +179,7 @@ body {
   overflow: hidden;
 }
 .modal-header {
-  background-color: #161616;
+  background-color: var(--panel-bg);
   padding: 18px 24px;
   display: flex;
   justify-content: space-between;
@@ -206,7 +207,7 @@ body {
   padding: 24px;
 }
 .alert-box {
-  background-color: #161616;
+  background-color: #fff7ed;
   border-left: 3px solid #f59e0b;
   padding: 16px;
   border-radius: 4px;
@@ -214,7 +215,7 @@ body {
 }
 .alert-title {
   margin: 0 0 8px 0;
-  color: #f59e0b;
+  color: #b45309;
   font-weight: 600;
   font-size: 0.95rem;
 }

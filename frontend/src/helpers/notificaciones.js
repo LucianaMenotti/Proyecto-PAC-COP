@@ -1,0 +1,40 @@
+import { ROLES_ADMIN, RUTAS } from "../config/rutas";
+
+// A dónde lleva una notificación (tipos que genera el backend: reserva*, mensaje, pago-*, resena, reclamo-*)
+export function destinoDeNotificacion(notificacion, usuario) {
+  const tipo = notificacion.tipo || "";
+  const esPrestador = usuario?.rol === "prestador";
+
+  if (notificacion.reclamoId || tipo.startsWith("reclamo")) {
+    if (ROLES_ADMIN.includes(usuario?.rol)) {
+      return { ruta: RUTAS.adminReclamos, texto: "Ver reclamos" };
+    }
+
+    return {
+      ruta: esPrestador ? `${RUTAS.panelPrestador}/reclamos` : RUTAS.misServicios,
+      texto: "Ver reclamos"
+    };
+  }
+
+  if (tipo.startsWith("reserva")) {
+    return esPrestador
+      ? { ruta: `${RUTAS.panelPrestador}/solicitudes`, texto: "Ver solicitudes" }
+      : { ruta: RUTAS.misServicios, texto: "Ver mis reservas" };
+  }
+
+  if (tipo === "mensaje" && notificacion.servicioId) {
+    return { ruta: `${RUTAS.chat}?servicioId=${notificacion.servicioId}`, texto: "Abrir chat" };
+  }
+
+  if (tipo.startsWith("pago")) {
+    return esPrestador
+      ? { ruta: `${RUTAS.panelPrestador}/cobros`, texto: "Ver cobros" }
+      : { ruta: RUTAS.misServicios, texto: "Ver mis reservas" };
+  }
+
+  if (tipo === "resena" && esPrestador) {
+    return { ruta: `${RUTAS.panelPrestador}/rendimiento`, texto: "Ver reseñas" };
+  }
+
+  return null;
+}

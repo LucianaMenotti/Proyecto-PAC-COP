@@ -25,3 +25,25 @@ export const enviarJson = (ruta, metodo, cuerpo) => {
     body: JSON.stringify(cuerpo ?? {})
   });
 };
+
+// Variantes que lanzan Error con el mensaje del backend cuando la respuesta no es ok.
+export const apiDatos = async (ruta, opciones = {}, mensajeError = "Ocurrió un error inesperado") => {
+  const { ok, datos } = await apiJson(ruta, opciones);
+
+  if (!ok) {
+    throw new Error(datos.mensaje || mensajeError);
+  }
+
+  return datos;
+};
+
+export const enviarDatos = (ruta, metodo, cuerpo, mensajeError) =>
+  apiDatos(
+    ruta,
+    {
+      method: metodo,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cuerpo ?? {})
+    },
+    mensajeError
+  );

@@ -173,7 +173,7 @@ export default function Landing() {
                   <p className="text-secondary">
                     Un flujo de pago protegido para las reservas de servicios.
                   </p>
-                  <Link to="/pago" className="btn btn-outline-primary">
+                  <Link to="/mis-servicios" className="btn btn-outline-primary">
                     Ver módulo
                   </Link>
                 </div>
@@ -187,7 +187,7 @@ export default function Landing() {
                   <p className="text-secondary">
                     Seguimiento de paseos y traslados mediante un mapa en tiempo real.
                   </p>
-                  <Link to="/seguimiento" className="btn btn-outline-primary">
+                  <Link to="/mis-servicios" className="btn btn-outline-primary">
                     Ver módulo
                   </Link>
                 </div>

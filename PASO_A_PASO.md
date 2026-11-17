@@ -1,90 +1,61 @@
 # Paso a paso
 
-Todos los comandos son para cmd de Windows. Se ejecutan desde la raíz del repositorio, la carpeta Proyecto-PAC-COP.
+Guía para instalar y ejecutar el proyecto con la estructura integrada (carpetas backend y frontend). Los comandos son para cmd de Windows y se ejecutan desde la raíz del repositorio, la carpeta Proyecto-PAC-COP.
 
-Los pasos 1 y 2 ya están hechos. Se dejan registrados.
+## 1. Requisitos
 
-## 1. Crear la rama
+1. Node.js 20 o superior.
+2. MySQL 8 o compatible en ejecución (por ejemplo desde XAMPP).
+3. Git.
+
+## 2. Obtener el código
 
 ```text
-git checkout menotti
+git clone https://github.com/LucianaMenotti/Proyecto-PAC-COP.git
+cd Proyecto-PAC-COP
+git checkout integracion-final
+```
+
+Si el repositorio ya está clonado:
+
+```text
+git fetch
+git checkout integracion-final
 git pull
-git checkout -b menotti-organizado
 ```
 
-La rama menotti no se toca. Todo lo siguiente ocurre en menotti-organizado.
+Las ramas menotti-organizado y prueba-integracion no se modifican. La rama integracion-final reúne el trabajo de ambas.
 
-## 2. Resguardar las imágenes
+## 3. Crear la base de datos
+
+Crear una base vacía en MySQL, por ejemplo pac_cop. Las tablas las crea el backend al iniciar.
+
+## 4. Configurar el entorno del backend
 
 ```text
-xcopy assets\img "%TEMP%\img_pac_cop" /E /I /Y
+copy backend\.env.example backend\.env
 ```
 
-## 3. Retirar la estructura anterior
-
-Estas rutas están versionadas en la rama. La lista sale del resultado de git ls-files.
+Abrir backend\.env y completar:
 
 ```text
-git rm -r assets css js paginas pagos panel-prestador prestadordeServicio "seguimiento gps en tiempo real" src test
-git rm index.html package.json package-lock.json .env.example
+DB_NAME=pac_cop
+DB_USER=root
+DB_PASSWORD=
+DB_HOST=localhost
+DB_DIALECT=mysql
+PORT=3000
+NODE_ENV=development
+DB_SYNC_ALTER=true
+FRONTEND_ORIGIN=http://localhost:5173
+AUTH_SECRET=una-clave-local-de-al-menos-32-caracteres
 ```
 
-No se tocan README.md, CONTEXTO.md, repomix-output.xml, .env, .gitignore, uploads ni node_modules.
+AUTH_SECRET debe tener al menos 32 caracteres. Las variables opcionales de correo (SMTP_) y de enlace de recuperación (FRONTEND_URL, PASSWORD_RESET_PATH) están explicadas en el README. Sin SMTP, el enlace de recuperación de contraseña se imprime en la consola del backend.
 
-El README.md se reemplaza en el paso 4. El CONTEXTO.md describe la estructura anterior y queda desactualizado. Se conserva como referencia histórica.
+El archivo .env no se sube al repositorio.
 
-Para quitar el node_modules de la raíz, que ya no se usa:
-
-```text
-rmdir /s /q node_modules
-```
-
-## 4. Copiar el proyecto nuevo
-
-Descomprimir el zip en una carpeta temporal y copiar el contenido. La instrucción tar de Windows 10 o superior lee archivos zip. No se verificó en su equipo.
-
-```text
-mkdir "%TEMP%\pac_cop_nuevo"
-tar -xf "%USERPROFILE%\Downloads\menotti-organizado.zip" -C "%TEMP%\pac_cop_nuevo"
-xcopy "%TEMP%\pac_cop_nuevo\menotti-organizado\backend" backend /E /I /Y
-xcopy "%TEMP%\pac_cop_nuevo\menotti-organizado\frontend" frontend /E /I /Y
-copy /Y "%TEMP%\pac_cop_nuevo\menotti-organizado\README.md" README.md
-copy /Y "%TEMP%\pac_cop_nuevo\menotti-organizado\PASO_A_PASO.md" PASO_A_PASO.md
-```
-
-Si el zip está en otra carpeta, cambiar la ruta de Downloads.
-
-Alternativa sin zip: crear cada archivo a mano con CODIGO_COMPLETO.md, que indica la ruta exacta de cada uno. En ese caso, en backend y en frontend ejecutar antes npm init -y y copiar los package.json completos del documento.
-
-## 5. Restaurar las imágenes
-
-```text
-xcopy "%TEMP%\img_pac_cop" frontend\public\img /E /I /Y
-```
-
-La imagen descarga (58).png debe quedar en frontend\public\img.
-
-## 6. Mover los archivos subidos
-
-Las evidencias de reclamos que ya existan están en la carpeta uploads de la raíz. El backend nuevo las busca en backend\uploads.
-
-```text
-move uploads backend\uploads
-```
-
-Si la carpeta uploads no existe, omitir este paso.
-
-## 7. Configurar el entorno del backend
-
-El .env de la raíz tiene los datos de MySQL. Se reutiliza.
-
-```text
-copy .env backend\.env
-```
-
-Abrir backend\.env y confirmar que tenga DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_DIALECT y AUTH_SECRET. La clave AUTH_SECRET debe tener al menos 32 caracteres. Las demás variables están en backend\.env.example.
-
-## 8. Instalar dependencias
+## 5. Instalar dependencias
 
 ```text
 cd backend
@@ -94,7 +65,7 @@ npm install
 cd ..
 ```
 
-## 9. Ejecutar
+## 6. Ejecutar
 
 Terminal 1:
 
@@ -102,6 +73,8 @@ Terminal 1:
 cd backend
 npm run dev
 ```
+
+Debe aparecer el mensaje de conexión con MySQL y el servidor en http://localhost:3000. Si no se conecta, el backend muestra el motivo y se detiene.
 
 Terminal 2:
 
@@ -112,13 +85,35 @@ npm run dev
 
 Abrir http://localhost:5173.
 
-## 10. Confirmar los cambios
+## 7. Verificar
+
+Pruebas del backend:
 
 ```text
-git add .
-git status
-git commit -m "reorganice el proyecto en backend y frontend"
-git push -u origin menotti-organizado
+cd backend
+npm test
 ```
 
-Revisar la salida de git status antes del commit. No deben aparecer .env, node_modules ni uploads.
+Compilación del frontend:
+
+```text
+cd frontend
+npm run build
+```
+
+Recorrido manual sugerido:
+
+1. Registrar un dueño con una mascota y un prestador con sus servicios.
+2. Como prestador, cargar precios en el panel.
+3. Como dueño, buscar al prestador, reservar y pagar. Una tarjeta que termina en 0000 simula un rechazo.
+4. Como prestador, aceptar la solicitud, abrir el chat e iniciar el seguimiento.
+5. Finalizar el servicio y, como dueño, calificarlo o abrir un reclamo.
+6. Para probar la administración, el registro no permite crear administradores. Cambiar a mano la columna rol de un usuario a admin en la tabla Users de MySQL y revisar /admin y /admin-reclamos.
+
+## 8. Antes de confirmar cambios
+
+```text
+git status
+```
+
+No deben aparecer .env, node_modules, dist ni uploads. Pueden aparecer avisos de fin de línea (LF y CRLF), que son inofensivos.

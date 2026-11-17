@@ -1,9 +1,9 @@
 const estilos = String.raw`
 .chat-app {
-  --chat-primario: #4f46e5;
-  --chat-primario-oscuro: #4338ca;
-  --chat-fondo: #f4f6f8;
-  --chat-propio: #4f46e5;
+  --chat-primario: #1f7a74;
+  --chat-primario-oscuro: #155551;
+  --chat-fondo: #f4fbf9;
+  --chat-propio: #1f7a74;
   --chat-ajeno: #ffffff;
   --chat-borde: #e5e7eb;
   box-sizing: border-box;
@@ -14,10 +14,18 @@ const estilos = String.raw`
   max-width: 800px;
   margin: 0 auto;
   background: var(--chat-fondo);
-  color: #1f2937;
+  color: #2c3e50;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   border-left: 1px solid var(--chat-borde);
   border-right: 1px solid var(--chat-borde);
+}
+
+.chat-app.chat-embebido {
+  height: 560px;
+  max-width: none;
+  border: 1px solid var(--chat-borde);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .chat-app *,
@@ -46,7 +54,7 @@ const estilos = String.raw`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  color: #374151;
+  color: #2c3e50;
   text-decoration: none;
   font-size: 1.25rem;
 }
@@ -82,7 +90,7 @@ const estilos = String.raw`
 
 .chat-contacto-detalle {
   font-size: 0.78rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .chat-hilo {
@@ -104,7 +112,7 @@ const estilos = String.raw`
 }
 
 .chat-vacio {
-  color: #6b7280;
+  color: #64748b;
   background: #ffffff;
 }
 
@@ -333,7 +341,7 @@ const estilos = String.raw`
   border: none;
   border-radius: 10px;
   background: #ffffff;
-  color: #1f2937;
+  color: #2c3e50;
   font-weight: 600;
   cursor: pointer;
 }

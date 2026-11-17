@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { RUTAS } from "../config/rutas";
 import { formatearHora } from "../helpers/geografia";
+import { useAuth } from "../hooks/useAuth";
 import { useEstilos } from "../hooks/useEstilos";
+import estilosBase from "../config/estilos/base";
 import { useSeguimiento } from "../hooks/useSeguimiento";
 import estilosMapa from "../config/estilos/mapa";
 import estilosSeguimiento from "../config/estilos/seguimiento";
@@ -18,22 +21,86 @@ const INSIGNIAS = {
   finalizado: { texto: "Finalizado", clase: "finalizado" }
 };
 
+function FormularioCalificacion({ calificacion, alEnviar }) {
+  const [puntuacion, setPuntuacion] = useState("");
+  const [comentario, setComentario] = useState("");
+
+  const enviar = (evento) => {
+    evento.preventDefault();
+    alEnviar({ puntuacion: Number(puntuacion), comentario: comentario.trim() });
+  };
+
+  return (
+    <section className="panel-calificacion">
+      <h2>Calificá el servicio</h2>
+
+      <p>Contanos cómo fue la experiencia con el prestador.</p>
+
+      <form onSubmit={enviar}>
+        <label htmlFor="puntuacion">Puntuación</label>
+
+        <select
+          id="puntuacion"
+          required
+          value={puntuacion}
+          onChange={(evento) => setPuntuacion(evento.target.value)}
+        >
+          <option value="">Seleccionar</option>
+          <option value="1">1 estrella</option>
+          <option value="2">2 estrellas</option>
+          <option value="3">3 estrellas</option>
+          <option value="4">4 estrellas</option>
+          <option value="5">5 estrellas</option>
+        </select>
+
+        <label htmlFor="comentario">Comentario</label>
+
+        <textarea
+          id="comentario"
+          rows="4"
+          maxLength="500"
+          placeholder="Escribí un comentario opcional"
+          value={comentario}
+          onChange={(evento) => setComentario(evento.target.value)}
+        ></textarea>
+
+        <button type="submit" className="boton-primario" disabled={calificacion.enviando}>
+          Enviar calificación
+        </button>
+
+        <p>{calificacion.mensaje}</p>
+      </form>
+    </section>
+  );
+}
+
 export default function Seguimiento() {
+  const { usuario } = useAuth();
   const seguimiento = useSeguimiento();
-  const { servicio, paso, error } = seguimiento;
+  const { servicio, paso, error, calificacion } = seguimiento;
 
   useEstilos("mapa", estilosMapa);
   useEstilos("seguimiento", estilosSeguimiento);
+  useEstilos("base", estilosBase);
 
   const indicePaso = PASOS.findIndex((item) => item.id === paso);
   const insignia = INSIGNIAS[paso];
-  const horaProgramada = servicio ? formatearHora(servicio.horaProgramada) : "17:00 hs";
+  const horaProgramada = servicio ? formatearHora(servicio.horaProgramada) : "—";
   const duracionTotal =
     seguimiento.horaInicioReal && seguimiento.horaFinReal
       ? Math.floor((seguimiento.horaFinReal - seguimiento.horaInicioReal) / 1000)
       : 0;
 
+  const rutaVolver = usuario?.rol === "prestador" ? RUTAS.panelPrestador : RUTAS.misServicios;
   const mensajeError = error ? <p className="mensaje-error">{error}</p> : null;
+  const iniciales = servicio?.prestador
+    ? servicio.prestador
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((parte) => parte.charAt(0).toUpperCase())
+        .join("")
+    : "—";
 
   return (
     <>
@@ -42,32 +109,32 @@ export default function Seguimiento() {
           <Link to={RUTAS.inicio} className="seg-nav-brand">
             Pac-Cop
           </Link>
-          <Link to={RUTAS.inicio} className="seg-nav-back">
-            ← Volver al Inicio
+          <Link to={rutaVolver} className="seg-nav-back">
+            ← Volver
           </Link>
         </div>
       </nav>
 
       <div className="seg-wrap">
         <header className="seg-header">
-          <p className="seg-eyebrow">Servicio #{servicio ? servicio.id : "7734"}</p>
+          <p className="seg-eyebrow">Servicio #{servicio ? servicio.id : "—"}</p>
           <h1>Seguimiento del paseo en vivo</h1>
         </header>
 
         <section className="resumen" aria-label="Resumen del servicio">
           <div className="resumen-prestador">
-            <div className="resumen-avatar-box">JR</div>
+            <div className="resumen-avatar-box">{iniciales}</div>
 
             <div>
-              <p className="resumen-nombre">{servicio ? servicio.prestador : "Julieta Ramos"}</p>
-              <p className="resumen-servicio">{servicio ? servicio.tipo : "Paseo · 1 hora"}</p>
+              <p className="resumen-nombre">{servicio ? servicio.prestador : "—"}</p>
+              <p className="resumen-servicio">{servicio ? servicio.tipo : "—"}</p>
             </div>
           </div>
 
           <dl className="resumen-datos">
             <div>
               <dt>Mascota</dt>
-              <dd>{servicio ? servicio.mascota : "Toby"}</dd>
+              <dd>{servicio ? servicio.mascota : "—"}</dd>
             </div>
 
             <div>
@@ -120,7 +187,7 @@ export default function Seguimiento() {
                 <div className="espera">
                   <p className="espera-texto">
                     El servicio todavía no comenzó. Vas a ver la ubicación de{" "}
-                    <strong>{servicio ? servicio.mascota : "Toby"}</strong> en el mapa en cuanto{" "}
+                    <strong>{servicio ? servicio.mascota : "la mascota"}</strong> en el mapa en cuanto{" "}
                     <span>{servicio ? servicio.prestador : "el prestador"}</span> inicie el paseo.
                   </p>
 
@@ -172,14 +239,16 @@ export default function Seguimiento() {
                   aria-label="Mapa con la ubicación en tiempo real de la mascota"
                 ></div>
 
-                <button
-                  type="button"
-                  className="boton-secundario"
-                  disabled={!seguimiento.puedeFinalizar}
-                  onClick={seguimiento.finalizar}
-                >
-                  Finalizar servicio
-                </button>
+                {servicio?.puedeGestionar && (
+                  <button
+                    type="button"
+                    className="boton-secundario"
+                    disabled={!seguimiento.puedeFinalizar}
+                    onClick={seguimiento.finalizar}
+                  >
+                    Finalizar servicio
+                  </button>
+                )}
               </section>
             )}
 
@@ -193,15 +262,25 @@ export default function Seguimiento() {
                   aria-label="Recorrido completo del servicio"
                 ></div>
 
+                {calificacion.visible && (
+                  <FormularioCalificacion calificacion={calificacion} alEnviar={seguimiento.calificar} />
+                )}
+
+                {!calificacion.visible && calificacion.mensaje && (
+                  <p className="mensaje-calificacion">{calificacion.mensaje}</p>
+                )}
+
                 <dl className="resumen-final">
                   <div>
                     <dt>Hora de inicio</dt>
-                    <dd>{formatearHora(seguimiento.horaInicioReal)}</dd>
+                    <dd>
+                      {seguimiento.horaInicioReal ? formatearHora(seguimiento.horaInicioReal) : "—"}
+                    </dd>
                   </div>
 
                   <div>
                     <dt>Hora de finalización</dt>
-                    <dd>{formatearHora(seguimiento.horaFinReal)}</dd>
+                    <dd>{seguimiento.horaFinReal ? formatearHora(seguimiento.horaFinReal) : "—"}</dd>
                   </div>
 
                   <div>

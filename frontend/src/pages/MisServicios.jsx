@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ContadorNotificaciones from "../components/ContadorNotificaciones";
 import ModalReclamo from "../components/reclamos/ModalReclamo";
+import ModalCalificar from "../components/servicios/ModalCalificar";
+import ModalCancelarReserva from "../components/servicios/ModalCancelarReserva";
 import { apiJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
 import { chatDisponible, formatearFecha, obtenerEstado } from "../helpers/servicios";
@@ -10,6 +12,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useBootstrap } from "../hooks/useBootstrap";
 import { useContadorNotificaciones } from "../hooks/useContadorNotificaciones";
 import { useEstilos } from "../hooks/useEstilos";
+import { useEventoTiempoReal } from "../hooks/useTiempoReal";
 import estilosBase from "../config/estilos/base";
 
 const INTERVALO_ACTUALIZACION = 15000;
@@ -61,7 +64,11 @@ export default function MisServicios() {
   const [reclamos, setReclamos] = useState([]);
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
+  const [aviso, setAviso] = useState(null);
+  const [filtroEstado, setFiltroEstado] = useState("");
   const [servicioReclamado, setServicioReclamado] = useState(null);
+  const [servicioCancelado, setServicioCancelado] = useState(null);
+  const [servicioCalificado, setServicioCalificado] = useState(null);
   const firma = useRef("");
   const { noLeidas, recargar: recargarContador } =
     useContadorNotificaciones(INTERVALO_ACTUALIZACION);
@@ -82,7 +89,7 @@ export default function MisServicios() {
     const listaReclamos = respuestaReclamos.ok ? respuestaReclamos.datos.reclamos || [] : [];
 
     const nuevaFirma = JSON.stringify([
-      listaServicios.map((servicio) => [servicio.id, servicio.estado]),
+      listaServicios.map((servicio) => [servicio.id, servicio.estado, servicio.reembolso, servicio.calificado]),
       listaReclamos.map((reclamo) => [reclamo.id, reclamo.estado])
     ]);
 
@@ -125,15 +132,23 @@ export default function MisServicios() {
     };
   }, [cargarDatos]);
 
+  // El prestador acepta/rechaza o el estado cambia: se refleja sin esperar al sondeo
+  useEventoTiempoReal("notificacion", () => {
+    cargarDatos().catch((fallo) => console.error("Error al actualizar los servicios:", fallo));
+  });
+
   useEffect(() => {
-    if (!exito) {
+    if (!exito && !aviso) {
       return undefined;
     }
 
-    const temporizador = setTimeout(() => setExito(""), 6000);
+    const temporizador = setTimeout(() => {
+      setExito("");
+      setAviso(null);
+    }, 6000);
 
     return () => clearTimeout(temporizador);
-  }, [exito]);
+  }, [exito, aviso]);
 
   const reclamoEnviado = async () => {
     setServicioReclamado(null);
@@ -148,7 +163,29 @@ export default function MisServicios() {
     setExito("Reclamo enviado. Podés seguir su estado en este servicio.");
   };
 
+  const reservaCancelada = async (mensaje) => {
+    setServicioCancelado(null);
+
+    try {
+      await cargarDatos();
+    } catch (fallo) {
+      console.error("Error al actualizar los servicios:", fallo);
+    }
+
+    setAviso({ tipo: "warning", texto: mensaje });
+  };
+
+  const reservaCalificada = () => {
+    setServicioCalificado(null);
+    setExito("¡Gracias por tu reseña!");
+    cargarDatos().catch(() => {});
+  };
+
   const esPrestador = usuario.rol === "prestador";
+
+  const lista = (servicios || []).filter(
+    (servicio) => filtroEstado === "" || servicio.estado === filtroEstado
+  );
 
   return (
     <>
@@ -164,7 +201,10 @@ export default function MisServicios() {
               <ContadorNotificaciones cantidad={noLeidas} />
             </Link>
 
-            <Link to={RUTAS.cuenta} className="btn btn-outline-primary">
+            <Link
+              to={esPrestador ? RUTAS.panelPrestador : RUTAS.cuenta}
+              className="btn btn-outline-primary"
+            >
               Volver
             </Link>
           </div>
@@ -175,11 +215,32 @@ export default function MisServicios() {
         <div className="text-center mb-5">
           <h1 className="fw-bold">Mis servicios</h1>
           <p className="text-secondary">
-            Consultá tus reservas, accedé al chat y abrí reclamos de servicios finalizados.
+            Consultá tus reservas, pagalas, cancelalas, accedé al chat, calificá al prestador y abrí
+            reclamos de servicios finalizados.
           </p>
         </div>
 
+        <div className="row justify-content-end mb-4">
+          <div className="col-md-4">
+            <select
+              className="form-select"
+              aria-label="Filtrar por estado"
+              value={filtroEstado}
+              onChange={(evento) => setFiltroEstado(evento.target.value)}
+            >
+              <option value="">Todos los estados</option>
+              <option value="programado">Pendiente de confirmación</option>
+              <option value="aceptado">Aceptadas</option>
+              <option value="en-curso">En curso</option>
+              <option value="finalizado">Finalizadas</option>
+              <option value="cancelado">Canceladas</option>
+              <option value="rechazado">Rechazadas</option>
+            </select>
+          </div>
+        </div>
+
         {exito && <div className="alert alert-success">{exito}</div>}
+        {aviso && <div className={`alert alert-${aviso.tipo}`}>{aviso.texto}</div>}
 
         {servicios === null && (
           <div className="text-center text-secondary">Cargando tus servicios...</div>
@@ -189,10 +250,14 @@ export default function MisServicios() {
           <div className="alert alert-info">Todavía no tenés servicios o reservas.</div>
         )}
 
+        {servicios !== null && servicios.length > 0 && lista.length === 0 && (
+          <div className="text-center text-secondary py-5">No hay reservas para mostrar.</div>
+        )}
+
         {error && <div className="alert alert-danger">{error}</div>}
 
         <div className="row g-4">
-          {(servicios || []).map((servicio) => {
+          {lista.map((servicio) => {
             const estado = obtenerEstado(servicio.estado);
 
             const reclamoEmitido = reclamos.find(
@@ -209,10 +274,12 @@ export default function MisServicios() {
               ? obtenerEstadoReclamo(reclamoRecibido.estado)
               : null;
 
+            const puedeCancelar = ["programado", "aceptado"].includes(servicio.estado);
+
             return (
               <div className="col-md-6 col-lg-4" key={servicio.id}>
                 <div className="card h-100 shadow-sm border-0 rounded-4">
-                  <div className="card-body p-4">
+                  <div className="card-body p-4 d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-start mb-3">
                       <h2 className="h5 fw-bold mb-0">{servicio.tipo || "Servicio"}</h2>
                       <span className={`badge ${estado.clase}`}>{estado.texto}</span>
@@ -232,37 +299,112 @@ export default function MisServicios() {
                       <strong>Fecha:</strong> {formatearFecha(servicio.horaProgramada)}
                     </p>
 
-                    <p className="mb-4">
+                    {servicio.origen && (
+                      <p className="mb-2">
+                        <strong>Traslado:</strong> {servicio.origen} → {servicio.destino}
+                      </p>
+                    )}
+
+                    {servicio.servicioVueltaId && (
+                      <p className="mb-2">
+                        <strong>
+                          {servicio.motivoTraslado === "vuelta"
+                            ? "Vuelta de la reserva"
+                            : "Incluye la vuelta"}
+                        </strong>{" "}
+                        #{servicio.servicioVueltaId}
+                      </p>
+                    )}
+
+                    <p className="mb-3">
                       <strong>Monto:</strong> ${Number(servicio.monto || 0).toLocaleString("es-AR")}
                     </p>
 
-                    {chatDisponible(servicio.estado) ? (
-                      <Link
-                        to={`${RUTAS.chat}?servicioId=${servicio.id}`}
-                        className="btn btn-primary w-100"
-                      >
-                        Abrir chat
-                      </Link>
-                    ) : (
-                      <button className="btn btn-outline-secondary w-100" disabled>
-                        Chat no disponible
-                      </button>
+                    {servicio.estado === "cancelado" && (
+                      <div className="small mb-3">
+                        {servicio.reembolso !== null && servicio.reembolso !== undefined && (
+                          <span
+                            className={`badge ${servicio.reembolso ? "text-bg-success" : "text-bg-secondary"}`}
+                          >
+                            {servicio.reembolso ? "Con reembolso" : "Sin reembolso"}
+                          </span>
+                        )}
+
+                        {servicio.motivoCancelacion && (
+                          <p className="text-secondary mb-0 mt-2">
+                            <strong>Motivo:</strong> {servicio.motivoCancelacion}
+                          </p>
+                        )}
+                      </div>
                     )}
 
-                    <BotonReclamo
-                      servicio={servicio}
-                      reclamoEmitido={reclamoEmitido}
-                      alReclamar={setServicioReclamado}
-                    />
+                    <div className="mt-auto">
+                      {!esPrestador && servicio.estado === "programado" && (
+                        <Link
+                          to={`${RUTAS.pago}?servicioId=${servicio.id}`}
+                          className="btn btn-primary w-100 mb-2"
+                        >
+                          <i className="bi bi-credit-card me-1"></i> Pagar con custodia
+                        </Link>
+                      )}
 
-                    {estadoRecibido && (
-                      <p className="small mt-2 mb-0">
-                        Reclamo recibido:{" "}
-                        <span className={`badge ${estadoRecibido.clase}`}>
-                          {estadoRecibido.texto}
-                        </span>
-                      </p>
-                    )}
+                      {puedeCancelar && (
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger w-100 mb-2"
+                          onClick={() => setServicioCancelado(servicio)}
+                        >
+                          Cancelar reserva
+                        </button>
+                      )}
+
+                      {chatDisponible(servicio.estado) ? (
+                        <Link
+                          to={`${RUTAS.chat}?servicioId=${servicio.id}`}
+                          className="btn btn-primary w-100"
+                        >
+                          Abrir chat
+                        </Link>
+                      ) : (
+                        <button className="btn btn-outline-secondary w-100" disabled>
+                          Chat no disponible
+                        </button>
+                      )}
+
+                      {servicio.estado === "en-curso" && (
+                        <Link
+                          to={`${RUTAS.seguimiento}?servicioId=${servicio.id}`}
+                          className="btn btn-outline-primary w-100 mt-2"
+                        >
+                          <i className="bi bi-geo-alt me-1"></i> Ver seguimiento
+                        </Link>
+                      )}
+
+                      {!esPrestador && servicio.estado === "finalizado" && !servicio.calificado && (
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary w-100 mt-2"
+                          onClick={() => setServicioCalificado(servicio)}
+                        >
+                          <i className="bi bi-star me-1"></i> Calificar
+                        </button>
+                      )}
+
+                      <BotonReclamo
+                        servicio={servicio}
+                        reclamoEmitido={reclamoEmitido}
+                        alReclamar={setServicioReclamado}
+                      />
+
+                      {estadoRecibido && (
+                        <p className="small mt-2 mb-0">
+                          Reclamo recibido:{" "}
+                          <span className={`badge ${estadoRecibido.clase}`}>
+                            {estadoRecibido.texto}
+                          </span>
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -276,6 +418,22 @@ export default function MisServicios() {
           servicio={servicioReclamado}
           alCerrar={() => setServicioReclamado(null)}
           alEnviado={reclamoEnviado}
+        />
+      )}
+
+      {servicioCancelado && (
+        <ModalCancelarReserva
+          servicio={servicioCancelado}
+          alCerrar={() => setServicioCancelado(null)}
+          alCancelada={reservaCancelada}
+        />
+      )}
+
+      {servicioCalificado && (
+        <ModalCalificar
+          servicio={servicioCalificado}
+          alCerrar={() => setServicioCalificado(null)}
+          alCalificado={reservaCalificada}
         />
       )}
     </>

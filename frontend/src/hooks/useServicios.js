@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiJson } from "../config/api";
+import { useEventoTiempoReal } from "./useTiempoReal";
 
-export function useServicios() {
+// intervalo (ms): si se indica, la lista se vuelve a pedir periódicamente.
+// También se recarga cuando llega una notificación en tiempo real (SSE).
+export function useServicios(intervalo = 0) {
   const [servicios, setServicios] = useState(null);
   const [fallo, setFallo] = useState(false);
 
@@ -24,7 +27,17 @@ export function useServicios() {
 
   useEffect(() => {
     recargar();
-  }, [recargar]);
+
+    if (!intervalo) {
+      return undefined;
+    }
+
+    const temporizador = setInterval(recargar, intervalo);
+
+    return () => clearInterval(temporizador);
+  }, [recargar, intervalo]);
+
+  useEventoTiempoReal("notificacion", recargar);
 
   return { servicios, fallo, recargar };
 }

@@ -13,6 +13,7 @@ const FORMULARIO_INICIAL = {
   nombreMascota: "",
   especie: "",
   raza: "",
+  tamano: "",
   edad: "",
   descripcion: "",
   condicion: "",
@@ -77,6 +78,7 @@ export default function RegistroMascota() {
       nombre,
       especie,
       raza: raza || null,
+      tamano: formulario.tamano || null,
       edad,
       descripcion: descripcion || null,
       condicion,
@@ -185,6 +187,26 @@ export default function RegistroMascota() {
                       value={formulario.raza}
                       onChange={cambiar("raza")}
                     />
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="tamano" className="form-label">
+                      Tamaño
+                    </label>
+                    <select
+                      id="tamano"
+                      className="form-select"
+                      value={formulario.tamano}
+                      onChange={cambiar("tamano")}
+                    >
+                      <option value="">Sin especificar</option>
+                      <option value="pequeño">Pequeño</option>
+                      <option value="mediano">Mediano</option>
+                      <option value="grande">Grande</option>
+                    </select>
+                    <div className="form-text">
+                      Algunos prestadores solo aceptan ciertos tamaños de mascota.
+                    </div>
                   </div>
 
                   <div className="mb-3">

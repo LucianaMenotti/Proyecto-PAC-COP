@@ -51,7 +51,7 @@ export default function Login() {
         <div className="form-container">
           <div className="text-center mb-4">
             <h1 className="fw-bold">Iniciar sesión</h1>
-            <p className="text-secondary">Ingresá a tu cuenta de PetCare.</p>
+            <p className="text-secondary">Ingresá a tu cuenta de Pac-Cop.</p>
           </div>
           <form onSubmit={enviar}>
             <div className="mb-3">
@@ -89,6 +89,9 @@ export default function Login() {
               <div className={`alert alert-${aviso.tipo}`}>{aviso.texto}</div>
             </div>
           )}
+          <p className="text-center mt-3 mb-0">
+            <Link to={RUTAS.recuperar}>¿Olvidaste tu contraseña?</Link>
+          </p>
           <div className="text-center mt-4">
             <p>¿Todavía no tenés una cuenta?</p>
             <Link to="/registro">Registrate</Link>

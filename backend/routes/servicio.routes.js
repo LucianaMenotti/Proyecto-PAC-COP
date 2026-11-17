@@ -1,32 +1,71 @@
 import express from "express";
+
 import {
-  crearServicioDemo,
   crearServicio,
+  crearServicioDemo,
   listarServicios,
   obtenerServicio,
   iniciarServicio,
   finalizarServicio,
-  guardarUbicacion,
-  obtenerUbicacion,
   aceptarServicio,
   rechazarServicio,
+  cancelarServicio,
+  precioSugerido,
+  rutaDeHoy,
+  listarResenasPrestador,
+  marcarCheckIn,
+  marcarCheckOut,
+  guardarUbicacion,
+  obtenerUbicacion,
+  crearCalificacion,
 } from "../controllers/servicio.controller.js";
+
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 router.use(authMiddleware);
-router.post("/", crearServicio);
+
+// Servicio utilizado para la demo actual
 router.post("/demo", crearServicioDemo);
 
+// Reserva solicitada por el dueño
+router.post("/", crearServicio);
+
+// Servicios existentes
+router.get("/", listarServicios);
+
+// Rango de precio sugerido por servicio y zona
+router.get("/precios/sugerido", precioSugerido);
+
+// Ruta del día del prestador (orden sugerido de salidas)
+router.get("/prestador/ruta", rutaDeHoy);
+
+// Reseñas públicas de un prestador (antes de /:id)
+router.get("/prestador/:id/resenas", listarResenasPrestador);
+
+router.get("/:id", obtenerServicio);
+
+// Confirmación de la reserva (prestador)
 router.post("/:id/aceptar", aceptarServicio);
 router.post("/:id/rechazar", rechazarServicio);
 
-router.get("/", listarServicios);
-router.get("/:id", obtenerServicio);
+// Cancelación (dueño o prestador)
+router.post("/:id/cancelar", cancelarServicio);
+
+// Guardería: check-in y check-out
+router.post("/:id/check-in", marcarCheckIn);
+router.post("/:id/check-out", marcarCheckOut);
+
+// Estados del servicio
 router.post("/:id/iniciar", iniciarServicio);
 router.post("/:id/finalizar", finalizarServicio);
+
+// Seguimiento GPS
 router.post("/:id/ubicacion", guardarUbicacion);
 router.get("/:id/ubicacion", obtenerUbicacion);
+
+// Calificación del dueño
+router.post("/:id/calificacion", crearCalificacion);
 
 export default router;

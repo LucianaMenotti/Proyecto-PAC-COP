@@ -4,6 +4,7 @@ import { RUTAS } from "../config/rutas";
 import { borrarGuardado, leerGuardado } from "../helpers/almacenamiento";
 import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
+import estilosBase from "../config/estilos/base";
 import estilosAlertas from "../config/estilos/alertas";
 
 const leerMascota = () => {
@@ -28,6 +29,7 @@ export default function Alertas() {
 
   useBootstrap();
   useEstilos("alertas", estilosAlertas);
+  useEstilos("base", estilosBase);
 
   useEffect(() => {
     if (!mascota) {

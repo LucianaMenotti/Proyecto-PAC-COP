@@ -1,25 +1,45 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BarraMarca from "../components/BarraMarca";
 import ModalReserva from "../components/ModalReserva";
+import ModalResenas from "../components/ModalResenas";
 import TarjetaPrestador from "../components/TarjetaPrestador";
 import { apiJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
+import { leerLista } from "../helpers/listas";
 import { obtenerServicios, precioDe } from "../helpers/prestadores";
 import { useAuth } from "../hooks/useAuth";
 import { useBootstrap } from "../hooks/useBootstrap";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
+// Un prestador no se muestra si la mascota elegida no cumple su política (tamaños aceptados y razas excluidas)
+const aceptaMascota = (prestador, mascota) => {
+  const tamanos = leerLista(prestador.tamanosAceptados);
+  const razasExcluidas = leerLista(prestador.restricciones);
+  const tamano = String(mascota.tamano || "mediano").toLowerCase();
+  const raza = String(mascota.raza || "").toLowerCase();
+
+  if (tamanos.length > 0 && !tamanos.includes(tamano)) {
+    return false;
+  }
+
+  return !razasExcluidas.some((excluida) => raza.includes(String(excluida).toLowerCase()));
+};
+
 export default function BuscarPrestadores() {
-  const { refrescar } = useAuth();
+  const { usuario, refrescar } = useAuth();
   const navegar = useNavigate();
   const [prestadores, setPrestadores] = useState([]);
-  const [resultados, setResultados] = useState(null);
   const [error, setError] = useState(false);
+  const [cargando, setCargando] = useState(true);
   const [filtroServicio, setFiltroServicio] = useState("");
   const [filtroZona, setFiltroZona] = useState("");
+  const [filtroMascota, setFiltroMascota] = useState("");
+  const [aplicados, setAplicados] = useState({ servicio: "", zona: "", mascota: "" });
+  const [misMascotas, setMisMascotas] = useState([]);
   const [reserva, setReserva] = useState(null);
+  const [resenas, setResenas] = useState(null);
 
   useBootstrap();
   useEstilos("base", estilosBase);
@@ -33,46 +53,68 @@ export default function BuscarPrestadores() {
           throw new Error("Error al obtener los usuarios");
         }
 
-        const lista = datos.filter((usuario) => usuario.rol === "prestador");
-
-        setPrestadores(lista);
-        setResultados(lista);
+        setPrestadores(datos.filter((item) => item.rol === "prestador"));
       } catch (fallo) {
         console.error("Error al cargar prestadores:", fallo);
         setError(true);
+      } finally {
+        setCargando(false);
       }
     };
 
     cargarPrestadores();
   }, []);
 
+  // Con una cuenta de dueño se habilita el filtro por mascota (tamaño y raza)
+  useEffect(() => {
+    if (usuario?.rol !== "dueño") {
+      setMisMascotas([]);
+      return;
+    }
+
+    const cargarMascotas = async () => {
+      const { ok, datos } = await apiJson(`/api/mascotas/usuario/${usuario.id}`);
+
+      setMisMascotas(ok && Array.isArray(datos) ? datos : []);
+    };
+
+    cargarMascotas();
+  }, [usuario?.id, usuario?.rol]);
+
   const buscar = () => {
-    const servicio = filtroServicio.trim().toLowerCase();
-    const zona = filtroZona.trim().toLowerCase();
-
-    setResultados(
-      prestadores.filter((prestador) => {
-        const servicios = obtenerServicios(prestador.servicios);
-
-        const coincideServicio =
-          servicio === "" || servicios.some((item) => item.toLowerCase() === servicio);
-
-        const coincideZona = zona === "" || prestador.zona.toLowerCase().includes(zona);
-
-        return coincideServicio && coincideZona;
-      })
-    );
+    setAplicados({
+      servicio: filtroServicio.trim().toLowerCase(),
+      zona: filtroZona.trim().toLowerCase(),
+      mascota: filtroMascota
+    });
   };
 
-  const abrirReserva = async (id) => {
-    const usuario = await refrescar();
+  const resultados = useMemo(() => {
+    const mascota = misMascotas.find((item) => String(item.id) === String(aplicados.mascota));
 
-    if (!usuario) {
+    return prestadores.filter((prestador) => {
+      const servicios = obtenerServicios(prestador.servicios);
+
+      const coincideServicio =
+        aplicados.servicio === "" ||
+        servicios.some((item) => item.toLowerCase() === aplicados.servicio);
+
+      const coincideZona =
+        aplicados.zona === "" || (prestador.zona || "").toLowerCase().includes(aplicados.zona);
+
+      return coincideServicio && coincideZona && (!mascota || aceptaMascota(prestador, mascota));
+    });
+  }, [prestadores, misMascotas, aplicados]);
+
+  const abrirReserva = async (id) => {
+    const sesion = await refrescar();
+
+    if (!sesion) {
       navegar(RUTAS.login);
       return;
     }
 
-    if (usuario.rol !== "dueño") {
+    if (sesion.rol !== "dueño") {
       alert("Solo los dueños de mascota pueden reservar servicios.");
       return;
     }
@@ -88,7 +130,7 @@ export default function BuscarPrestadores() {
       return;
     }
 
-    const { ok, datos } = await apiJson(`/api/mascotas/usuario/${usuario.id}`);
+    const { ok, datos } = await apiJson(`/api/mascotas/usuario/${sesion.id}`);
     const mascotas = ok ? datos : [];
 
     if (mascotas.length === 0) {
@@ -99,9 +141,14 @@ export default function BuscarPrestadores() {
     setReserva({ prestador, serviciosConPrecio, mascotas });
   };
 
-  const reservaCreada = () => {
+  const reservaCreada = (datos) => {
     setReserva(null);
+
+    const id = datos?.servicio?.id;
+
     alert("Reserva creada correctamente. Ya podés pagarla desde la pantalla de pago.");
+
+    navegar(id ? `${RUTAS.pago}?servicioId=${id}` : RUTAS.misServicios);
   };
 
   return (
@@ -117,7 +164,7 @@ export default function BuscarPrestadores() {
         <div className="card border-0 shadow-sm mb-5">
           <div className="card-body">
             <div className="row g-3">
-              <div className="col-md-4">
+              <div className={misMascotas.length > 0 ? "col-md-3" : "col-md-4"}>
                 <label className="form-label" htmlFor="filtroServicio">
                   Servicio
                 </label>
@@ -134,7 +181,7 @@ export default function BuscarPrestadores() {
                 </select>
               </div>
 
-              <div className="col-md-4">
+              <div className={misMascotas.length > 0 ? "col-md-3" : "col-md-4"}>
                 <label className="form-label" htmlFor="filtroZona">
                   Zona
                 </label>
@@ -148,7 +195,28 @@ export default function BuscarPrestadores() {
                 />
               </div>
 
-              <div className="col-md-4">
+              {misMascotas.length > 0 && (
+                <div className="col-md-3">
+                  <label className="form-label" htmlFor="filtroMascota">
+                    Mascota a atender
+                  </label>
+                  <select
+                    id="filtroMascota"
+                    className="form-select"
+                    value={filtroMascota}
+                    onChange={(e) => setFiltroMascota(e.target.value)}
+                  >
+                    <option value="">Cualquier mascota</option>
+                    {misMascotas.map((mascota) => (
+                      <option key={mascota.id} value={mascota.id}>
+                        {mascota.nombre} ({mascota.tamano || "mediano"} · {mascota.raza || "mestizo"})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className={misMascotas.length > 0 ? "col-md-3" : "col-md-4"}>
                 <label className="form-label">Buscar</label>
                 <button className="btn btn-primary w-100" onClick={buscar}>
                   Buscar
@@ -163,12 +231,17 @@ export default function BuscarPrestadores() {
             <div className="alert alert-danger">No se pudieron cargar los prestadores.</div>
           )}
 
-          {!error && resultados && resultados.length === 0 && (
+          {!error && !cargando && resultados.length === 0 && (
             <div className="alert alert-info">No se encontraron prestadores.</div>
           )}
 
-          {(resultados || []).map((prestador) => (
-            <TarjetaPrestador key={prestador.id} prestador={prestador} alReservar={abrirReserva} />
+          {resultados.map((prestador) => (
+            <TarjetaPrestador
+              key={prestador.id}
+              prestador={prestador}
+              alReservar={abrirReserva}
+              alVerResenas={setResenas}
+            />
           ))}
         </div>
       </main>
@@ -182,6 +255,8 @@ export default function BuscarPrestadores() {
           alCrear={reservaCreada}
         />
       )}
+
+      {resenas && <ModalResenas prestador={resenas} alCerrar={() => setResenas(null)} />}
     </>
   );
 }

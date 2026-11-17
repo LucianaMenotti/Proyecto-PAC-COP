@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch, apiJson } from "../config/api";
-import { RUTAS, ROLES_ADMIN } from "../config/rutas";
+import { RUTAS } from "../config/rutas";
+import { destinoDeNotificacion } from "../helpers/notificaciones";
 import { formatearFechaHora } from "../helpers/reclamos";
 import { useAuth } from "../hooks/useAuth";
 import { useBootstrap } from "../hooks/useBootstrap";
@@ -17,10 +18,6 @@ export default function Notificaciones() {
 
   useBootstrap();
   useEstilos("base", estilosBase);
-
-  const destinoReclamos = ROLES_ADMIN.includes(usuario.rol)
-    ? RUTAS.adminReclamos
-    : RUTAS.misServicios;
 
   const cargar = useCallback(async () => {
     try {
@@ -94,7 +91,10 @@ export default function Notificaciones() {
 
         {error && <div className="alert alert-danger">{error}</div>}
 
-        {lista.map((notificacion) => (
+        {lista.map((notificacion) => {
+          const destino = destinoDeNotificacion(notificacion, usuario);
+
+          return (
           <div
             key={notificacion.id}
             className={`card shadow-sm rounded-4 mb-3 ${
@@ -114,9 +114,9 @@ export default function Notificaciones() {
               </small>
 
               <div className="d-flex flex-wrap gap-2">
-                {notificacion.reclamoId && (
-                  <Link to={destinoReclamos} className="btn btn-primary btn-sm">
-                    Ver reclamos
+                {destino && (
+                  <Link to={destino.ruta} className="btn btn-primary btn-sm">
+                    {destino.texto}
                   </Link>
                 )}
                 {!notificacion.leida && (
@@ -131,7 +131,8 @@ export default function Notificaciones() {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </main>
     </>
   );

@@ -1,31 +1,15 @@
+import { leerLista, leerPrecios } from "./listas";
+import { normalizarConfigPrecio } from "./precios";
+
 export function obtenerServicios(servicios) {
-  if (Array.isArray(servicios)) {
-    return servicios;
-  }
+  return leerLista(servicios);
+}
 
-  if (typeof servicios === "string") {
-    try {
-      const resultado = JSON.parse(servicios);
-
-      return Array.isArray(resultado) ? resultado : [];
-    } catch {
-      return [];
-    }
-  }
-
-  return [];
+// preciosServicios[tipo] puede ser un número o un objeto { precioBase, tipoDescuento, valorDescuento }
+export function configPrecioDe(prestador, tipo) {
+  return normalizarConfigPrecio(leerPrecios(prestador.preciosServicios)?.[tipo]);
 }
 
 export function precioDe(prestador, tipo) {
-  let precios = prestador.preciosServicios;
-
-  if (typeof precios === "string") {
-    try {
-      precios = JSON.parse(precios);
-    } catch {
-      precios = {};
-    }
-  }
-
-  return Number(precios?.[tipo]) || 0;
+  return configPrecioDe(prestador, tipo).precioBase;
 }

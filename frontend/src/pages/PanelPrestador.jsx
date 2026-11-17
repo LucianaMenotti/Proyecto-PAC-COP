@@ -1,151 +1,120 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import ContadorNotificaciones from "../components/ContadorNotificaciones";
-import ServiciosActivos from "../components/panel/ServiciosActivos";
-import SolicitudesPrestador from "../components/panel/SolicitudesPrestador";
-import TabNiveles from "../components/panel/TabNiveles";
-import TabPublicar from "../components/panel/TabPublicar";
-import TabRendimiento from "../components/panel/TabRendimiento";
-import TabRuta from "../components/panel/TabRuta";
+import { useMemo } from "react";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import BarraPanel from "../components/panel/BarraPanel";
+import MenuLateralPanel, { SECCIONES_PANEL } from "../components/panel/MenuLateralPanel";
+import SeccionChat from "../components/panel/SeccionChat";
+import SeccionCobros from "../components/panel/SeccionCobros";
+import SeccionPerfil from "../components/panel/SeccionPerfil";
+import SeccionPrecios from "../components/panel/SeccionPrecios";
+import SeccionReclamos from "../components/panel/SeccionReclamos";
+import SeccionRendimiento from "../components/panel/SeccionRendimiento";
+import SeccionSolicitudes from "../components/panel/SeccionSolicitudes";
+import SeccionTrabajo from "../components/panel/SeccionTrabajo";
+import SeccionVehiculo from "../components/panel/SeccionVehiculo";
 import { RUTAS } from "../config/rutas";
-import { leerLista, leerPrecios } from "../helpers/listas";
 import { calcularNivel } from "../helpers/niveles";
 import { useAuth } from "../hooks/useAuth";
-import { useBootstrap } from "../hooks/useBootstrap";
-import { useContadorNotificaciones } from "../hooks/useContadorNotificaciones";
 import { useEstilos } from "../hooks/useEstilos";
+import { useRangosMercado } from "../hooks/useRangosMercado";
 import { useServicios } from "../hooks/useServicios";
-import estilosBase from "../config/estilos/base";
-import estilosPanel from "../config/estilos/panelPrestador";
+import estilosIconos from "../config/estilos/iconos";
+import estilosTailwind from "../config/estilos/panelTailwind";
 
-const PESTANAS = [
-  { id: "niveles", numero: "01", titulo: "Niveles y precio mínimo" },
-  { id: "publicar", numero: "02", titulo: "Publicar servicio" },
-  { id: "rendimiento", numero: "03", titulo: "Rendimiento" },
-  { id: "ruta", numero: "04", titulo: "Ruta de hoy" }
-];
+const INTERVALO_ACTUALIZACION = 20000;
 
-export default function PanelPrestador() {
-  const { usuario } = useAuth();
-  const { servicios, fallo, recargar } = useServicios();
-  const [pestana, setPestana] = useState("niveles");
-  const [misServicios, setMisServicios] = useState(() => leerLista(usuario.servicios));
-  const [misPrecios, setMisPrecios] = useState(() => leerPrecios(usuario.preciosServicios));
+// Panel del prestador (base: panel de Maxi con Tailwind v4). Cada sección es una ruta:
+// /panel-prestador/:seccion (precios, rendimiento, solicitudes, trabajo, cobros, vehiculo, chat, reclamos, perfil)
+// Solo carga Tailwind y los íconos mientras está montado; el resto de la app usa Bootstrap.
+export default function PanelPrestador({ seccionFija = null }) {
+  const { usuario, refrescar, cerrarSesion } = useAuth();
+  const { seccion: seccionRuta } = useParams();
+  const navegar = useNavigate();
+  const { servicios, recargar } = useServicios(INTERVALO_ACTUALIZACION);
+  const rangos = useRangosMercado(usuario.zona);
 
-  const { noLeidas } = useContadorNotificaciones(15000);
+  useEstilos("panel-tailwind", estilosTailwind);
+  useEstilos("iconos", estilosIconos);
 
-  useBootstrap();
-  useEstilos("base", estilosBase);
-  useEstilos("panel-prestador", estilosPanel);
+  const seccion = seccionFija || seccionRuta || "precios";
 
   const completados = useMemo(
     () => (servicios || []).filter((servicio) => servicio.estado === "finalizado").length,
     [servicios]
   );
 
-  const nivelActual = calcularNivel(completados);
+  const pendientes = (servicios || []).filter(
+    (servicio) => servicio.estado === "programado" && servicio.puedeGestionar !== false
+  ).length;
 
-  const solicitudes = (servicios || []).filter(
-    (servicio) => servicio.estado === "programado" && servicio.puedeGestionar === true
-  );
+  const nivel = calcularNivel(completados, usuario.calificacion);
 
-  const activos = (servicios || []).filter(
-    (servicio) => servicio.estado === "aceptado" || servicio.estado === "en-curso"
-  );
+  if (!SECCIONES_PANEL.some((item) => item.id === seccion)) {
+    return <Navigate to={`${RUTAS.panelPrestador}/precios`} replace />;
+  }
 
-  const guardado = (nuevosServicios, nuevosPrecios) => {
-    setMisServicios(nuevosServicios);
-    setMisPrecios(nuevosPrecios);
+  const cerrar = async () => {
+    await cerrarSesion();
+    navegar(RUTAS.inicio);
   };
 
-  const inicial = (usuario.nombre || "P").charAt(0).toUpperCase();
-
   return (
-    <>
-      <nav className="navbar bg-white border-bottom shadow-sm">
-        <div className="container py-2">
-          <Link to={RUTAS.inicio} className="navbar-brand fw-bold pac-brand">
-            Pac-Cop
-          </Link>
+    <div className="panel-tw flex flex-col text-slate-800">
+      <BarraPanel usuario={usuario} nivel={nivel} alCerrarSesion={cerrar} />
 
-          <div className="d-flex align-items-center gap-2">
-            <Link to={RUTAS.misServicios} className="btn btn-outline-primary btn-sm">
-              Mis servicios
-            </Link>
-            <Link to={RUTAS.notificaciones} className="btn btn-outline-primary btn-sm">
-              Notificaciones
-              <ContadorNotificaciones cantidad={noLeidas} />
-            </Link>
-            <span className="badge rounded-pill nivel-badge">Nivel: Establecido</span>
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <MenuLateralPanel seccionActual={seccion} pendientes={pendientes} />
 
-            <Link
-              to={RUTAS.perfilPrestador}
-              className="avatar text-decoration-none"
-              title="Ver mi perfil"
-              style={{ cursor: "pointer" }}
-            >
-              {inicial}
-            </Link>
+          <div className="flex-1 w-full min-w-0">
+            {seccion === "precios" && (
+              <SeccionPrecios
+                usuario={usuario}
+                nivel={nivel}
+                completados={completados}
+                rangos={rangos}
+                alActualizar={refrescar}
+              />
+            )}
+
+            {seccion === "rendimiento" && (
+              <SeccionRendimiento usuario={usuario} servicios={servicios} rangos={rangos} />
+            )}
+
+            {seccion === "solicitudes" && (
+              <SeccionSolicitudes
+                servicios={servicios}
+                cargando={servicios === null}
+                alActualizar={recargar}
+              />
+            )}
+
+            {seccion === "trabajo" && <SeccionTrabajo usuario={usuario} alActualizar={refrescar} />}
+
+            {seccion === "cobros" && (
+              <SeccionCobros
+                usuario={usuario}
+                servicios={servicios}
+                alActualizar={refrescar}
+                alActualizarServicios={recargar}
+              />
+            )}
+
+            {seccion === "vehiculo" && <SeccionVehiculo usuario={usuario} alActualizar={refrescar} />}
+
+            {seccion === "chat" && <SeccionChat usuario={usuario} servicios={servicios} />}
+
+            {seccion === "reclamos" && <SeccionReclamos servicios={servicios} />}
+
+            {seccion === "perfil" && <SeccionPerfil usuario={usuario} alActualizar={refrescar} />}
           </div>
         </div>
-      </nav>
-
-      <main className="container py-4 py-md-5">
-        {servicios !== null && !fallo && (
-          <>
-            <SolicitudesPrestador solicitudes={solicitudes} alActualizar={recargar} />
-            <ServiciosActivos servicios={activos} />
-          </>
-        )}
-
-        <div className="panel-header mb-4">
-          <h1 className="fw-bold mb-2">Panel del prestador</h1>
-
-          <p className="text-secondary mb-0">Administrá tus servicios, precios y rendimiento.</p>
-
-          <Link to={RUTAS.perfilPrestador} className="btn btn-outline-primary btn-sm mt-3">
-            Mi perfil y servicios
-          </Link>
-        </div>
-
-        <ul className="nav nav-tabs panel-tabs mb-4" role="tablist">
-          {PESTANAS.map((item) => (
-            <li className="nav-item" role="presentation" key={item.id}>
-              <button
-                className={`nav-link${pestana === item.id ? " active" : ""}`}
-                id={`tab-${item.id}`}
-                type="button"
-                role="tab"
-                onClick={() => setPestana(item.id)}
-              >
-                <span>{item.numero}</span>
-                {item.titulo}
-              </button>
-            </li>
-          ))}
-        </ul>
-
-        <div className="tab-content">
-          <TabNiveles
-            activa={pestana === "niveles"}
-            completados={completados}
-            nivelActual={nivelActual}
-            calificacion={usuario.calificacion}
-          />
-
-          <TabPublicar
-            activa={pestana === "publicar"}
-            nivelActual={nivelActual}
-            misServicios={misServicios}
-            misPrecios={misPrecios}
-            alGuardar={guardado}
-          />
-
-          <TabRendimiento activa={pestana === "rendimiento"} />
-
-          <TabRuta activa={pestana === "ruta"} />
-        </div>
       </main>
-    </>
+
+      <footer className="border-t border-slate-200 bg-white py-4 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+          Pac-Cop &copy; 2026 · Plataforma Integral de Servicios para Mascotas
+        </div>
+      </footer>
+    </div>
   );
 }

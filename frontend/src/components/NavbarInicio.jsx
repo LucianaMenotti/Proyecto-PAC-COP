@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ROLES_ADMIN } from "../config/rutas";
 import { useAuth } from "../hooks/useAuth";
 
 export default function NavbarInicio() {
   const { usuario, cerrarSesion } = useAuth();
   const [cerrando, setCerrando] = useState(false);
   const navegar = useNavigate();
+  const esAdmin = ROLES_ADMIN.includes(usuario?.rol);
 
   const manejarCierre = async () => {
     setCerrando(true);
@@ -55,6 +57,23 @@ export default function NavbarInicio() {
                 <i className="bi bi-search me-1"></i> Buscar
               </Link>
             </li>
+            <li className="nav-item">
+              <Link to="/mis-servicios" className="nav-link fw-medium">
+                <i className="bi bi-credit-card-2-front me-1"></i> Mis reservas
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/ficha-salud" className="nav-link fw-medium">
+                <i className="bi bi-heart-pulse me-1"></i> Ficha de Salud
+              </Link>
+            </li>
+            {esAdmin && (
+              <li className="nav-item">
+                <Link to="/admin" className="nav-link fw-medium">
+                  <i className="bi bi-shield-lock me-1"></i> Admin
+                </Link>
+              </li>
+            )}
           </ul>
           {!usuario && (
             <div className="d-flex gap-2">

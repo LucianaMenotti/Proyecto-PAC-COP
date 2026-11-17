@@ -98,11 +98,15 @@ export const validateActualizarServicios = (req, res, next) => {
   }
 
   for (const servicio of servicios) {
-    const valor = preciosServicios[servicio];
+    const entrada = preciosServicios[servicio];
+    const precioBase =
+      typeof entrada === "object" && entrada !== null
+        ? entrada.precioBase ?? entrada.precio
+        : entrada;
 
     if (
-      valor !== undefined &&
-      (!Number.isFinite(Number(valor)) || Number(valor) <= 0)
+      precioBase !== undefined &&
+      (!Number.isFinite(Number(precioBase)) || Number(precioBase) <= 0)
     ) {
       return res
         .status(400)

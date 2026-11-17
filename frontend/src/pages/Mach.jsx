@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useEstilos } from "../hooks/useEstilos";
+import estilosBase from "../config/estilos/base";
 import estilosMach from "../config/estilos/mach";
 
 const PRESTADORES = [
@@ -31,6 +32,7 @@ export default function Mach() {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEstilos("mach", estilosMach);
+  useEstilos("base", estilosBase);
 
   const buscar = () => {
     const texto = consulta.toLowerCase();

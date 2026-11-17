@@ -1,38 +1,141 @@
 const estilos = String.raw`
-body {
-    font-family: Arial, sans-serif;
+/* ============================================================
+   PAC-COP - Hoja de estilos base compartida
+   Tokens, tipografia y utilidades comunes del tema.
+   ============================================================ */
+
+:root {
+    --pac-primary: #1f7a74;
+    --pac-primary-dark: #155551;
+    --pac-accent: #ff6f52;
+    --pac-accent-dark: #e85b3e;
+    --pac-bg-soft: #f4fbf9;
 }
+
+body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #2c3e50;
+}
+
+.font-display {
+    font-family: "Fraunces", serif;
+}
+
+.navbar-brand-pac {
+    color: var(--pac-primary) !important;
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.btn-primary {
+    background-color: var(--pac-primary);
+    border-color: var(--pac-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--pac-primary-dark);
+    border-color: var(--pac-primary-dark);
+}
+
+.btn-outline-primary {
+    color: var(--pac-primary);
+    border-color: var(--pac-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--pac-primary);
+    border-color: var(--pac-primary);
+    color: #fff;
+}
+
+.btn-accent {
+    background-color: var(--pac-accent);
+    border-color: var(--pac-accent);
+    color: #fff;
+}
+
+.btn-accent:hover {
+    background-color: var(--pac-accent-dark);
+    border-color: var(--pac-accent-dark);
+    color: #fff;
+}
+
+.text-primary-pac {
+    color: var(--pac-primary) !important;
+}
+
+.text-accent-pac {
+    color: var(--pac-accent) !important;
+}
+
+.bg-soft-pac {
+    background-color: var(--pac-bg-soft);
+}
+
+
+/* HERO */
+
 .hero {
+    /* background: linear-gradient(
+        135deg,
+        #eef5ff,
+        #ffffff
+    ); */
     min-height: 600px;
     display: flex;
     align-items: center;
 }
+
+/* CARDS */
+
 .service-card {
     transition: transform 0.2s ease;
 }
+
 .service-card:hover {
     transform: translateY(-5px);
 }
+
+
+/* CTA */
+
 .cta-box {
     background-color: #eef5ff;
     border-radius: 20px;
 }
+
+
+/* FORMULARIOS */
+
 .form-container {
     max-width: 600px;
     margin: 50px auto;
 }
+
+
+/* PERFIL */
+
 .profile-header {
     background-color: #eef5ff;
     border-radius: 20px;
 }
+
+
+/* RESPONSIVE */
+
 @media (max-width: 768px) {
+
     .hero {
         text-align: center;
         min-height: auto;
     }
+
     .hero-icon {
         font-size: 120px;
     }
+
 }
 `;
 

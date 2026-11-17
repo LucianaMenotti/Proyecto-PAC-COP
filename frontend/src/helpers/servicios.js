@@ -7,13 +7,15 @@ export const NOMBRES_SERVICIO = {
 export const obtenerEstado = (estado) => {
   switch (estado) {
     case "programado":
-      return { texto: "Programado", clase: "bg-warning text-dark" };
+      return { texto: "Pendiente de confirmación", clase: "bg-warning text-dark" };
     case "aceptado":
       return { texto: "Aceptado", clase: "bg-success" };
     case "en-curso":
       return { texto: "En curso", clase: "bg-primary" };
     case "finalizado":
       return { texto: "Finalizado", clase: "bg-secondary" };
+    case "cancelado":
+      return { texto: "Cancelado", clase: "bg-dark" };
     case "rechazado":
       return { texto: "Rechazado", clase: "bg-danger" };
     default:

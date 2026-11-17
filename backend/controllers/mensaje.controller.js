@@ -6,6 +6,8 @@ import {
     guardarImagenDesdeDataUrl,
     rutaDeImagen
 } from "../helpers/imagen.helper.js";
+import { crearNotificacion } from "./notificacion.controller.js";
+import { publicarEvento } from "../helpers/realtime.helper.js";
 
 const puedeAccederAlChat = (servicio, usuario) => {
     return (
@@ -139,6 +141,27 @@ export const enviarMensaje = async (req, res) => {
                     attributes: ["id", "nombre", "apellido"]
                 }
             ]
+        });
+
+        const destinatario =
+            Number(servicio.ownerId) === Number(req.user.id)
+                ? servicio.providerId
+                : servicio.ownerId;
+
+        await crearNotificacion({
+            usuarioId: destinatario,
+            tipo: "mensaje",
+            titulo: "Nuevo mensaje",
+            mensaje: texto ? texto.slice(0, 120) : "Te enviaron una foto",
+            servicioId: servicio.id
+        });
+
+        publicarEvento(destinatario, "mensaje", {
+            servicioId: servicio.id,
+            remitenteId: req.user.id,
+            texto: texto || "Foto",
+            tieneImagen: Boolean(imagenArchivo),
+            momento: new Date().toISOString()
         });
 
         return res.status(201).json({

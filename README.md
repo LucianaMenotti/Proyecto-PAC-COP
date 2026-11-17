@@ -1,36 +1,26 @@
 # PAC-COP
 
-Plataforma de gestión de servicios para mascotas. Este documento describe la reorganización del proyecto de la rama menotti hacia la rama menotti-organizado.
+Plataforma de gestión de servicios para mascotas. Un dueño busca un prestador (paseo, guardería o traslado), reserva, paga con custodia, sigue el servicio por GPS, conversa por chat y califica. El prestador administra precios, solicitudes, cobros y reclamos desde su panel.
 
-## 1. Alcance
+Este repositorio es el resultado de integrar dos líneas de trabajo:
 
-La rama menotti no se modifica. Todo el trabajo se aplica en la rama menotti-organizado.
+1. La rama menotti-organizado, de Luciana Menotti. Aporta la estructura backend y frontend con React y Vite, los reclamos, las reservas, el chat unificado con fotos y las notificaciones.
+2. La rama prueba-integracion, de Maxi. Aporta el precio por volumen, las calificaciones, el panel de administración, la recuperación de contraseña, el tiempo real por SSE, la limitación de intentos, los estados de pago fallido y expirado, y el seguimiento GPS.
 
-La lógica de negocio se mantiene. Los modelos, las rutas, los permisos, los estados del servicio y las reglas de pago no cambian.
+La integración mantiene una sola carpeta de backend y una sola de frontend. El frontend heredado de la rama de Maxi (HTML suelto, la carpeta prestador-react y las demás carpetas de páginas) se reescribió en React dentro de frontend. No queda código en carpetas heredadas.
 
-La única funcionalidad modificada es el chat entre dueño y prestador. Se describe en la sección 6.
+## 1. Estructura del repositorio
 
-## 2. Cambios estructurales
+```text
+backend/       API Express 5 con Sequelize y MySQL (ES Modules)
+frontend/      Aplicación React 18 con Vite 5
+README.md
+CONTEXTO.md    Contexto técnico para quien modifique el proyecto
+PASO_A_PASO.md Guía de instalación y primer arranque en Windows
+.gitignore
+```
 
-1. El proyecto se divide en dos carpetas independientes: backend y frontend.
-2. El servidor Express deja de servir páginas. Solo expone la API bajo la ruta /api.
-3. Cada página HTML se convierte en una página de React.
-4. Cada archivo JavaScript que manipulaba el DOM se convierte en un componente, un hook o un helper.
-5. Cada archivo CSS se convierte en un módulo JavaScript dentro de frontend/src/config/estilos. Un hook lo inyecta mientras la página está montada.
-6. Bootstrap, los iconos de Bootstrap, Leaflet y jsPDF se instalan por npm. Ya no se cargan desde una red de distribución externa.
-7. La sesión de usuario se concentra en un proveedor de React con el hook useAuth.
-8. El acceso por rol se concentra en el componente RutaProtegida.
-9. Vite reemplaza al servidor de archivos estáticos. El único archivo HTML es frontend/index.html, que Vite exige como punto de entrada.
-
-## 3. Motivos de la nueva arquitectura
-
-1. La separación permite desplegar y escalar cada parte por su cuenta.
-2. Cada carpeta tiene una responsabilidad única. Esto reduce el costo de mantenimiento.
-3. Los componentes de React eliminan la duplicación de marcado entre páginas.
-4. Los hooks aíslan la lógica con estado. Las páginas quedan como composición de piezas.
-5. El proxy de Vite hace que navegador y API compartan origen. Las cookies httpOnly funcionan sin configuración adicional.
-
-## 4. Estructura del backend
+### Backend
 
 ```text
 backend/
@@ -40,6 +30,7 @@ backend/
   config/
     database.js
   controllers/
+    admin.controller.js
     mascota.controller.js
     mensaje.controller.js
     notificacion.controller.js
@@ -50,13 +41,20 @@ backend/
     user.controller.js
   helpers/
     auth.helper.js
+    email.helper.js
+    email.templates.js
     imagen.helper.js
     password.helper.js
+    precio.helper.js
+    realtime.helper.js
   middlewares/
+    admin.middleware.js
     auth.middleware.js
+    rateLimit.middleware.js
     upload.middleware.js
     validation.middleware.js
   models/
+    calificacion.model.js
     mascota.model.js
     mensaje.model.js
     notificacion.model.js
@@ -67,6 +65,8 @@ backend/
     ubicacion.model.js
     user.model.js
   routes/
+    admin.routes.js
+    evento.routes.js
     mascota.routes.js
     mensaje.routes.js
     notificacion.routes.js
@@ -77,152 +77,140 @@ backend/
     user.routes.js
   test/
     helpers.test.js
+    precio.test.js
 ```
 
 Responsabilidades:
 
 1. config: conexión de Sequelize con las variables DB_.
-2. models: definición de tablas y relaciones.
+2. models: tablas y relaciones.
 3. routes: asociación entre rutas HTTP y controladores.
 4. controllers: lógica de cada recurso.
-5. middlewares: verificación de sesión, de rol y de datos de entrada.
-6. helpers: firma de sesión, cifrado de contraseñas y guardado de imágenes.
-7. upload.middleware.js: recepción de las imágenes de evidencia de los reclamos con multer.
+5. middlewares: sesión, rol de administrador, limitación de intentos, validación de datos y recepción de imágenes con multer.
+6. helpers: firma de sesión, hash de contraseñas, guardado de imágenes del chat, cálculo de precios, correo y canal de eventos en tiempo real.
 
-## 5. Estructura del frontend
+El servidor solo expone la API bajo /api, más las evidencias de reclamos en /uploads/reclamos. No sirve páginas. Cualquier ruta /api sin coincidencia responde JSON 404.
+
+### Frontend
 
 ```text
 frontend/
   index.html
   package.json
   vite.config.js
-  public/
-    img/
+  public/img/
   src/
     main.jsx
     App.jsx
-    config/
-      api.js
-      rutas.js
-      estilos/
-    helpers/
-    hooks/
+    config/        api.js, rutas.js, estilos/ (estilos como módulos JS y la hoja de Tailwind del panel)
+    helpers/       funciones puras (precios, niveles, servicios, notificaciones, mapas, PDF, tarjeta)
+    hooks/         sesión, tiempo real (SSE), servicios, chat, seguimiento, estilos, Bootstrap
     components/
-      chat/
-      pago/
-      panel/
-    pages/
+      admin/       tablas del panel de administración
+      chat/        conversación unificada
+      panel/       secciones del panel del prestador
+      pago/        piezas de la pantalla de pago
+      reclamos/    modal de reclamo
+      servicios/   modales de calificar y cancelar
+    pages/         una página por ruta
 ```
 
-Responsabilidades:
+Criterios de la arquitectura de React:
 
-1. pages: una página por ruta.
-2. components: piezas reutilizables. Las subcarpetas chat, pago y panel agrupan piezas de una misma página.
-3. hooks: sesión, estilos, Bootstrap, servicios, seguimiento y chat.
-4. helpers: funciones puras, como PDF del comprobante, validación de tarjeta, niveles y mapas.
-5. config: cliente de la API, tabla de rutas y estilos.
+1. Una página por ruta. Los componentes agrupan piezas reutilizables y los hooks aíslan la lógica con estado.
+2. La sesión se concentra en el proveedor ProveedorAuth y el hook useAuth. El acceso por rol, en RutaProtegida.
+3. Vite hace de proxy de /api y /uploads hacia el backend (puerto 3000). Navegador y API comparten origen y las cookies httpOnly funcionan sin configuración adicional.
+4. Bootstrap, los iconos de Bootstrap, Leaflet y jsPDF se instalan por npm.
+5. Estilos. Las páginas con Bootstrap inyectan su hoja CSS mientras están montadas. El panel del prestador usa Tailwind 4 en lugar de Bootstrap. Su hoja se carga solo mientras ese panel está montado, de modo que el Preflight de Tailwind no afecta a las demás páginas.
 
-Rutas del frontend:
+## 2. Rutas del frontend
 
 | Ruta | Acceso |
 | --- | --- |
 | / | Público |
 | /login | Público |
 | /registro | Público |
-| /buscar-prestadores | Público |
-| /pago | Público |
-| /seguimiento | Público |
-| /alertas | Público |
-| /mach | Público |
-| /numero | Público |
-| /inicio | Cualquier usuario con sesión |
-| /mis-mascotas | Dueño |
-| /registro-mascota | Dueño |
-| /ficha-salud | Dueño |
+| /recuperar | Público |
+| /restablecer?token= | Público |
+| /buscar-prestadores | Público. Reservar exige ser dueño con sesión |
+| /alertas, /mach, /numero | Público |
+| /pago?servicioId= | Cualquier usuario con sesión |
+| /seguimiento?servicioId= | Cualquier usuario con sesión |
+| /inicio | Cualquier usuario con sesión. El prestador pasa a su panel |
+| /mis-mascotas, /registro-mascota, /ficha-salud | Dueño |
 | /mis-servicios | Dueño y prestador |
+| /panel-prestador/:seccion? | Prestador |
+| /perfil-prestador | Prestador. Redirige a /panel-prestador/perfil |
+| /chat?servicioId= | Cualquier usuario con sesión |
 | /notificaciones | Cualquier usuario con sesión |
+| /admin | Administrador |
 | /admin-reclamos | Administrador |
-| /panel-prestador | Prestador |
-| /perfil-prestador | Prestador |
-| /chat | Cualquier usuario con sesión |
 
-Cualquier otra ruta redirige a /.
+Cualquier otra ruta redirige a /. Son administradores los roles admin y administrador.
 
-## 6. Chat unificado
+Secciones del panel del prestador (/panel-prestador/:seccion): precios (por defecto), rendimiento, solicitudes, trabajo, cobros, vehiculo, chat, reclamos y perfil.
 
-Antes, la subida de fotos y la conversación de texto estaban en secciones separadas. Ahora existe una sola interfaz.
+## 3. Funcionalidades
 
-1. Hay un único chat por servicio. Dueño, prestador y administrador entran al mismo.
-2. Las reglas de acceso no cambian. El chat solo está disponible con el servicio en estado aceptado o en-curso.
-3. Cada mensaje puede llevar texto, una imagen, o ambos.
-4. El botón de clip adjunta una imagen desde la galería.
-5. El botón de cámara abre la cámara del dispositivo. Agrega ubicación GPS y hora a la foto. Si la cámara no está disponible, se ofrece selección por archivo.
-6. Antes de enviar, se muestra una vista previa con descripción opcional.
-7. Tocar una imagen del chat la abre en tamaño completo.
-8. La conversación se actualiza cada 3 segundos con GET /api/mensajes/:servicioId?desde=ID. Solo se piden los mensajes nuevos.
-9. El cliente reduce la imagen a 1280 píxeles y calidad JPEG 0.82 antes de enviarla.
-10. El servidor acepta jpeg, png y webp de hasta 6 MB. Las guarda en backend/uploads/chat con nombre aleatorio.
-11. Las imágenes se entregan por GET /api/mensajes/:servicioId/imagen/:archivo. Esa ruta exige sesión y permiso sobre el servicio.
+### Aportadas por la rama menotti-organizado (Luciana)
 
-Endpoints del chat:
+1. Reclamos de servicios finalizados con hasta 5 imágenes de evidencia (jpeg, png o webp, 5 MB cada una). Estados pendiente, en-revision y finalizado, que solo avanzan en ese orden. Solo el administrador cambia el estado. Cada alta o cambio genera notificaciones.
+2. Chat unificado por servicio. Un único chat al que entran dueño, prestador y administrador, disponible con el servicio aceptado o en curso. Cada mensaje lleva texto, imagen o ambos. Se puede adjuntar desde la galería o tomar con la cámara, con ubicación GPS y hora. El servidor acepta jpeg, png y webp de hasta 6 MB y las guarda en backend/uploads/chat. Las imágenes se entregan con sesión y permiso sobre el servicio.
+3. Reservas (POST /api/reservas), tabla Reservas. Es un endpoint heredado que el frontend no usa. El flujo real de contratación es Servicio.
+4. Notificaciones por usuario con contador de no leídas.
+5. Mascotas con ficha de salud, búsqueda de prestadores, mis servicios, alertas, mach y número.
+6. Sesión con cookie httpOnly pac_cop_session y contraseñas con scrypt.
 
-| Método | Ruta | Función |
-| --- | --- | --- |
-| GET | /api/mensajes/:servicioId | Lista mensajes. Acepta el parámetro desde |
-| POST | /api/mensajes/:servicioId | Envía texto, imagen, latitud y longitud |
-| GET | /api/mensajes/:servicioId/imagen/:archivo | Entrega una imagen |
+### Aportadas por la rama prueba-integracion (Maxi)
 
-Campos nuevos del modelo Mensaje: imagenArchivo, latitud y longitud. El campo texto ahora admite cadena vacía cuando el mensaje solo trae imagen.
+1. Precio por volumen. Cada prestador define un precio base por servicio y una regla de descuento para la segunda mascota en adelante (porcentaje o monto fijo). El precio sugerido sale del rango real de mercado.
+2. Reserva con varias mascotas, traslado con origen, destino y motivo, y viaje de vuelta cuando el motivo es queda.
+3. Validación en la reserva de disponibilidad horaria, tamaños aceptados y razas excluidas del prestador.
+4. Pago con custodia (escrow). Estados pendiente, retenido, liberado, fallido, expirado y reembolsado. Un pago pendiente expira a los 15 minutos. Una tarjeta que termina en 0000 simula un rechazo. Al finalizar el servicio se libera el pago al prestador.
+5. Cancelación. El dueño recibe reembolso si cancela con 12 horas o más de anticipación. Si no, el pago se libera al prestador. Cancelaciones del prestador siempre reembolsan.
+6. Seguimiento GPS en tiempo real con mapa Leaflet. El prestador inicia y finaliza el servicio y su navegador envía la ubicación.
+7. Calificaciones y reseñas del prestador, una por servicio y dueño.
+8. Check-in y check-out de guardería, cuenta de cobro y liquidaciones.
+9. Panel de administración: resumen, usuarios (rol y verificación) y servicios (cancelación).
+10. Recuperación de contraseña por correo.
+11. Tiempo real por SSE en GET /api/eventos (eventos conectado, notificacion, mensaje y ubicacion).
+12. Limitación de intentos en memoria en registro, login y recuperación. Responde 429 con Retry-After.
+13. Notificaciones por reservas, pagos, mensajes, reseñas y administración, con tipos reserva, reserva-aceptada, reserva-rechazada, reserva-cancelada, mensaje, pago-confirmado, pago-fallido, pago-liberado y resena.
+14. Niveles del prestador (nuevo, establecido, top) según servicios finalizados y calificación.
 
-## 7. Reclamos y notificaciones
+### Combinación de ambas ramas
 
-Estos módulos ya existían en la rama menotti. Se migraron sin cambiar su lógica.
+1. Panel del prestador. Se conservó el de Maxi como base, reescrito en React con Tailwind, y se le agregaron las secciones de reclamos y de chat unificado de Luciana. Las pestañas estáticas de la versión de Luciana (niveles, publicar, rendimiento, ruta) se reemplazaron por secciones con datos reales.
+2. Notificaciones. Se mantuvo el modelo de Luciana y las de reclamos también se envían por SSE. Hay una campana flotante con avisos en tiempo real y la página /notificaciones.
+3. Páginas de dueño. Se mantuvieron las de Luciana (Bootstrap) y se les incorporó la lógica final de Maxi: reserva con varias mascotas y traslado, pago, cancelación, calificación, reseñas y seguimiento.
 
-Reclamos:
+## 4. API
 
-1. Solo se reclaman servicios en estado finalizado.
-2. Dueño y prestador pueden reclamar. El reclamo se dirige a la otra parte del servicio.
-3. Cada usuario puede abrir un solo reclamo por servicio.
-4. La descripción debe tener entre 10 y 2000 caracteres.
-5. Se aceptan hasta 5 imágenes jpeg, png o webp de hasta 5 MB cada una.
-6. El administrador no puede abrir reclamos. Es el único que cambia el estado.
-7. Los estados son pendiente, en-revision y finalizado. Solo avanzan en ese orden.
-8. Cada alta o cambio de estado genera notificaciones para las partes y para los administradores.
+Todas las rutas, salvo las marcadas como públicas, exigen sesión.
 
-Las imágenes se guardan en backend/uploads/reclamos. El servidor las entrega por GET /uploads/reclamos/:archivo, igual que en la rama menotti, sin pedir sesión. El proxy de Vite redirige esa ruta al backend.
+| Recurso | Endpoints |
+| --- | --- |
+| Usuarios | POST /api/users (público), POST /api/users/login (público), POST /api/users/recuperar (público), POST /api/users/restablecer (público), POST /api/users/logout, GET /api/users/me, GET /api/users (filtros rol, servicio, zona, q), GET /api/users/:id, PUT /api/users/me/servicios, PUT /api/users/me/disponibilidad, PUT /api/users/me/restricciones, PUT /api/users/me/vehiculo, PUT /api/users/me/cuenta-cobro |
+| Mascotas | POST /api/mascotas, GET /api/mascotas/usuario/:userId, GET /api/mascotas/:id, PUT /api/mascotas/:id |
+| Reservas | POST /api/reservas |
+| Servicios | POST /api/servicios, POST /api/servicios/demo, GET /api/servicios (filtros estado, servicio y paginación limite y pagina), GET /api/servicios/precios/sugerido, GET /api/servicios/prestador/ruta, GET /api/servicios/prestador/:id/resenas, GET /api/servicios/:id, POST /api/servicios/:id/{aceptar, rechazar, cancelar, check-in, check-out, iniciar, finalizar, ubicacion, calificacion}, GET /api/servicios/:id/ubicacion |
+| Pagos | POST /api/pagos, GET /api/pagos/liquidaciones, GET /api/pagos/servicio/:servicioId, GET /api/pagos/:id, POST /api/pagos/:id/{confirmar, liberar, fallido} |
+| Mensajes | GET /api/mensajes/:servicioId (parámetro desde), POST /api/mensajes/:servicioId, GET /api/mensajes/:servicioId/imagen/:archivo |
+| Reclamos | GET /api/reclamos, POST /api/reclamos (multipart), PATCH /api/reclamos/:id/estado |
+| Notificaciones | GET /api/notificaciones, POST /api/notificaciones/leer-todas, POST /api/notificaciones/:id/leer |
+| Eventos | GET /api/eventos (SSE) |
+| Administración | GET /api/admin/resumen, GET /api/admin/usuarios, PUT /api/admin/usuarios/:id, GET /api/admin/servicios, POST /api/admin/servicios/:id/cancelar |
+| Archivos | GET /uploads/reclamos/:archivo (sin sesión) |
 
-Notificaciones:
+## 5. Requisitos
 
-1. Cada usuario ve solo las suyas.
-2. El contador de no leídas aparece en Inicio, Mis servicios, el panel del prestador y la gestión de reclamos.
-3. El contador se actualiza cada 15 segundos en Mis servicios y en el panel. En la gestión de reclamos, cada 20.
-
-Endpoints:
-
-| Método | Ruta | Función |
-| --- | --- | --- |
-| GET | /api/reclamos | Lista reclamos. El administrador ve todos |
-| POST | /api/reclamos | Crea un reclamo con imágenes en formato multipart |
-| PATCH | /api/reclamos/:id/estado | Cambia el estado. Solo administrador |
-| GET | /api/notificaciones | Lista las notificaciones y el total de no leídas |
-| POST | /api/notificaciones/leer-todas | Marca todas como leídas |
-| POST | /api/notificaciones/:id/leer | Marca una como leída |
-
-Tablas nuevas: Reclamos y Notificaciones. Sequelize las crea al iniciar el servidor. No modifican las tablas existentes.
-
-Dependencia nueva del backend: multer.
-
-## 8. Requisitos
-
-1. Node.js 18 o superior.
-2. MySQL 8 o compatible, con una base de datos vacía creada.
+1. Node.js 20 o superior.
+2. MySQL 8 o compatible, con una base de datos vacía creada (por ejemplo desde XAMPP).
 3. Git.
 
-Verificado: la compilación del frontend y las pruebas de punta a punta se ejecutaron con una base SQLite temporal, no con MySQL. El uso con MySQL no se probó en este entorno.
+## 6. Variables de entorno del backend
 
-## 9. Variables de entorno del backend
-
-Crear el archivo backend/.env a partir de backend/.env.example.
+Crear backend/.env a partir de backend/.env.example. El archivo .env no se sube al repositorio.
 
 | Variable | Descripción |
 | --- | --- |
@@ -231,15 +219,18 @@ Crear el archivo backend/.env a partir de backend/.env.example.
 | DB_PASSWORD | Contraseña de la base |
 | DB_HOST | Servidor de la base, por ejemplo localhost |
 | DB_DIALECT | mysql |
-| PORT | 3000 |
-| NODE_ENV | development |
-| DB_SYNC_ALTER | true en desarrollo |
-| FRONTEND_ORIGIN | http://localhost:5173 |
+| PORT | Puerto del backend. Por defecto 3000 |
+| NODE_ENV | development o production |
+| DB_SYNC_ALTER | true en desarrollo. En producción la estructura no se altera |
+| FRONTEND_ORIGIN | Origen permitido por CORS, http://localhost:5173 |
 | AUTH_SECRET | Clave de al menos 32 caracteres |
+| FRONTEND_URL | Opcional. Base del enlace de recuperación. Por defecto FRONTEND_ORIGIN y luego http://localhost:5173 |
+| PASSWORD_RESET_PATH | Opcional. Ruta del formulario de nueva contraseña. Por defecto /restablecer |
+| SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, SMTP_FROM | Opcionales. Envío real de correos. Sin ellos, el enlace de recuperación se imprime en la consola del backend |
 
-## 10. Ejecución
+## 7. Ejecución
 
-Terminal 1, backend:
+Terminal 1, backend (puerto 3000):
 
 ```text
 cd backend
@@ -247,7 +238,7 @@ npm install
 npm run dev
 ```
 
-Terminal 2, frontend:
+Terminal 2, frontend (puerto 5173):
 
 ```text
 cd frontend
@@ -255,35 +246,38 @@ npm install
 npm run dev
 ```
 
-Abrir http://localhost:5173 en el navegador.
+Abrir http://localhost:5173.
 
-Compilar el frontend para producción:
+Scripts del backend: npm start (sin reinicio automático), npm run dev (reinicia al cambiar un archivo) y npm test (pruebas con node --test).
 
-```text
-cd frontend
-npm run build
-```
+Scripts del frontend: npm run dev, npm run build (genera frontend/dist) y npm run preview.
 
-Ejecutar las pruebas del backend:
+Al iniciar, el backend crea las tablas y agrega las columnas que falten. Si no puede conectarse a MySQL, no arranca y explica el motivo en la consola.
 
-```text
-cd backend
-npm test
-```
+## 8. Pruebas realizadas y límites
 
-## 11. Supuestos y puntos pendientes
+Verificado en este entorno:
 
-1. Se eligió Vite como herramienta del frontend. El enunciado no la especificaba.
-2. Se eligió actualización por consulta periódica y no WebSockets. El documento CONTEXTO.md de la rama original desaconseja WebSockets.
-3. Las imágenes del chat se guardan en el disco del servidor. En un despliegue con varias instancias se requiere almacenamiento compartido.
-4. El prototipo panel-prestador no se migró. No está enlazado desde ninguna página y su script no coincide con su HTML.
-5. La carpeta prestadordeServicio duplicada se descartó. Su contenido quedó reemplazado por la página de chat unificada.
-6. Se retiraron los emojis de la interfaz. Se conservaron los símbolos de estrella y de verificación.
-7. La imagen assets/img/descarga (58).png no venía en el archivo de código recibido. Debe copiarse a frontend/public/img. Mientras falte, el navegador muestra un error 404 solo para esa imagen.
-8. Los modales de Bootstrap con JavaScript, incluido el de reclamo, se reemplazaron por modales controlados con estado de React. El aspecto y el comportamiento se mantienen.
-9. Con el prestador en la ruta /pago aparece el mensaje de que no tiene servicios asignados. Es el comportamiento original.
-10. Un servicio demo nace en estado programado. El backend exige estado aceptado para iniciar el seguimiento. Es la lógica original.
-11. Mis servicios admite dueño y prestador, igual que en la rama menotti actual.
-12. Los archivos de evidencia que ya existan en la carpeta uploads de la raíz deben moverse a backend\uploads. Si no, los reclamos antiguos no mostrarán sus imágenes.
-13. En la rama menotti, Express servía toda la raíz del proyecto como archivos estáticos. En la rama nueva solo se sirve uploads/reclamos.
-14. Los reclamos y las notificaciones se probaron de punta a punta con una base SQLite temporal: alta con imagen, contadores, cambio de estado, filtros y permisos por rol.
+1. node --check sobre todos los archivos del backend y carga de todos los módulos sin errores de importación.
+2. npm test del backend: 7 pruebas correctas (hash y sesión, y cálculo de precios).
+3. npm run build del frontend sin errores.
+4. Renderizado de las páginas con datos simulados.
+
+No verificado, porque no hay MySQL con credenciales en el entorno de integración:
+
+1. Arranque real con MySQL y sincronización de tablas.
+2. Recorrido completo contra la API real: login, SSE a través del proxy, pagos, cancelaciones, reclamos con imágenes, chat con cámara y GPS del navegador, y panel de administración.
+
+## 9. Notas y puntos a tener en cuenta
+
+1. Las evidencias de reclamos y las imágenes del chat se guardan en el disco del servidor, en backend/uploads. Con varias instancias hace falta almacenamiento compartido.
+2. Los eventos en tiempo real y la limitación de intentos viven en la memoria del proceso. Con varias instancias no se comparten.
+3. Detrás del proxy de Vite todos los usuarios de desarrollo comparten una IP, por lo que el límite de intentos puede alcanzarse. Los valores están en backend/routes/user.routes.js.
+4. POST /api/reservas no exige sesión y toma userId del cuerpo. Es un endpoint heredado que el frontend no usa.
+5. Si el traslado de ida y vuelta tiene una hora de regreso inválida, el servicio de ida ya se creó cuando se devuelve el error 400.
+6. El panel de administración de reclamos (/admin-reclamos) y el de gestión general (/admin) son páginas distintas.
+7. El resumen de /api/admin/resumen incluye los servicios rechazados en el total.
+8. Las columnas de las tablas existentes se agregan al iniciar. Una base creada solo con la rama de Maxi tiene una tabla Notificacions que este proyecto no usa. Las notificaciones viven en la tabla Notificaciones.
+9. Un servicio nace en estado programado. El prestador debe aceptarlo para poder iniciar el seguimiento, y el chat solo está disponible con el servicio aceptado o en curso.
+10. Pueden aparecer avisos de fin de línea (LF y CRLF) al confirmar cambios. Son inofensivos.
+11. El registro solo permite los roles dueño y prestador. Un administrador se crea cambiando a mano la columna rol de un usuario a admin en la tabla Users.

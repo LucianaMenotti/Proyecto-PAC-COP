@@ -2,12 +2,12 @@ const estilos = String.raw`
 :root {
   --turquesa: #1f7a74;
   --turquesa-suave: #e4f3f1;
-  --crema: #fbf6ec;
+  --crema: #f4fbf9;
   --coral: #ff6f52;
   --coral-suave: #ffe9e2;
-  --tinta: #223333;
-  --tinta-suave: #5b6b6a;
-  --linea: #dcd5c4;
+  --tinta: #2c3e50;
+  --tinta-suave: #64748b;
+  --linea: #e2e8f0;
   --blanco: #ffffff;
   --ambar: #b8862e;
   --ambar-suave: #fbf0dd;
@@ -272,6 +272,42 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--coral);
+}
+.mensaje-error {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #fff1ec;
+  color: #b23a2a;
+  font-size: 0.9rem;
+}
+.panel-calificacion {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  background: #ffffff;
+}
+.panel-calificacion h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.25rem;
+}
+.panel-calificacion form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.panel-calificacion select,
+.panel-calificacion textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  font: inherit;
+}
+.mensaje-calificacion {
+  margin: 1rem 0;
+  color: var(--tinta-suave);
 }
 .mapa {
   width: 100%;

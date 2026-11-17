@@ -1,5 +1,9 @@
+import { Op } from "sequelize";
+import { createHash, randomBytes } from "node:crypto";
 import User from "../models/user.model.js";
 import { hashPassword, verifyPassword } from "../helpers/password.helper.js";
+import { enviarEmail } from "../helpers/email.helper.js";
+import { plantillaRecuperacion } from "../helpers/email.templates.js";
 import {
   clearAuthCookie,
   createAuthToken,
@@ -22,6 +26,10 @@ const PUBLIC_USER_FIELDS = [
   "verificado",
   "calificacion",
   "resenas",
+  "disponibilidad",
+  "tamanosAceptados",
+  "restricciones",
+  "cuentaCobro",
 ];
 
 const DIRECTORY_USER_FIELDS = [
@@ -36,6 +44,8 @@ const DIRECTORY_USER_FIELDS = [
   "verificado",
   "calificacion",
   "resenas",
+  "tamanosAceptados",
+  "restricciones",
 ];
 
 const publicUser = (user) => {
@@ -175,12 +185,35 @@ export const obtenerSesion = (req, res) =>
 
 export const obtenerUsuarios = async (req, res) => {
   try {
+    const { rol, servicio, zona, q } = req.query;
+    const where = {};
+
+    if (rol) where.rol = rol;
+    if (zona) where.zona = { [Op.like]: `%${zona}%` };
+    if (q) {
+      where[Op.or] = [
+        { nombre: { [Op.like]: `%${q}%` } },
+        { apellido: { [Op.like]: `%${q}%` } },
+      ];
+    }
+
     const users = await User.findAll({
+      where,
       attributes: DIRECTORY_USER_FIELDS,
       order: [["nombre", "ASC"]],
     });
 
-    return res.status(200).json(users);
+    const filtrados = servicio
+      ? users.filter((user) => {
+          const lista = Array.isArray(user.servicios) ? user.servicios : [];
+          const buscado = String(servicio).toLowerCase();
+          return lista.some((item) =>
+            String(item).toLowerCase().includes(buscado),
+          );
+        })
+      : users;
+
+    return res.status(200).json(filtrados);
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
     return res.status(500).json({ mensaje: "Error al obtener los usuarios" });
@@ -235,5 +268,294 @@ export const actualizarMisServicios = async (req, res) => {
     return res
       .status(500)
       .json({ mensaje: "No se pudieron actualizar los servicios" });
+  }
+};
+
+const requierePrestador = (req, res) => {
+  if (req.user.rol !== "prestador") {
+    res
+      .status(403)
+      .json({ mensaje: "Solo un prestador puede modificar este dato" });
+    return false;
+  }
+  return true;
+};
+
+export const actualizarDisponibilidad = async (req, res) => {
+  if (!requierePrestador(req, res)) return;
+
+  try {
+    const { disponibilidad } = req.body;
+
+    if (typeof disponibilidad !== "object" || disponibilidad === null) {
+      return res
+        .status(400)
+        .json({ mensaje: "La disponibilidad no es válida" });
+    }
+
+    const diasValidos = [
+      "lunes",
+      "martes",
+      "miercoles",
+      "jueves",
+      "viernes",
+      "sabado",
+      "domingo",
+    ];
+
+    const esHora = (valor) => /^\d{2}:\d{2}$/.test(String(valor ?? ""));
+
+    for (const [dia, valor] of Object.entries(disponibilidad)) {
+      if (!diasValidos.includes(dia)) continue;
+
+      if (valor && valor.activo) {
+        if (!esHora(valor.desde) || !esHora(valor.hasta)) {
+          return res.status(400).json({
+            mensaje: `Los horarios de ${dia} no son válidos (usá HH:MM)`,
+          });
+        }
+
+        if (valor.desde >= valor.hasta) {
+          return res.status(400).json({
+            mensaje: `El horario de ${dia} debe terminar después de empezar`,
+          });
+        }
+      }
+    }
+
+    await req.user.update({ disponibilidad });
+
+    return res.status(200).json({
+      mensaje: "Disponibilidad actualizada correctamente",
+      disponibilidad: req.user.disponibilidad,
+    });
+  } catch (error) {
+    console.error("Error al actualizar disponibilidad:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo actualizar la disponibilidad" });
+  }
+};
+
+export const actualizarRestricciones = async (req, res) => {
+  if (!requierePrestador(req, res)) return;
+
+  try {
+    const { tamanosAceptados, restricciones } = req.body;
+    const TAMANOS = ["pequeño", "mediano", "grande"];
+
+    if (
+      !Array.isArray(tamanosAceptados) ||
+      tamanosAceptados.some((tamano) => !TAMANOS.includes(tamano))
+    ) {
+      return res
+        .status(400)
+        .json({ mensaje: "Los tamaños aceptados no son válidos" });
+    }
+
+    // Acepta array o texto "pitbull, rottweiler" (formatos viejos en la base)
+    const listaRazas = Array.isArray(restricciones)
+      ? restricciones
+      : typeof restricciones === "string" && restricciones.trim()
+        ? restricciones.split(",")
+        : [];
+
+    await req.user.update({
+      tamanosAceptados,
+      restricciones: listaRazas
+        .map((raza) => String(raza).trim().toLowerCase())
+        .filter(Boolean),
+    });
+
+    return res.status(200).json({
+      mensaje: "Restricciones actualizadas correctamente",
+      usuario: publicUser(req.user),
+    });
+  } catch (error) {
+    console.error("Error al actualizar restricciones:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudieron actualizar las restricciones" });
+  }
+};
+
+export const actualizarVehiculo = async (req, res) => {
+  if (!requierePrestador(req, res)) return;
+
+  try {
+    const VEHICULOS = ["auto", "moto", "camioneta"];
+    const valor = String(req.body.vehiculo ?? "").trim().toLowerCase();
+
+    if (valor && !VEHICULOS.includes(valor)) {
+      return res.status(400).json({
+        mensaje: "Elegí un vehículo válido (Auto, Moto o Camioneta)",
+      });
+    }
+
+    const vehiculo = valor
+      ? valor.charAt(0).toUpperCase() + valor.slice(1)
+      : null;
+
+    await req.user.update({ vehiculo });
+
+    return res.status(200).json({
+      mensaje: "Vehículo actualizado correctamente",
+      vehiculo: req.user.vehiculo,
+      usuario: publicUser(req.user),
+    });
+  } catch (error) {
+    console.error("Error al actualizar el vehículo:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo actualizar el vehículo" });
+  }
+};
+
+export const actualizarCuentaCobro = async (req, res) => {
+  if (!requierePrestador(req, res)) return;
+
+  try {
+    const { tipo, titular, cbu, alias } = req.body;
+    const TIPOS = ["banco", "billetera"];
+
+    if (typeof req.body !== "object" || !TIPOS.includes(tipo)) {
+      return res
+        .status(400)
+        .json({ mensaje: "Elegí un tipo de cuenta válido" });
+    }
+
+    if (!String(titular ?? "").trim() || (!cbu && !alias)) {
+      return res.status(400).json({
+        mensaje: "Completá el titular y el CBU o alias de la cuenta",
+      });
+    }
+
+    await req.user.update({
+      cuentaCobro: {
+        tipo,
+        titular: String(titular).trim(),
+        cbu: cbu ? String(cbu).replace(/\D/g, "") : null,
+        alias: alias ? String(alias).trim() : null,
+      },
+    });
+
+    return res.status(200).json({
+      mensaje: "Cuenta de cobro actualizada correctamente",
+      cuentaCobro: req.user.cuentaCobro,
+    });
+  } catch (error) {
+    console.error("Error al actualizar cuenta de cobro:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo actualizar la cuenta de cobro" });
+  }
+};
+
+const hashResetToken = (token) =>
+  createHash("sha256").update(token).digest("hex");
+
+const MINUTOS_VIGENCIA_RESET = 30;
+
+export const solicitarRecuperacion = async (req, res) => {
+  try {
+    const email = String(req.body.email ?? "").trim();
+
+    if (!email) {
+      return res.status(400).json({ mensaje: "Ingresá tu correo electrónico" });
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (user) {
+      const token = randomBytes(32).toString("hex");
+      const expira = new Date(Date.now() + MINUTOS_VIGENCIA_RESET * 60 * 1000);
+
+      await user.update({
+        resetTokenHash: hashResetToken(token),
+        resetExpira: expira,
+      });
+
+      const base = (
+        process.env.FRONTEND_URL ||
+        process.env.FRONTEND_ORIGIN ||
+        "http://localhost:5173"
+      ).replace(/\/$/, "");
+      // Ruta de React que muestra el formulario de nueva contraseña
+      const rutaRestablecer =
+        process.env.PASSWORD_RESET_PATH || "/restablecer";
+      const enlace = `${base}${rutaRestablecer}?token=${token}`;
+
+      const plantilla = plantillaRecuperacion({
+        nombre: user.nombre,
+        enlace,
+        minutos: MINUTOS_VIGENCIA_RESET,
+      });
+
+      const envio = await enviarEmail({
+        to: user.email,
+        subject: plantilla.subject,
+        texto: plantilla.texto,
+        html: plantilla.html,
+        enlace,
+      });
+
+      if (envio?.error) {
+        return res.status(502).json({
+          mensaje: "No se pudo enviar el correo de recuperación",
+        });
+      }
+    }
+
+    return res.status(200).json({
+      mensaje:
+        "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña",
+    });
+  } catch (error) {
+    console.error("Error al solicitar recuperación:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo procesar la solicitud" });
+  }
+};
+
+export const restablecerPassword = async (req, res) => {
+  try {
+    const token = String(req.body.token ?? "").trim();
+    const password = String(req.body.password ?? "");
+
+    if (!token) {
+      return res.status(400).json({ mensaje: "El enlace no es válido" });
+    }
+
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ mensaje: "La contraseña debe tener al menos 8 caracteres" });
+    }
+
+    const user = await User.findOne({
+      where: { resetTokenHash: hashResetToken(token) },
+    });
+
+    if (!user || !user.resetExpira || new Date(user.resetExpira) < new Date()) {
+      return res
+        .status(400)
+        .json({ mensaje: "El enlace es inválido o ya venció" });
+    }
+
+    await user.update({
+      password: await hashPassword(password),
+      resetTokenHash: null,
+      resetExpira: null,
+    });
+
+    return res
+      .status(200)
+      .json({ mensaje: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error("Error al restablecer contraseña:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "No se pudo restablecer la contraseña" });
   }
 };

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiJson, enviarJson } from "../config/api";
+import { useEventoTiempoReal } from "./useTiempoReal";
 
 const INTERVALO_ACTUALIZACION = 3000;
 
@@ -48,12 +49,25 @@ export function useChat(servicioId) {
     }
   }, [servicioId, incorporar]);
 
+  // Un mensaje nuevo llega por SSE: se actualiza al instante sin esperar al sondeo
+  useEventoTiempoReal("mensaje", (datos) => {
+    if (servicioId && (!datos.servicioId || Number(datos.servicioId) === Number(servicioId))) {
+      cargar();
+    }
+  });
+
   useEffect(() => {
     if (!servicioId) {
       setCargando(false);
       setError("No se indicó una reserva para este chat.");
       return undefined;
     }
+
+    // Al cambiar de reserva se parte de un hilo vacío
+    ultimoId.current = 0;
+    setMensajes([]);
+    setCargando(true);
+    setError("");
 
     cargar();
     const intervalo = setInterval(cargar, INTERVALO_ACTUALIZACION);

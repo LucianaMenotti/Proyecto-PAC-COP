@@ -1,18 +1,11 @@
+import { leerLista, leerPrecios } from "../helpers/listas";
+import { formatearResumenPrecio } from "../helpers/precios";
 import { obtenerServicios } from "../helpers/prestadores";
 
-export default function TarjetaPrestador({ prestador, alReservar }) {
+export default function TarjetaPrestador({ prestador, alReservar, alVerResenas }) {
   const servicios = obtenerServicios(prestador.servicios);
-
-  const textoServicios =
-    servicios.length > 0
-      ? servicios
-          .map((servicio) =>
-            prestador.preciosServicios?.[servicio]
-              ? `${servicio} ($${prestador.preciosServicios[servicio]})`
-              : servicio
-          )
-          .join(", ")
-      : "Sin servicios registrados";
+  const precios = leerPrecios(prestador.preciosServicios);
+  const tamanos = leerLista(prestador.tamanosAceptados);
 
   return (
     <div className="col-md-6 col-lg-4">
@@ -27,7 +20,20 @@ export default function TarjetaPrestador({ prestador, alReservar }) {
           </p>
 
           <p className="card-text">
-            <strong>Servicios:</strong> {textoServicios}
+            <strong>Servicios:</strong>{" "}
+            {servicios.length > 0
+              ? servicios
+                  .map((servicio) => {
+                    const resumen = formatearResumenPrecio(precios[servicio], "");
+
+                    return resumen ? `${servicio} (${resumen})` : servicio;
+                  })
+                  .join(", ")
+              : "Sin servicios registrados"}
+          </p>
+
+          <p className="card-text">
+            <strong>Acepta:</strong> {tamanos.length > 0 ? tamanos.join(", ") : "Todos los tamaños"}
           </p>
 
           <p className="card-text">
@@ -36,6 +42,13 @@ export default function TarjetaPrestador({ prestador, alReservar }) {
 
           <button className="btn btn-primary w-100" onClick={() => alReservar(prestador.id)}>
             Reservar
+          </button>
+
+          <button
+            className="btn btn-outline-secondary w-100 mt-2"
+            onClick={() => alVerResenas(prestador)}
+          >
+            Ver reseñas ({prestador.resenas || 0})
           </button>
         </div>
       </div>

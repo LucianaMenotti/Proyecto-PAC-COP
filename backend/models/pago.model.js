@@ -18,6 +18,10 @@ const Pago = sequelize.define("Pago", {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    providerId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     monto: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
@@ -45,6 +49,18 @@ const Pago = sequelize.define("Pago", {
         allowNull: true
     },
     liberadoEn: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    reembolsadoEn: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    motivoFallo: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    expiradoEn: {
         type: DataTypes.DATE,
         allowNull: true
     }

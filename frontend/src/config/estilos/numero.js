@@ -1,21 +1,21 @@
 const estilos = String.raw`
 :root {
-  --bg-app: #f0fdf4;
+  --bg-app: #f4fbf9;
   --bg-card: #ffffff;
   --bg-input: #f8fafc;
-  --primary: #0f766e;
-  --primary-hover: #115e59;
-  --text-main: #334155;
+  --primary: #1f7a74;
+  --primary-hover: #155551;
+  --text-main: #2c3e50;
   --text-muted: #64748b;
   --text-label: #475569;
   --border-light: #e2e8f0;
   --border-input: #cbd5e1;
-  --alert-bg: #fff1f2;
-  --alert-main: #0f766e;
-  --alert-hover: #0f766e;
+  --alert-bg: #fff1ec;
+  --alert-main: #ff6f52;
+  --alert-hover: #e85b3e;
   --success-text: #15803d; 
   --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.05);
-  --shadow-fab: 0 8px 20px rgba(225, 29, 72, 0.3); 
+  --shadow-fab: 0 8px 20px rgba(255, 111, 82, 0.3); 
   --radius-card: 12px;
   --radius-btn: 8px;
   --radius-input: 6px;
@@ -70,7 +70,7 @@ body {
 .fab-emergency:hover {
   background-color: var(--alert-hover);
   transform: translateY(-3px);
-  box-shadow: 0 12px 25px rgba(225, 29, 72, 0.4);
+  box-shadow: 0 12px 25px rgba(255, 111, 82, 0.4);
 }
 .modal-overlay {
   position: fixed;

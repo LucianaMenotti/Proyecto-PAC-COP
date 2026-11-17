@@ -1,0 +1,66 @@
+/* Tailwind CSS v4 del panel del prestador (se inyecta con useEstilos, ver PanelPrestador.jsx).
+   Se limita el escaneo a los archivos del panel para no generar utilidades de otras páginas. */
+@import "tailwindcss" source(none);
+@source "../../components/panel";
+@source "../../pages/PanelPrestador.jsx";
+
+@theme {
+  --color-pac-cream: #f4fbf9;
+  --color-pac-card: #ffffff;
+  --color-pac-mint: #e4f3f1;
+  --color-pac-turquoise: #1f7a74;
+  --color-pac-turquoise-dark: #155551;
+  --color-pac-coral: #ff6f52;
+  --color-pac-coral-dark: #e85d41;
+  --color-pac-amber: #e8a33d;
+  --color-pac-ink: #2c3e50;
+  --color-pac-gray: #64748b;
+  --color-pac-line: #e2e8f0;
+
+}
+
+.panel-tw {
+  font-family: "Inter", system-ui, sans-serif;
+  color: #2c3e50;
+  background-color: #f4fbf9;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.panel-tw .font-serif {
+  font-family: "Fraunces", Georgia, serif;
+}
+
+@keyframes pac-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: pac-fade-in 0.25s ease-out both;
+}
+
+body {
+  background-color: #f4fbf9;
+}
+
+.panel-tw ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.panel-tw ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.panel-tw ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.panel-tw ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

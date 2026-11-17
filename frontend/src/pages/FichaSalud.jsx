@@ -5,6 +5,7 @@ import { apiJson, enviarJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
 import { useAuth } from "../hooks/useAuth";
 import { useEstilos } from "../hooks/useEstilos";
+import estilosBase from "../config/estilos/base";
 import estilosFichaSalud from "../config/estilos/fichaSalud";
 
 const FICHA_INICIAL = {
@@ -26,6 +27,7 @@ export default function FichaSalud() {
   const [formularioVisible, setFormularioVisible] = useState(true);
 
   useEstilos("ficha-salud", estilosFichaSalud);
+  useEstilos("base", estilosBase);
 
   useEffect(() => {
     const ocultarConAviso = (texto) => {

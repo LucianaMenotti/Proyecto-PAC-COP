@@ -1,21 +1,21 @@
 const estilos = String.raw`
 :root {
-  --bg-app: #f0fdf4;
+  --bg-app: #f4fbf9;
   --bg-card: #ffffff;
   --bg-input: #f8fafc;
-  --primary: #0f766e;
-  --primary-hover: #115e59;
-  --primary-focus: rgba(20, 184, 166, 0.15);
-  --primary-border: #14b8a6;
-  --text-main: #334155;
+  --primary: #1f7a74;
+  --primary-hover: #155551;
+  --primary-focus: rgba(31, 122, 116, 0.15);
+  --primary-border: #1f7a74;
+  --text-main: #2c3e50;
   --text-muted: #64748b;
   --text-label: #475569;
   --border-light: #e2e8f0;
   --border-input: #cbd5e1;
-  --alert-bg: #fff1f2;
-  --alert-border: #fecdd3;
-  --alert-text: #9f1239;
-  --alert-main: #e11d48;
+  --alert-bg: #fff1ec;
+  --alert-border: #ffd6c9;
+  --alert-text: #b23a2a;
+  --alert-main: #ff6f52;
   --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.05);
   --radius-card: 12px;
   --radius-btn: 8px;
@@ -31,6 +31,9 @@ body {
     sans-serif;
   background-color: var(--bg-app);
   color: var(--text-main);
+}
+.header-app h2 {
+  font-family: "Fraunces", serif;
 }
 .header-app {
   background-color: var(--primary);
@@ -78,7 +81,7 @@ body {
 }
 .input-danger:focus {
   border-color: var(--alert-main);
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 111, 82, 0.15);
 }
 .custom-radio,
 .custom-checkbox {
@@ -108,7 +111,7 @@ body {
   border-radius: var(--radius-btn);
 }
 .btn-danger-custom:hover {
-  background-color: #be123c;
+  background-color: #e85b3e;
   color: #ffffff;
 }
 .list-group-item {

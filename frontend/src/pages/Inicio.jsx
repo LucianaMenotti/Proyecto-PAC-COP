@@ -73,6 +73,18 @@ export default function Inicio() {
                   Mis mascotas
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link to="/mis-servicios" className="nav-link">
+                  Mis reservas
+                </Link>
+              </li>
+              {esAdmin && (
+                <li className="nav-item">
+                  <Link to={RUTAS.admin} className="nav-link">
+                    <i className="bi bi-shield-lock me-1"></i>Admin
+                  </Link>
+                </li>
+              )}
             </ul>
             <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0">
               <span className="profile-chip rounded-pill px-3 py-2 small fw-semibold">
@@ -179,19 +191,19 @@ export default function Inicio() {
               </div>
               <div className="col-md-6 col-lg-3">
                 <Link
-                  to="/seguimiento"
+                  to="/mis-servicios"
                   className="card feature-card h-100 rounded-4 p-4 shadow-sm text-decoration-none text-dark"
                 >
                   <i className="bi bi-geo-alt text-accent-pac fs-1 mb-3"></i>
                   <h3 className="h5 fw-bold">Seguimiento GPS</h3>
                   <p className="text-secondary small mb-0">
-                    Visualizá el recorrido de un paseo en curso.
+                    Abrí el mapa en vivo de un paseo en curso desde tus reservas.
                   </p>
                 </Link>
               </div>
               <div className="col-md-6 col-lg-3">
                 <Link
-                  to="/pago"
+                  to="/mis-servicios"
                   className="card feature-card h-100 rounded-4 p-4 shadow-sm text-decoration-none text-dark"
                 >
                   <i className="bi bi-shield-lock text-primary-pac fs-1 mb-3"></i>
@@ -201,6 +213,20 @@ export default function Inicio() {
                   </p>
                 </Link>
               </div>
+              {esAdmin && (
+                <div className="col-md-6 col-lg-3">
+                  <Link
+                    to={RUTAS.admin}
+                    className="card feature-card h-100 rounded-4 p-4 shadow-sm text-decoration-none text-dark"
+                  >
+                    <i className="bi bi-shield-lock text-primary-pac fs-1 mb-3"></i>
+                    <h3 className="h5 fw-bold">Panel de administración</h3>
+                    <p className="text-secondary small mb-0">
+                      Métricas, usuarios y moderación de servicios.
+                    </p>
+                  </Link>
+                </div>
+              )}
               {esAdmin && (
                 <div className="col-md-6 col-lg-3">
                   <Link
