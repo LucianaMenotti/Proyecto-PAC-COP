@@ -8,6 +8,7 @@ import Mascota from "../models/mascota.model.js";
 import Reclamo from "../models/reclamo.model.js";
 import Calificacion from "../models/calificacion.model.js";
 import AccionAdmin from "../models/accionAdmin.model.js";
+import Reporte from "../models/reporte.model.js";
 import { reembolsarPagoDelServicio } from "./pago.controller.js";
 import { crearNotificacion } from "./notificacion.controller.js";
 import { ROLES_ADMIN, esAdministrador } from "../middlewares/admin.middleware.js";
@@ -148,6 +149,7 @@ export const resumenAdmin = async (req, res) => {
       suspendidos,
       nuevosUsuarios,
       reclamosAbiertos,
+      reportesPendientes,
     ] = await Promise.all([
       Servicio.findAll({
         attributes: [
@@ -195,6 +197,7 @@ export const resumenAdmin = async (req, res) => {
         where: { createdAt: { [Op.between]: [rango.desde, rango.hasta] } },
       }),
       Reclamo.count({ where: { estado: { [Op.ne]: "finalizado" } } }),
+      Reporte.count({ where: { estado: "pendiente" } }),
     ]);
 
     const servicios = resumirServicios(filasServicios);
@@ -252,6 +255,7 @@ export const resumenAdmin = async (req, res) => {
       },
       moderacion: {
         reclamosAbiertos,
+        reportesPendientes,
       },
     });
   } catch (error) {
@@ -436,6 +440,7 @@ export const obtenerLegajoAdmin = async (req, res) => {
       reclamos,
       mascotas,
       acciones,
+      reportes,
     ] = await Promise.all([
       Servicio.findAll({
         attributes: ["estado", [fn("COUNT", col("id")), "cantidad"]],
@@ -484,6 +489,11 @@ export const obtenerLegajoAdmin = async (req, res) => {
         order: [["id", "DESC"]],
         limit: 50,
       }),
+      Reporte.findAll({
+        where: { reportadoId: id },
+        include: [{ model: User, as: "reportante", attributes: ["id", "nombre", "apellido"] }],
+        order: [["id", "DESC"]],
+      }),
     ]);
 
     const { documentos, ...datos } = usuario.toJSON();
@@ -500,6 +510,7 @@ export const obtenerLegajoAdmin = async (req, res) => {
         cobradoComoPrestador: Number(cobrado) || 0,
         pagadoComoDueno: Number(pagado) || 0,
         reclamosRecibidos: reclamos.filter((item) => Number(item.reclamadoId) === id).length,
+        reportesRecibidos: reportes.length,
       },
       servicios: servicios.map((servicio) => ({
         id: servicio.id,
@@ -534,6 +545,15 @@ export const obtenerLegajoAdmin = async (req, res) => {
         fecha: reclamo.createdAt,
       })),
       mascotas,
+      reportes: reportes.map((reporte) => ({
+        id: reporte.id,
+        tipo: reporte.tipo,
+        motivo: reporte.motivo,
+        detalle: reporte.detalle,
+        estado: reporte.estado,
+        reportante: nombreCompleto(reporte.reportante),
+        fecha: reporte.createdAt,
+      })),
       acciones: acciones.map((accion) => ({
         id: accion.id,
         accion: accion.accion,

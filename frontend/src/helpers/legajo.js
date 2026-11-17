@@ -3,6 +3,7 @@ import { leerLista, leerPrecios } from "./listas";
 import { formatearResumenPrecio } from "./precios";
 import { NOMBRE_TIPO, TEXTO_ACCIONES, formatearFecha, formatearMonto, rutaDocumento } from "./admin";
 import { obtenerEstadoAprobacion } from "./documentacion";
+import { textoMotivo } from "./reportes";
 
 const DIAS = [
   ["lunes", "Lunes"],
@@ -76,7 +77,16 @@ const cargarImagen = async (ruta) => {
 
 // Legajo virtual del usuario para la administración: datos, perfil profesional,
 // documentación, actividad, reseñas, reclamos y decisiones tomadas.
-export async function descargarLegajo({ usuario, estadisticas, servicios, calificaciones, reclamos, mascotas, acciones }) {
+export async function descargarLegajo({
+  usuario,
+  estadisticas,
+  servicios,
+  calificaciones,
+  reclamos,
+  reportes = [],
+  mascotas,
+  acciones
+}) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   let y = 18;
 
@@ -219,6 +229,7 @@ export async function descargarLegajo({ usuario, estadisticas, servicios, califi
   if (esPrestador) fila("Cobrado como prestador", formatearMonto(estadisticas.cobradoComoPrestador));
   if (estadisticas.pagadoComoDueno) fila("Pagado como dueño", formatearMonto(estadisticas.pagadoComoDueno));
   fila("Reclamos recibidos", estadisticas.reclamosRecibidos);
+  fila("Reportes recibidos", estadisticas.reportesRecibidos ?? reportes.length);
 
   if (servicios.length) {
     titulo("Últimos servicios");
@@ -243,6 +254,15 @@ export async function descargarLegajo({ usuario, estadisticas, servicios, califi
     reclamos.forEach((reclamo) =>
       parrafo(
         `#${reclamo.id} (servicio #${reclamo.servicioId}) · ${reclamo.recibido ? "Recibido de" : "Emitido contra"} ${reclamo.recibido ? reclamo.reclamante : reclamo.reclamado} · ${reclamo.estado} · ${formatearFecha(reclamo.fecha, false)}: ${reclamo.descripcion}`
+      )
+    );
+  }
+
+  if (reportes.length) {
+    titulo("Reportes recibidos");
+    reportes.forEach((reporte) =>
+      parrafo(
+        `#${reporte.id} · ${textoMotivo(reporte.tipo, reporte.motivo)} · de ${reporte.reportante} · ${reporte.estado} · ${formatearFecha(reporte.fecha, false)}${reporte.detalle ? `: ${reporte.detalle}` : ""}`
       )
     );
   }

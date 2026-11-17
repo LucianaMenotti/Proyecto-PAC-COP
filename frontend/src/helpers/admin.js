@@ -6,6 +6,7 @@ export const SECCIONES_ADMIN = [
   { id: "usuarios", texto: "Usuarios", icono: "bi-people" },
   { id: "servicios", texto: "Servicios", icono: "bi-calendar-check" },
   { id: "reclamos", texto: "Reclamos", icono: "bi-flag", contador: "reclamosAbiertos" },
+  { id: "moderacion", texto: "Moderación", icono: "bi-chat-square-text", contador: "reportesPendientes" },
   { id: "auditoria", texto: "Registro de acciones", icono: "bi-journal-text" }
 ];
 
@@ -39,7 +40,12 @@ export const TEXTO_ACCIONES = {
   "rechazo-prestador": "Rechazo de prestador",
   "suspension-cuenta": "Suspensión de cuenta",
   "reactivacion-cuenta": "Reactivación de cuenta",
-  "cancelacion-servicio": "Cancelación de servicio"
+  "cancelacion-servicio": "Cancelación de servicio",
+  "ocultar-resena": "Reseña ocultada",
+  "mostrar-resena": "Reseña visible de nuevo",
+  "eliminar-resena": "Reseña eliminada",
+  "resolver-reporte": "Reporte resuelto",
+  "descartar-reporte": "Reporte descartado"
 };
 
 export const ROLES_ASIGNABLES = ["dueño", "prestador", "admin"];

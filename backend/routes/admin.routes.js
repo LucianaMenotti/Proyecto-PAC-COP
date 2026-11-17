@@ -13,6 +13,13 @@ import {
   cancelarServicioAdmin,
   listarAccionesAdmin,
 } from "../controllers/admin.controller.js";
+import {
+  listarReportesAdmin,
+  resolverReporte,
+  listarResenasAdmin,
+  cambiarVisibilidadResena,
+  eliminarResena,
+} from "../controllers/moderacion.controller.js";
 
 const router = express.Router();
 
@@ -30,6 +37,13 @@ router.post("/usuarios/:id/suspension", cambiarSuspension);
 
 router.get("/servicios", listarServiciosAdmin);
 router.post("/servicios/:id/cancelar", cancelarServicioAdmin);
+
+// Moderación de reseñas y reportes de usuarios
+router.get("/reportes", listarReportesAdmin);
+router.patch("/reportes/:id", resolverReporte);
+router.get("/resenas", listarResenasAdmin);
+router.patch("/resenas/:id", cambiarVisibilidadResena);
+router.delete("/resenas/:id", eliminarResena);
 
 router.get("/acciones", listarAccionesAdmin);
 

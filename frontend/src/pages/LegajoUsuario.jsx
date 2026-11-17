@@ -15,6 +15,7 @@ import { obtenerEstadoAprobacion } from "../helpers/documentacion";
 import { descargarLegajo, textoDisponibilidad, textoServicios } from "../helpers/legajo";
 import { leerLista } from "../helpers/listas";
 import { obtenerEstadoReclamo } from "../helpers/reclamos";
+import { textoMotivo } from "../helpers/reportes";
 import { useAuth } from "../hooks/useAuth";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
@@ -98,7 +99,7 @@ export default function LegajoUsuario() {
     return <main className="container py-5 text-secondary">Cargando legajo...</main>;
   }
 
-  const { usuario, estadisticas, servicios, calificaciones, reclamos, mascotas, acciones } = legajo;
+  const { usuario, estadisticas, servicios, calificaciones, reclamos, reportes, mascotas, acciones } = legajo;
   const esPrestador = usuario.rol === "prestador";
   const esAdmin = ["admin", "administrador"].includes(usuario.rol);
   const esPropio = Number(usuario.id) === Number(sesion?.id);
@@ -338,6 +339,7 @@ export default function LegajoUsuario() {
               {esPrestador && <Dato etiqueta="Cobrado como prestador">{formatearMonto(estadisticas.cobradoComoPrestador)}</Dato>}
               {!esPrestador && <Dato etiqueta="Pagado como dueño">{formatearMonto(estadisticas.pagadoComoDueno)}</Dato>}
               <Dato etiqueta="Reclamos recibidos">{String(estadisticas.reclamosRecibidos)}</Dato>
+              <Dato etiqueta="Reportes recibidos">{String(estadisticas.reportesRecibidos)}</Dato>
             </Tarjeta>
           </div>
 
@@ -421,6 +423,27 @@ export default function LegajoUsuario() {
             </Tarjeta>
           </div>
         </div>
+
+        {reportes.length > 0 && (
+          <div className="mb-3">
+            <Tarjeta titulo="Reportes recibidos" icono="bi-exclamation-octagon">
+              {reportes.map((reporte) => (
+                <div key={reporte.id} className="border-bottom py-2 small">
+                  <div className="d-flex flex-wrap justify-content-between gap-2">
+                    <span>
+                      #{reporte.id} · {reporte.tipo === "resena" ? "Por una reseña" : "Como usuario"} ·{" "}
+                      <strong>{textoMotivo(reporte.tipo, reporte.motivo)}</strong> · de {reporte.reportante}
+                    </span>
+                    <span className="text-secondary">
+                      {reporte.estado} · {formatearFecha(reporte.fecha, false)}
+                    </span>
+                  </div>
+                  {reporte.detalle && <p className="mb-0 text-secondary">{reporte.detalle}</p>}
+                </div>
+              ))}
+            </Tarjeta>
+          </div>
+        )}
 
         <Tarjeta titulo="Decisiones de la administración" icono="bi-journal-text">
           {acciones.length === 0 && <p className="text-secondary small mb-0">Sin decisiones registradas.</p>}

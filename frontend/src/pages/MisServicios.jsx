@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ContadorNotificaciones from "../components/ContadorNotificaciones";
 import ModalReclamo from "../components/reclamos/ModalReclamo";
+import ModalReporte from "../components/reportes/ModalReporte";
 import ModalCalificar from "../components/servicios/ModalCalificar";
 import ModalCancelarReserva from "../components/servicios/ModalCancelarReserva";
 import { apiJson } from "../config/api";
@@ -69,6 +70,7 @@ export default function MisServicios() {
   const [servicioReclamado, setServicioReclamado] = useState(null);
   const [servicioCancelado, setServicioCancelado] = useState(null);
   const [servicioCalificado, setServicioCalificado] = useState(null);
+  const [personaReportada, setPersonaReportada] = useState(null);
   const firma = useRef("");
   const { noLeidas, recargar: recargarContador } =
     useContadorNotificaciones(INTERVALO_ACTUALIZACION);
@@ -173,6 +175,11 @@ export default function MisServicios() {
     }
 
     setAviso({ tipo: "warning", texto: mensaje });
+  };
+
+  const reporteEnviado = (mensaje) => {
+    setPersonaReportada(null);
+    setExito(mensaje);
   };
 
   const reservaCalificada = () => {
@@ -382,6 +389,23 @@ export default function MisServicios() {
                           </span>
                         </p>
                       )}
+
+                      {(esPrestador ? servicio.ownerId : servicio.providerId) && (
+                        <button
+                          type="button"
+                          className="btn btn-link btn-sm text-secondary w-100 mt-2"
+                          onClick={() =>
+                            setPersonaReportada(
+                              esPrestador
+                                ? { id: servicio.ownerId, nombre: `el dueño de la reserva #${servicio.id}` }
+                                : { id: servicio.providerId, nombre: servicio.prestador || "el prestador" }
+                            )
+                          }
+                        >
+                          <i className="bi bi-exclamation-octagon me-1"></i>
+                          {esPrestador ? "Reportar al dueño" : "Reportar al prestador"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -404,6 +428,14 @@ export default function MisServicios() {
           servicio={servicioCancelado}
           alCerrar={() => setServicioCancelado(null)}
           alCancelada={reservaCancelada}
+        />
+      )}
+
+      {personaReportada && (
+        <ModalReporte
+          persona={personaReportada}
+          alCerrar={() => setPersonaReportada(null)}
+          alEnviado={reporteEnviado}
         />
       )}
 

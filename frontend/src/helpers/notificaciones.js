@@ -12,6 +12,10 @@ export function destinoDeNotificacion(notificacion, usuario) {
     return { ruta: `${RUTAS.admin}/prestadores`, texto: "Revisar documentación" };
   }
 
+  if (tipo === "reporte-nuevo" && esAdmin) {
+    return { ruta: `${RUTAS.admin}/moderacion`, texto: "Ir a moderación" };
+  }
+
   if (notificacion.reclamoId || tipo.startsWith("reclamo")) {
     if (esAdmin) {
       return { ruta: `${RUTAS.admin}/reclamos`, texto: "Ver reclamos" };

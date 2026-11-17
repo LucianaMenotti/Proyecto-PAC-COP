@@ -12,6 +12,10 @@ import { crearNotificacion } from "./notificacion.controller.js";
 import { publicarEvento } from "../helpers/realtime.helper.js";
 import { calcularPresupuesto, normalizarConfigPrecio } from "../helpers/precio.helper.js";
 import { condicionPrestadorVisible } from "../helpers/cuenta.helper.js";
+import {
+  condicionResenaVisible,
+  recalcularCalificacionPrestador,
+} from "../helpers/calificacion.helper.js";
 
 const esAdministrador = (user) => ["admin", "administrador"].includes(user.rol);
 
@@ -894,31 +898,8 @@ export const crearCalificacion = async (req, res) => {
       comentario: comentario || null,
     });
 
-    const calificaciones = await Calificacion.findAll({
-      where: {
-        providerId: servicio.providerId,
-      },
-      attributes: ["puntuacion"],
-    });
-
-    const cantidad = calificaciones.length;
-    const promedio =
-      calificaciones.reduce(
-        (total, item) => total + Number(item.puntuacion),
-        0,
-      ) / cantidad;
-
-    await User.update(
-      {
-        calificacion: Number(promedio.toFixed(2)),
-        resenas: cantidad,
-      },
-      {
-        where: {
-          id: servicio.providerId,
-        },
-      },
-    );
+    // El promedio solo considera las reseñas visibles (no ocultadas por moderación)
+    await recalcularCalificacionPrestador(servicio.providerId);
 
     await crearNotificacion({
       usuarioId: servicio.providerId,
@@ -1133,7 +1114,7 @@ export const listarResenasPrestador = async (req, res) => {
       Number.isInteger(paginaPedida) && paginaPedida > 0 ? paginaPedida : 1;
 
     const { count, rows: resenas } = await Calificacion.findAndCountAll({
-      where: { providerId },
+      where: { providerId, ...condicionResenaVisible() },
       order: [["id", "DESC"]],
       limit: limite,
       offset: (pagina - 1) * limite,

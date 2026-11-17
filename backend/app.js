@@ -16,6 +16,7 @@ import Notificacion from "./models/notificacion.model.js";
 import Reserva from "./models/reserva.model.js";
 import Reclamo from "./models/reclamo.model.js";
 import AccionAdmin from "./models/accionAdmin.model.js";
+import Reporte from "./models/reporte.model.js";
 
 import userRoutes from "./routes/user.routes.js";
 import mascotaRoutes from "./routes/mascota.routes.js";
@@ -27,6 +28,7 @@ import reclamoRoutes from "./routes/reclamo.routes.js";
 import notificacionRoutes from "./routes/notificacion.routes.js";
 import eventoRoutes from "./routes/evento.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import reporteRoutes from "./routes/reporte.routes.js";
 
 import { CARPETA_EVIDENCIAS } from "./middlewares/upload.middleware.js";
 
@@ -75,6 +77,7 @@ app.use("/api/reclamos", reclamoRoutes);
 app.use("/api/notificaciones", notificacionRoutes);
 app.use("/api/eventos", eventoRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/reportes", reporteRoutes);
 app.use("/uploads/reclamos", express.static(CARPETA_EVIDENCIAS));
 
 // Cualquier ruta /api sin coincidencia responde JSON (nunca HTML)
@@ -121,7 +124,8 @@ const MODELOS = [
     Notificacion,
     Reserva,
     Reclamo,
-    AccionAdmin
+    AccionAdmin,
+    Reporte
 ];
 
 // Migración idempotente: agrega las columnas nuevas que existan en el modelo
@@ -151,7 +155,7 @@ const asegurarColumnasFaltantes = async (modelo) => {
     }
 };
 
-// Completa los datos de filas creadas antes de las columnas de verificación y cuenta.
+// Completa los datos de filas creadas antes de las columnas de verificación, cuenta y moderación.
 // Un prestador ya verificado queda aprobado; el resto espera la revisión del administrador.
 const normalizarDatosHeredados = async () => {
     await User.update(
@@ -163,6 +167,7 @@ const normalizarDatosHeredados = async () => {
         { where: { rol: "prestador", estadoAprobacion: null } }
     );
     await User.update({ estadoCuenta: "activa" }, { where: { estadoCuenta: null } });
+    await Calificacion.update({ oculta: false }, { where: { oculta: null } });
 };
 
 const iniciarServidor = async () => {

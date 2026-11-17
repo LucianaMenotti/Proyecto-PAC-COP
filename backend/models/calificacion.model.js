@@ -40,6 +40,23 @@ const Calificacion = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+
+    // Moderación: una reseña oculta no se muestra ni cuenta para el promedio del prestador
+    oculta: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
+
+    motivoModeracion: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+
+    moderadaEn: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     indexes: [

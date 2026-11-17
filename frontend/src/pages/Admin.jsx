@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Navigate, NavLink, useParams } from "react-router-dom";
 import SeccionAuditoria from "../components/admin/SeccionAuditoria";
+import SeccionModeracion from "../components/admin/SeccionModeracion";
 import SeccionPrestadoresAdmin from "../components/admin/SeccionPrestadoresAdmin";
 import SeccionResumenAdmin from "../components/admin/SeccionResumenAdmin";
 import TablaServiciosAdmin from "../components/admin/TablaServiciosAdmin";
@@ -14,7 +15,7 @@ import estilosBase from "../config/estilos/base";
 import AdminReclamos from "./AdminReclamos";
 
 // Panel de administración. Cada sección es una ruta: /admin/:seccion
-// (resumen, prestadores, usuarios, servicios, reclamos, auditoria). Todas las acciones
+// (resumen, prestadores, usuarios, servicios, reclamos, moderacion, auditoria). Todas las acciones
 // se validan también en el backend (authMiddleware + adminMiddleware en /api/admin).
 export default function Admin() {
   const { seccion = "resumen" } = useParams();
@@ -32,7 +33,8 @@ export default function Admin() {
 
       setContadores({
         prestadoresPendientes: resumen.prestadores.pendientes,
-        reclamosAbiertos: resumen.moderacion.reclamosAbiertos
+        reclamosAbiertos: resumen.moderacion.reclamosAbiertos,
+        reportesPendientes: resumen.moderacion.reportesPendientes
       });
     } catch (error) {
       avisar(error.message, "danger");
@@ -43,7 +45,7 @@ export default function Admin() {
     cargarContadores();
   }, [cargarContadores]);
 
-  // Un reclamo nuevo o un prestador que envía documentación llega como notificación
+  // Un reclamo, un reporte o un prestador que envía documentación llega como notificación
   useEventoTiempoReal("notificacion", cargarContadores);
 
   useEffect(() => {
@@ -112,6 +114,7 @@ export default function Admin() {
         {seccion === "usuarios" && <TablaUsuarios {...propiedades} />}
         {seccion === "servicios" && <TablaServiciosAdmin {...propiedades} />}
         {seccion === "reclamos" && <AdminReclamos {...propiedades} />}
+        {seccion === "moderacion" && <SeccionModeracion {...propiedades} />}
         {seccion === "auditoria" && <SeccionAuditoria {...propiedades} />}
       </main>
     </div>
