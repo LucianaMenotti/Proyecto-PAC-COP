@@ -10,8 +10,8 @@ const smtpConfigurado = () =>
 export const enviarEmail = async ({ to, subject, texto, html, enlace }) => {
     if (!smtpConfigurado()) {
         console.log(
-            "[email simulado] SMTP no configurado. Enlace de recuperación:",
-            enlace || texto
+            `[email simulado] SMTP no configurado. Para: ${to} · Asunto: ${subject}`,
+            enlace ? `· Enlace: ${enlace}` : `\n${texto}`
         );
         return { simulado: true, enlace: enlace || null };
     }

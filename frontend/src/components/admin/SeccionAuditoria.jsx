@@ -9,6 +9,7 @@ const LIMITE = 15;
 const ENTIDADES = {
   usuario: "Usuario",
   servicio: "Servicio",
+  reclamo: "Reclamo",
   resena: "Reseña",
   reporte: "Reporte"
 };

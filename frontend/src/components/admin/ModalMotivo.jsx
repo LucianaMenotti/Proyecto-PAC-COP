@@ -7,6 +7,7 @@ export default function ModalMotivo({
   descripcion,
   etiqueta = "Motivo",
   minimo = 0,
+  maximo = 255,
   textoConfirmar = "Confirmar",
   claseConfirmar = "btn-danger",
   valorInicial = "",
@@ -77,7 +78,7 @@ export default function ModalMotivo({
                 id="motivo-admin"
                 className="form-control"
                 rows="3"
-                maxLength={255}
+                maxLength={maximo}
                 value={motivo}
                 onChange={(evento) => setMotivo(evento.target.value)}
                 autoFocus

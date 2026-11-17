@@ -33,7 +33,11 @@ export const obtenerMensajes = async (req, res) => {
             });
         }
 
-        if (servicio.estado !== "aceptado" && servicio.estado !== "en-curso") {
+        // La administración puede leer la conversación en cualquier estado para mediar
+        // en reclamos; escribir sigue limitado a servicios aceptados o en curso.
+        const esAdmin = ["admin", "administrador"].includes(req.user.rol);
+
+        if (!esAdmin && servicio.estado !== "aceptado" && servicio.estado !== "en-curso") {
             return res.status(409).json({
                 mensaje: "El chat todavía no está disponible"
             });

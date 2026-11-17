@@ -8,8 +8,9 @@ import VistaPreviaFoto from "./VistaPreviaFoto";
 
 // Conversación unificada de una reserva: mensajes, fotos con GPS y cámara en vivo.
 // La comparten la pantalla /chat y la sección "Chat y reportes" del panel del prestador.
-// `chat` es el resultado de useChat(servicioId).
-export default function ConversacionChat({ chat, servicioId, usuarioId, encabezado = null }) {
+// `chat` es el resultado de useChat(servicioId). Con `soloLectura` (administración revisando un
+// servicio cerrado) se muestra la conversación sin el formulario de envío.
+export default function ConversacionChat({ chat, servicioId, usuarioId, encabezado = null, soloLectura = false }) {
   const { mensajes, cargando, error, enviando, enviar } = chat;
   const [camaraAbierta, setCamaraAbierta] = useState(false);
   const [fotoPendiente, setFotoPendiente] = useState(null);
@@ -69,12 +70,18 @@ export default function ConversacionChat({ chat, servicioId, usuarioId, encabeza
 
       {error && mensajes.length > 0 && <div className="chat-error">{error}</div>}
 
-      <FormularioMensaje
-        deshabilitado={Boolean(error && mensajes.length === 0) || enviando}
-        alEnviarTexto={(texto) => enviar({ texto })}
-        alAbrirCamara={() => setCamaraAbierta(true)}
-        alElegirArchivo={elegirArchivo}
-      />
+      {soloLectura ? (
+        <div className="chat-error">
+          Conversación en modo lectura: el servicio ya no admite mensajes nuevos.
+        </div>
+      ) : (
+        <FormularioMensaje
+          deshabilitado={Boolean(error && mensajes.length === 0) || enviando}
+          alEnviarTexto={(texto) => enviar({ texto })}
+          alAbrirCamara={() => setCamaraAbierta(true)}
+          alElegirArchivo={elegirArchivo}
+        />
+      )}
 
       {camaraAbierta && (
         <CamaraEnVivo alCapturar={prepararFoto} alCerrar={() => setCamaraAbierta(false)} />

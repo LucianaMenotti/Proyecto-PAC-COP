@@ -149,7 +149,7 @@ export default function TablaServiciosAdmin({ alAvisar, alCambiar }) {
                       <span className={`badge ${estado.clase}`}>{estado.texto}</span>
                     </td>
                     <td className="text-end text-nowrap">
-                      {["aceptado", "en-curso"].includes(servicio.estado) && (
+                      {!["programado", "rechazado"].includes(servicio.estado) && (
                         <Link
                           to={`${RUTAS.chat}?servicioId=${servicio.id}`}
                           className="btn btn-outline-secondary btn-sm me-1"

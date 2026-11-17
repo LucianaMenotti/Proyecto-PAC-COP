@@ -93,6 +93,12 @@ export default function SeccionReclamos({ servicios }) {
 
         <p className="text-xs text-slate-600 whitespace-pre-wrap">{reclamo.descripcion}</p>
 
+        {reclamo.resolucion && (
+          <p className="text-xs p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 whitespace-pre-wrap">
+            <strong>Resolución de la administración:</strong> {reclamo.resolucion}
+          </p>
+        )}
+
         {reclamo.evidencias.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {reclamo.evidencias.map((ruta) => (

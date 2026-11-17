@@ -44,6 +44,9 @@ function BotonReclamo({ servicio, reclamoEmitido, alReclamar }) {
           Estado del reclamo:{" "}
           <span className={`badge ${estadoReclamo.clase}`}>{estadoReclamo.texto}</span>
         </p>
+        {reclamoEmitido.resolucion && (
+          <small className="text-secondary d-block mt-1">Resolución: {reclamoEmitido.resolucion}</small>
+        )}
       </>
     );
   }

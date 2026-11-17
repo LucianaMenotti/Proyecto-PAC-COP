@@ -41,6 +41,8 @@ export const TEXTO_ACCIONES = {
   "suspension-cuenta": "Suspensión de cuenta",
   "reactivacion-cuenta": "Reactivación de cuenta",
   "cancelacion-servicio": "Cancelación de servicio",
+  "estado-reclamo": "Cambio de estado de reclamo",
+  "contacto-reclamo": "Mensaje a las partes de un reclamo",
   "ocultar-resena": "Reseña ocultada",
   "mostrar-resena": "Reseña visible de nuevo",
   "eliminar-resena": "Reseña eliminada",

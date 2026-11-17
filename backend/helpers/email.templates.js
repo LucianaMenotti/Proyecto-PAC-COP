@@ -65,3 +65,39 @@ export const plantillaRecuperacion = ({ nombre = "", enlace, minutos }) => {
     html,
   };
 };
+
+// Mensaje de la administración a una de las partes de un reclamo
+export const plantillaMensajeAdmin = ({ nombre = "", asunto, mensaje }) => {
+  const nombreLimpio = String(nombre).trim();
+  const saludo = nombreLimpio ? `Hola, ${nombreLimpio}:` : "Hola,";
+
+  const texto = [
+    saludo,
+    "",
+    mensaje,
+    "",
+    "Podés responder desde la sección de reclamos de Pac-COP.",
+    "",
+    "Administración de Pac-COP",
+  ].join("\n");
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f4fbf9;font-family:Arial,Helvetica,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
+    <div style="background-color:#1f7a74;padding:22px 28px;">
+      <span style="font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:1px;">PAC-COP</span>
+    </div>
+    <div style="padding:28px;color:#2c3e50;font-size:15px;line-height:1.6;">
+      <h1 style="margin:0 0 18px 0;font-size:20px;">${escaparHtml(asunto)}</h1>
+      <p style="margin:0 0 14px 0;">${escaparHtml(saludo)}</p>
+      <p style="margin:0 0 14px 0;white-space:pre-wrap;">${escaparHtml(mensaje)}</p>
+      <p style="margin:24px 0 0 0;color:#64748b;font-size:13px;">Administración de Pac-COP</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  return { subject: asunto, texto, html };
+};

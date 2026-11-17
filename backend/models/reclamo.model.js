@@ -34,6 +34,11 @@ const Reclamo = sequelize.define("Reclamo", {
     allowNull: false,
     defaultValue: "pendiente",
   },
+  // Conclusión de la administración, visible para las dos partes
+  resolucion: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 });
 
 Servicio.hasMany(Reclamo, { foreignKey: "servicioId", as: "reclamos" });
