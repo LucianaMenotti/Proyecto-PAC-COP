@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch, apiJson } from "../config/api";
-import { RUTAS } from "../config/rutas";
 import { destinoDeNotificacion } from "../helpers/notificaciones";
 import { formatearFechaHora } from "../helpers/reclamos";
 import { useAuth } from "../hooks/useAuth";

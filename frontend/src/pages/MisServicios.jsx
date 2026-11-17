@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import ContadorNotificaciones from "../components/ContadorNotificaciones";
 import ModalReclamo from "../components/reclamos/ModalReclamo";
 import ModalReporte from "../components/reportes/ModalReporte";
 import ModalCalificar from "../components/servicios/ModalCalificar";
@@ -75,7 +74,7 @@ export default function MisServicios() {
   const [servicioCalificado, setServicioCalificado] = useState(null);
   const [personaReportada, setPersonaReportada] = useState(null);
   const firma = useRef("");
-  const { noLeidas, recargar: recargarContador } =
+  const { recargar: recargarContador } =
     useContadorNotificaciones(INTERVALO_ACTUALIZACION);
 
   useBootstrap();

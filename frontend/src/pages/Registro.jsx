@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { enviarJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
 import { enviarDocumentacion, validarDocumentacion } from "../helpers/documentacion";
