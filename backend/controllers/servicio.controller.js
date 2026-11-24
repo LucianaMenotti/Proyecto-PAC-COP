@@ -135,7 +135,7 @@ const DIAS_SEMANA = [
   "sabado",
 ];
 
-const validarDisponibilidad = (prestador, fecha) => {
+const validarDisponibilidad = (prestador, fecha, duracionHoras = 0) => {
   const disponibilidad =
     prestador.disponibilidad && typeof prestador.disponibilidad === "object"
       ? prestador.disponibilidad
@@ -156,7 +156,14 @@ const validarDisponibilidad = (prestador, fecha) => {
   const desde = desdeH * 60 + desdeM;
   const hasta = hastaH * 60 + hastaM;
 
-  if (!Number.isFinite(minutos) || minutos < desde || minutos > hasta) {
+  const finMinutos = minutos + Number(duracionHoras || 0) * 60;
+
+  if (
+    !Number.isFinite(minutos) ||
+    !Number.isFinite(finMinutos) ||
+    minutos < desde ||
+    finMinutos > hasta
+  ) {
     return { ok: false, mensaje: "En ese horario no está disponible" };
   }
 
@@ -312,7 +319,11 @@ export const crearServicio = async (req, res) => {
     const presupuesto = calcularPresupuesto(configPrecio.precioBase, horasContratadas);
     const monto = presupuesto.total;
 
-    const disponibilidad = validarDisponibilidad(prestador, fecha);
+    const disponibilidad = validarDisponibilidad(
+      prestador,
+      fecha,
+      horasContratadas,
+    );
 
     if (!disponibilidad.ok) {
       return res.status(409).json({ mensaje: disponibilidad.mensaje });
@@ -351,7 +362,11 @@ export const crearServicio = async (req, res) => {
         });
       }
 
-      const disponibilidadVuelta = validarDisponibilidad(prestador, regreso);
+      const disponibilidadVuelta = validarDisponibilidad(
+        prestador,
+        regreso,
+        horasContratadas,
+      );
 
       if (!disponibilidadVuelta.ok) {
         return res.status(409).json({

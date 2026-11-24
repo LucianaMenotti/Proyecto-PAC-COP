@@ -132,34 +132,6 @@ export default function Inicio() {
                   </p>
                 </Link>
               </div>
-              {esAdmin && (
-                <div className="col-md-6 col-lg-3">
-                  <Link
-                    to={RUTAS.admin}
-                    className="card feature-card h-100 rounded-4 p-4 shadow-sm text-decoration-none text-dark"
-                  >
-                    <i className="bi bi-shield-lock text-primary-pac fs-1 mb-3"></i>
-                    <h3 className="h5 fw-bold">Panel de administración</h3>
-                    <p className="text-secondary small mb-0">
-                      Métricas, aprobación de prestadores, usuarios y moderación.
-                    </p>
-                  </Link>
-                </div>
-              )}
-              {esAdmin && (
-                <div className="col-md-6 col-lg-3">
-                  <Link
-                    to={`${RUTAS.admin}/reclamos`}
-                    className="card feature-card h-100 rounded-4 p-4 shadow-sm text-decoration-none text-dark"
-                  >
-                    <i className="bi bi-flag text-accent-pac fs-1 mb-3"></i>
-                    <h3 className="h5 fw-bold">Gestionar reclamos</h3>
-                    <p className="text-secondary small mb-0">
-                      Revisá y resolvé los reclamos de los usuarios.
-                    </p>
-                  </Link>
-                </div>
-              )}
               <div className="col-md-6 col-lg-3">
                 <Link
                   to="/notificaciones"
