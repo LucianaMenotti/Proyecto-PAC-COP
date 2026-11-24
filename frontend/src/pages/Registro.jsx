@@ -2,14 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { enviarJson } from "../config/api";
 import { RUTAS } from "../config/rutas";
-import { enviarDocumentacion, validarDocumentacion } from "../helpers/documentacion";
 import { useEstilos } from "../hooks/useEstilos";
 import estilosBase from "../config/estilos/base";
 
 const DATOS_INICIALES = {
   nombre: "",
   apellido: "",
-  dni: "",
   fechaNacimiento: "",
   telefono: "",
   email: "",
@@ -32,10 +30,6 @@ const PRESTADOR_INICIAL = {
   zona: "",
   servicios: [],
   vehiculo: "",
-  experiencia: "",
-  documento: null,
-  selfie: null,
-  cv: null
 };
 
 export default function Registro() {
@@ -83,11 +77,6 @@ export default function Registro() {
     }
   };
 
-  const cambiarArchivo = (campo) => (evento) => {
-    const archivo = evento.target.files?.[0] || null;
-    setPrestador((anterior) => ({ ...anterior, [campo]: archivo }));
-  };
-
   const cambiarServicio = (servicio) => (evento) => {
     setPrestador((anterior) => {
       const servicios = evento.target.checked
@@ -122,13 +111,12 @@ export default function Registro() {
 
     const nombre = datos.nombre.trim();
     const apellido = datos.apellido.trim();
-    const dni = datos.dni.trim();
     const fechaNacimiento = datos.fechaNacimiento;
     const telefono = datos.telefono.trim();
     const email = datos.email.trim();
     const password = datos.password;
 
-    if (!nombre || !apellido || !dni || !fechaNacimiento || !telefono || !email || !password) {
+    if (!nombre || !apellido || !fechaNacimiento || !telefono || !email || !password) {
       mostrarMensaje("Completá todos los datos obligatorios.");
       return;
     }
@@ -160,12 +148,6 @@ export default function Registro() {
         vehiculo = prestador.vehiculo;
       }
 
-      const errorDocumentacion = validarDocumentacion(prestador, true);
-
-      if (errorDocumentacion) {
-        mostrarMensaje(errorDocumentacion);
-        return;
-      }
     }
 
     let datosMascotaRegistro = null;
@@ -219,7 +201,6 @@ export default function Registro() {
     const datosUsuario = {
       nombre,
       apellido,
-      dni,
       fechaNacimiento,
       telefono,
       email,
@@ -239,24 +220,6 @@ export default function Registro() {
       }
 
       const usuarioCreado = resultadoUsuario.usuario;
-
-      // El registro deja la sesión iniciada, así que la documentación se sube a continuación
-      if (rol === "prestador") {
-        try {
-          await enviarDocumentacion({
-            documento: prestador.documento,
-            selfie: prestador.selfie,
-            cv: prestador.cv,
-            experiencia: prestador.experiencia.trim()
-          });
-        } catch (falloDocumentacion) {
-          mostrarMensaje(
-            `La cuenta se creó, pero no se pudo subir la documentación (${falloDocumentacion.message}). Podés cargarla desde Mi perfil en tu panel.`,
-            "warning"
-          );
-          return;
-        }
-      }
 
       if (datosMascotaRegistro) {
         const { ok: mascotaCreada } = await enviarJson("/api/mascotas", "POST", {
@@ -338,20 +301,6 @@ export default function Registro() {
                         required
                         value={datos.apellido}
                         onChange={cambiarDato("apellido")}
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="dni" className="form-label">
-                        DNI
-                      </label>
-                      <input
-                        type="text"
-                        id="dni"
-                        className="form-control"
-                        required
-                        value={datos.dni}
-                        onChange={cambiarDato("dni")}
                       />
                     </div>
 
@@ -768,69 +717,6 @@ export default function Registro() {
                         />
                       </div>
 
-                      <hr className="my-4" />
-                      <h4 className="mb-1">Verificación de identidad</h4>
-                      <p className="text-secondary small">
-                        Tu perfil aparece en el buscador cuando la administración revisa y aprueba esta
-                        documentación.
-                      </p>
-
-                      <div className="mb-3">
-                        <label htmlFor="documento" className="form-label">
-                          Foto del documento (DNI)
-                        </label>
-                        <input
-                          type="file"
-                          id="documento"
-                          className="form-control"
-                          accept="image/jpeg,image/png,image/webp"
-                          onChange={cambiarArchivo("documento")}
-                        />
-                      </div>
-
-                      <div className="mb-3">
-                        <label htmlFor="selfie" className="form-label">
-                          Selfie de validación sosteniendo el documento
-                        </label>
-                        <input
-                          type="file"
-                          id="selfie"
-                          className="form-control"
-                          accept="image/jpeg,image/png,image/webp"
-                          capture="user"
-                          onChange={cambiarArchivo("selfie")}
-                        />
-                      </div>
-
-                      <div className="mb-3">
-                        <label htmlFor="cv" className="form-label">
-                          CV o certificados (opcional)
-                        </label>
-                        <input
-                          type="file"
-                          id="cv"
-                          className="form-control"
-                          accept="application/pdf,image/jpeg,image/png,image/webp"
-                          onChange={cambiarArchivo("cv")}
-                        />
-                      </div>
-
-                      <div className="mb-3">
-                        <label htmlFor="experiencia" className="form-label">
-                          Experiencia con mascotas (opcional)
-                        </label>
-                        <textarea
-                          id="experiencia"
-                          className="form-control"
-                          rows="3"
-                          maxLength={2000}
-                          placeholder="Años de experiencia, cursos, tipo de mascotas que cuidaste..."
-                          value={prestador.experiencia}
-                          onChange={(evento) =>
-                            setPrestador((anterior) => ({ ...anterior, experiencia: evento.target.value }))
-                          }
-                        />
-                      </div>
                     </div>
                   )}
 

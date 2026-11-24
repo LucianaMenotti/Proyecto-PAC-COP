@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Navigate, NavLink, useParams } from "react-router-dom";
 import SeccionAuditoria from "../components/admin/SeccionAuditoria";
 import SeccionModeracion from "../components/admin/SeccionModeracion";
-import SeccionPrestadoresAdmin from "../components/admin/SeccionPrestadoresAdmin";
 import SeccionResumenAdmin from "../components/admin/SeccionResumenAdmin";
 import TablaServiciosAdmin from "../components/admin/TablaServiciosAdmin";
 import TablaUsuarios from "../components/admin/TablaUsuarios";
@@ -110,7 +109,6 @@ export default function Admin() {
         </nav>
 
         {seccion === "resumen" && <SeccionResumenAdmin {...propiedades} />}
-        {seccion === "prestadores" && <SeccionPrestadoresAdmin {...propiedades} />}
         {seccion === "usuarios" && <TablaUsuarios {...propiedades} />}
         {seccion === "servicios" && <TablaServiciosAdmin {...propiedades} />}
         {seccion === "reclamos" && <AdminReclamos {...propiedades} />}

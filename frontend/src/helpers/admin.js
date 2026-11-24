@@ -2,7 +2,6 @@
 
 export const SECCIONES_ADMIN = [
   { id: "resumen", texto: "Resumen", icono: "bi-graph-up" },
-  { id: "prestadores", texto: "Aprobaciones", icono: "bi-person-check", contador: "prestadoresPendientes" },
   { id: "usuarios", texto: "Usuarios", icono: "bi-people" },
   { id: "servicios", texto: "Servicios", icono: "bi-calendar-check" },
   { id: "reclamos", texto: "Reclamos", icono: "bi-flag", contador: "reclamosAbiertos" },
