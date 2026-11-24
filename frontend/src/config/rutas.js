@@ -5,6 +5,7 @@ export const RUTAS = {
   login: "/login",
   registro: "/registro",
   recuperar: "/recuperar",
+  apelacionSuspension: "/apelacion-suspension",
   restablecer: "/restablecer",
   misMascotas: "/mis-mascotas",
   registroMascota: "/registro-mascota",

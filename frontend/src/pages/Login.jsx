@@ -11,6 +11,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [aviso, setAviso] = useState(null);
+  const [cuentaSuspendida, setCuentaSuspendida] = useState(false);
   useEstilos("base", estilosBase);
 
   const enviar = async (evento) => {
@@ -20,12 +21,15 @@ export default function Login() {
       const { ok, datos } = await iniciarSesion(email, password);
 
       if (!ok) {
+        setCuentaSuspendida(Boolean(datos.suspendida));
         setAviso({
           tipo: "danger",
           texto: datos.mensaje || "Correo o contraseña incorrectos."
         });
         return;
       }
+
+      setCuentaSuspendida(false);
 
       setAviso({ tipo: "success", texto: "Inicio de sesión correcto." });
 
@@ -82,6 +86,15 @@ export default function Login() {
           {aviso && (
             <div className="mt-3">
               <div className={`alert alert-${aviso.tipo}`}>{aviso.texto}</div>
+            </div>
+          )}
+          {cuentaSuspendida && (
+            <div className="alert alert-warning mt-3 mb-0">
+              ¿Creés que la suspensión es un error?{" "}
+              <Link to={`${RUTAS.apelacionSuspension}?email=${encodeURIComponent(email.trim())}`}>
+                Enviar una solicitud a administración
+              </Link>
+              .
             </div>
           )}
           <p className="text-center mt-3 mb-0">

@@ -6,6 +6,7 @@ import { ROLES_ADMIN, RUTAS } from "./config/rutas";
 import { useAuth } from "./hooks/useAuth";
 import Admin from "./pages/Admin";
 import Alertas from "./pages/Alertas";
+import ApelacionSuspension from "./pages/ApelacionSuspension";
 import BuscarPrestadores from "./pages/BuscarPrestadores";
 import Chat from "./pages/Chat";
 import FichaSalud from "./pages/FichaSalud";
@@ -74,6 +75,7 @@ export default function App() {
           <Route path={RUTAS.login} element={<Login />} />
           <Route path={RUTAS.registro} element={<Registro />} />
           <Route path={RUTAS.recuperar} element={<Recuperar />} />
+          <Route path={RUTAS.apelacionSuspension} element={<ApelacionSuspension />} />
           <Route path={RUTAS.restablecer} element={<Restablecer />} />
           <Route path={RUTAS.buscarPrestadores} element={<SoloUsuarios><BuscarPrestadores /></SoloUsuarios>} />
           <Route path={RUTAS.alertas} element={<SoloUsuarios><Alertas /></SoloUsuarios>} />
