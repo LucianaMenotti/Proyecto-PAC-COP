@@ -26,9 +26,7 @@ function enlacesPara(usuario) {
 
   if (ROLES_ADMIN.includes(usuario.rol)) {
     return [
-      { to: RUTAS.inicio, texto: "Inicio", icono: "bi-house", exacto: true },
       { to: RUTAS.admin, texto: "Panel de administración", icono: "bi-shield-lock" },
-      { to: RUTAS.buscarPrestadores, texto: "Prestadores", icono: "bi-search" },
       { to: RUTAS.notificaciones, texto: "Notificaciones", icono: "bi-bell" }
     ];
   }
@@ -64,7 +62,11 @@ export default function NavbarApp() {
   };
 
   const inicial = (usuario?.nombre || "?").charAt(0).toUpperCase();
-  const destinoCuenta = usuario?.rol === "prestador" ? `${RUTAS.panelPrestador}/perfil` : RUTAS.inicio;
+  const destinoCuenta = ROLES_ADMIN.includes(usuario?.rol)
+    ? `${RUTAS.admin}/resumen`
+    : usuario?.rol === "prestador"
+      ? `${RUTAS.panelPrestador}/perfil`
+      : RUTAS.inicio;
 
   return (
     <header className="pac-nav">

@@ -72,7 +72,7 @@ export default function ConversacionChat({ chat, servicioId, usuarioId, encabeza
 
       {soloLectura ? (
         <div className="chat-error">
-          Conversación en modo lectura: el servicio ya no admite mensajes nuevos.
+          {"Conversación en modo lectura. Para enviar un aviso a las partes, usá el contacto del reclamo en el panel de administración."}
         </div>
       ) : (
         <FormularioMensaje

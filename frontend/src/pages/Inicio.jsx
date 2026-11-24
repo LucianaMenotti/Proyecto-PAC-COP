@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import ContadorNotificaciones from "../components/ContadorNotificaciones";
 import { useAuth } from "../hooks/useAuth";
 import { useContadorNotificaciones } from "../hooks/useContadorNotificaciones";
@@ -13,10 +13,10 @@ export default function Inicio() {
 
   useEstilos("inicio", estilosInicio);
 
-  const esAdmin = ROLES_ADMIN.includes(usuario.rol);
-  const mensajeRol = esAdmin
-    ? "Ingresaste como administrador."
-    : "Ingresaste como dueño de mascota.";
+  if (ROLES_ADMIN.includes(usuario.rol)) {
+    return <Navigate to={`${RUTAS.admin}/resumen`} replace />;
+  }
+  const mensajeRol = "Ingresaste como dueño de mascota.";
 
   return (
     <>

@@ -1,7 +1,7 @@
 // Otorga el rol de administrador a un usuario ya registrado.
 // Uso: npm run crear-admin -- correo@ejemplo.com
-// El registro público solo crea dueños y prestadores, así que el primer administrador
-// se habilita desde el servidor y los siguientes desde el propio panel (cambio de rol).
+// El registro público solo crea dueños y prestadores. La administración solo se gestiona
+// manualmente desde la consola del servidor.
 import "dotenv/config";
 import sequelize from "../config/database.js";
 import User from "../models/user.model.js";
@@ -29,7 +29,7 @@ if (!email) {
     if (!usuario) {
       await finalizar(`No existe un usuario con el correo ${email}. Registralo primero desde la aplicación.`, 1);
     } else if (["admin", "administrador"].includes(usuario.rol)) {
-      await finalizar(`${usuario.nombre} ${usuario.apellido} ya es administrador.`);
+      await finalizar(`${usuario.nombre} ${usuario.apellido} ya es administrador. No se hicieron cambios.`);
     } else {
       await User.update({ rol: "admin" }, { where: { id: usuario.id }, fields: ["rol"] });
       await finalizar(`${usuario.nombre} ${usuario.apellido} ahora es administrador. Cerrá e iniciá sesión de nuevo.`);

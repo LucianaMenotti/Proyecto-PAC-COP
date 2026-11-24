@@ -357,6 +357,13 @@ export const actualizarUsuarioAdmin = async (req, res) => {
       return res.status(400).json({ mensaje: "Rol inválido" });
     }
 
+    // Los roles administrativos solo pueden asignarse o quitarse desde la consola.
+    if (ROLES_ADMIN.includes(rol) || esAdministrador(usuario)) {
+      return res.status(403).json({
+        mensaje: "Los administradores solo se gestionan manualmente desde la consola del servidor",
+      });
+    }
+
     if (rol === usuario.rol) {
       return res.status(400).json({ mensaje: "El usuario ya tiene ese rol" });
     }

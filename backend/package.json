@@ -9,7 +9,8 @@
     "start": "node app.js",
     "dev": "node --watch app.js",
     "test": "node --test",
-    "crear-admin": "node scripts/crearAdmin.js"
+    "crear-admin": "node scripts/crearAdmin.js",
+    "eliminar-admin": "node scripts/eliminarAdmin.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

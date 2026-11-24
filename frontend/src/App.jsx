@@ -43,11 +43,25 @@ function Inicial() {
     return <Navigate to={RUTAS.panelPrestador} replace />;
   }
 
+  if (ROLES_ADMIN.includes(usuario.rol)) {
+    return <Navigate to={`${RUTAS.admin}/resumen`} replace />;
+  }
+
   return <Inicio />;
 }
 
 function protegida(elemento, roles = []) {
   return <RutaProtegida roles={roles}>{elemento}</RutaProtegida>;
+}
+
+function SoloUsuarios({ children }) {
+  const { usuario } = useAuth();
+
+  if (usuario && ROLES_ADMIN.includes(usuario.rol)) {
+    return <Navigate to={`${RUTAS.admin}/resumen`} replace />;
+  }
+
+  return children;
 }
 
 export default function App() {
@@ -61,13 +75,13 @@ export default function App() {
           <Route path={RUTAS.registro} element={<Registro />} />
           <Route path={RUTAS.recuperar} element={<Recuperar />} />
           <Route path={RUTAS.restablecer} element={<Restablecer />} />
-          <Route path={RUTAS.buscarPrestadores} element={<BuscarPrestadores />} />
-          <Route path={RUTAS.alertas} element={<Alertas />} />
-          <Route path={RUTAS.mach} element={<Mach />} />
-          <Route path={RUTAS.numero} element={<Numero />} />
+          <Route path={RUTAS.buscarPrestadores} element={<SoloUsuarios><BuscarPrestadores /></SoloUsuarios>} />
+          <Route path={RUTAS.alertas} element={<SoloUsuarios><Alertas /></SoloUsuarios>} />
+          <Route path={RUTAS.mach} element={<SoloUsuarios><Mach /></SoloUsuarios>} />
+          <Route path={RUTAS.numero} element={<SoloUsuarios><Numero /></SoloUsuarios>} />
 
-          <Route path={RUTAS.pago} element={protegida(<Pago />)} />
-          <Route path={RUTAS.seguimiento} element={protegida(<Seguimiento />)} />
+          <Route path={RUTAS.pago} element={protegida(<Pago />, ["dueño"])} />
+          <Route path={RUTAS.seguimiento} element={protegida(<Seguimiento />, ["dueño", "prestador"])} />
           <Route path={RUTAS.misMascotas} element={protegida(<MisMascotas />, ["dueño"])} />
           <Route path={RUTAS.registroMascota} element={protegida(<RegistroMascota />, ["dueño"])} />
           <Route path={RUTAS.fichaSalud} element={protegida(<FichaSalud />, ["dueño"])} />

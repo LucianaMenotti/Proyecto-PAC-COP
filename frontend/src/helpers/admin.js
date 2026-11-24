@@ -49,7 +49,7 @@ export const TEXTO_ACCIONES = {
   "descartar-reporte": "Reporte descartado"
 };
 
-export const ROLES_ASIGNABLES = ["dueño", "prestador", "admin"];
+export const ROLES_ASIGNABLES = ["dueño", "prestador"];
 
 export const formatearMonto = (valor) => `$${Number(valor || 0).toLocaleString("es-AR")}`;
 

@@ -74,6 +74,14 @@ export const obtenerMensajes = async (req, res) => {
 
 export const enviarMensaje = async (req, res) => {
     try {
+        // La administración puede consultar conversaciones para mediar, pero no
+        // intervenir como participante. El contacto oficial se envía desde reclamos.
+        if (["admin", "administrador"].includes(req.user.rol)) {
+            return res.status(403).json({
+                mensaje: "La administración no puede escribir en el chat. Usá el contacto del reclamo para enviar un aviso."
+            });
+        }
+
         const servicio = await Servicio.findByPk(req.params.servicioId);
 
         if (!servicio) {
