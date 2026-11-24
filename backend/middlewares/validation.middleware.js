@@ -38,7 +38,7 @@ export const validateUser = (req, res, next) => {
   } = req.body;
 
   if (
-    [nombre, apellido, email, password, telefono, dni, fechaNacimiento].some(
+    [nombre, apellido, email, password, telefono, fechaNacimiento].some(
       (value) => !String(value ?? "").trim(),
     )
   ) {

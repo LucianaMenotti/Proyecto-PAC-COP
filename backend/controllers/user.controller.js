@@ -25,7 +25,6 @@ const PUBLIC_USER_FIELDS = [
   "id",
   "nombre",
   "apellido",
-  "dni",
   "fechaNacimiento",
   "email",
   "telefono",
@@ -87,7 +86,6 @@ export const crearUsuario = async (req, res) => {
     const {
       nombre,
       apellido,
-      dni,
       fechaNacimiento,
       email,
       password,
@@ -119,16 +117,9 @@ export const crearUsuario = async (req, res) => {
       return res.status(409).json({ mensaje: "El correo ya está registrado" });
     }
 
-    const existingDni = await User.findOne({ where: { dni } });
-
-    if (existingDni) {
-      return res.status(409).json({ mensaje: "El DNI ya está registrado" });
-    }
-
     const user = await User.create({
       nombre,
       apellido,
-      dni,
       fechaNacimiento,
       email,
       password: await hashPassword(password),
@@ -137,8 +128,8 @@ export const crearUsuario = async (req, res) => {
       rol,
       servicios: rol === "prestador" ? servicios : null,
       vehiculo: rol === "prestador" ? (vehiculo ?? null) : null,
-      // Todo prestador nuevo espera la revisión de la administración
-      estadoAprobacion: rol === "prestador" ? "pendiente" : null,
+      estadoAprobacion: rol === "prestador" ? "aprobado" : null,
+      verificado: rol === "prestador",
       estadoCuenta: "activa",
     });
 
@@ -154,7 +145,7 @@ export const crearUsuario = async (req, res) => {
     if (error.name === "SequelizeUniqueConstraintError") {
       return res
         .status(409)
-        .json({ mensaje: "El email o DNI ya está registrado" });
+        .json({ mensaje: "El correo ya está registrado" });
     }
 
     return res.status(500).json({ mensaje: "Error al registrar el usuario" });

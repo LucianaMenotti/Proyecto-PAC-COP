@@ -159,12 +159,8 @@ const asegurarColumnasFaltantes = async (modelo) => {
 // Un prestador ya verificado queda aprobado; el resto espera la revisión del administrador.
 const normalizarDatosHeredados = async () => {
     await User.update(
-        { estadoAprobacion: "aprobado" },
-        { where: { rol: "prestador", estadoAprobacion: null, verificado: true } }
-    );
-    await User.update(
-        { estadoAprobacion: "pendiente" },
-        { where: { rol: "prestador", estadoAprobacion: null } }
+        { estadoAprobacion: "aprobado", verificado: true },
+        { where: { rol: "prestador" } }
     );
     await User.update({ estadoCuenta: "activa" }, { where: { estadoCuenta: null } });
     await Calificacion.update({ oculta: false }, { where: { oculta: null } });

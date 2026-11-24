@@ -21,8 +21,7 @@ const User = sequelize.define("User", {
 
     dni: {
         type: DataTypes.STRING(20),
-        allowNull: false,
-        unique: true
+        allowNull: true
     },
 
     fechaNacimiento: {

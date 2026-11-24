@@ -17,7 +17,7 @@ export const condicionCuentaActiva = () => ({
 // Prestador que puede aparecer en el buscador y recibir reservas.
 export const condicionPrestadorVisible = (extra = {}) => ({
     [Op.and]: [
-        { rol: "prestador", estadoAprobacion: "aprobado" },
+        { rol: "prestador" },
         condicionCuentaActiva(),
         extra
     ]
@@ -25,7 +25,6 @@ export const condicionPrestadorVisible = (extra = {}) => ({
 
 export const prestadorHabilitado = (usuario) =>
     usuario?.rol === "prestador" &&
-    usuario.estadoAprobacion === "aprobado" &&
     !estaSuspendido(usuario);
 
 // Columna JSON que el driver puede devolver como texto
