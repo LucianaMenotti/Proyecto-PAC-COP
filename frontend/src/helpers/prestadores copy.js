@@ -1,0 +1,15 @@
+import { leerLista, leerPrecios } from "./listas";
+import { normalizarConfigPrecio } from "./precios";
+
+export function obtenerServicios(servicios) {
+  return leerLista(servicios);
+}
+
+// preciosServicios[tipo] guarda la tarifa por hora en precioBase.
+export function configPrecioDe(prestador, tipo) {
+  return normalizarConfigPrecio(leerPrecios(prestador.preciosServicios)?.[tipo]);
+}
+
+export function precioDe(prestador, tipo) {
+  return configPrecioDe(prestador, tipo).precioBase;
+}

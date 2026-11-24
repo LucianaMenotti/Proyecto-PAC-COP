@@ -20,6 +20,7 @@ export default function ModalReserva({
   const [servicio, setServicio] = useState(serviciosConPrecio[0] || "");
   const [mascotasElegidas, setMascotasElegidas] = useState(mascotas[0] ? [Number(mascotas[0].id)] : []);
   const [fecha, setFecha] = useState("");
+  const [duracionHoras, setDuracionHoras] = useState(1);
   const [origen, setOrigen] = useState("");
   const [destino, setDestino] = useState("");
   const [motivo, setMotivo] = useState("");
@@ -43,11 +44,11 @@ export default function ModalReserva({
   const esTraslado = servicio === "Traslado";
   const permiteVuelta = esTraslado && motivo === "queda";
 
-  // Desglose del presupuesto: precio base, cantidad de mascotas y regla de descuento del prestador
+  // El precio depende de las horas contratadas, no de la cantidad de mascotas.
   const config = useMemo(() => configPrecioDe(prestador, servicio), [prestador, servicio]);
   const presupuesto = useMemo(
-    () => calcularPresupuesto(config.precioBase, mascotasElegidas.length, config),
-    [config, mascotasElegidas.length]
+    () => calcularPresupuesto(config.precioBase, duracionHoras),
+    [config.precioBase, duracionHoras]
   );
 
   const alternarMascota = (id) => {
@@ -75,12 +76,18 @@ export default function ModalReserva({
       return;
     }
 
+    if (!Number.isFinite(Number(duracionHoras)) || Number(duracionHoras) < 1 || Number(duracionHoras) > 24) {
+      setError("La duración debe estar entre 1 y 24 horas.");
+      return;
+    }
+
     const cuerpo = {
       providerId: prestador.id,
       tipo: servicio,
       mascotaIds: mascotasElegidas,
       mascotaId: mascotasElegidas[0],
-      horaProgramada: new Date(fecha).toISOString()
+      horaProgramada: new Date(fecha).toISOString(),
+      duracionHoras: Number(duracionHoras)
     };
 
     if (esTraslado) {
@@ -197,8 +204,25 @@ export default function ModalReserva({
               </div>
 
               <div className="mb-3">
+                <label className="form-label" htmlFor="duracionHoras">
+                  Duración del servicio (horas)
+                </label>
+                <input
+                  type="number"
+                  id="duracionHoras"
+                  className="form-control"
+                  min="1"
+                  max="24"
+                  step="1"
+                  required
+                  value={duracionHoras}
+                  onChange={(e) => setDuracionHoras(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-3">
                 <label className="form-label" htmlFor="reservaFecha">
-                  Fecha y hora
+                  Fecha y hora de inicio
                 </label>
                 <input
                   type="datetime-local"
@@ -298,36 +322,19 @@ export default function ModalReserva({
                 <h6 className="fw-bold mb-2">Desglose del presupuesto</h6>
 
                 <div className="d-flex justify-content-between small text-secondary mb-1">
-                  <span>Precio base (1 mascota):</span>
-                  <strong>{formatearPesos(presupuesto.precioBase)}</strong>
+                  <span>Precio por hora:</span>
+                  <strong>{formatearPesos(presupuesto.precioHora)}</strong>
+                </div>
+
+                <div className="d-flex justify-content-between small text-secondary mb-1">
+                  <span>Duración:</span>
+                  <strong>{presupuesto.duracionHoras} hora(s)</strong>
                 </div>
 
                 <div className="d-flex justify-content-between small text-secondary mb-1">
                   <span>Mascotas seleccionadas:</span>
-                  <strong>{presupuesto.cantidadMascotas}</strong>
+                  <strong>{mascotasElegidas.length}</strong>
                 </div>
-
-                <div className="d-flex justify-content-between small text-secondary mb-1">
-                  <span>Regla aplicada:</span>
-                  <span className="badge bg-secondary">{presupuesto.reglaAplicada}</span>
-                </div>
-
-                {presupuesto.descuentoTotal > 0 ? (
-                  <div className="d-flex justify-content-between small mb-1">
-                    <span>Descuento aplicado:</span>
-                    <strong className="text-success">-{formatearPesos(presupuesto.descuentoTotal)}</strong>
-                  </div>
-                ) : (
-                  presupuesto.costoMascotasExtra > 0 &&
-                  config.tipoDescuento === "fijoIncremental" && (
-                    <div className="d-flex justify-content-between small mb-1">
-                      <span>Adicional mascotas extra:</span>
-                      <strong className="text-primary">
-                        +{formatearPesos(presupuesto.costoMascotasExtra)}
-                      </strong>
-                    </div>
-                  )
-                )}
 
                 <hr className="my-2" />
 

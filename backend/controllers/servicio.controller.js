@@ -34,6 +34,7 @@ const presentarServicio = (servicio, ubicacion = null, user = null) => ({
   monto: Number(servicio.monto),
   estado: servicio.estado,
   horaProgramada: servicio.horaProgramada,
+  duracionHoras: Number(servicio.duracionHoras || 1),
   iniciadoEn: servicio.iniciadoEn,
   finalizadoEn: servicio.finalizadoEn,
   canceladoEn: servicio.canceladoEn,
@@ -191,25 +192,28 @@ const validarRestricciones = (prestador, mascota) => {
   return { ok: true };
 };
 
-// Paseos y traslados ocupan al prestador: no se superponen reservas activas dentro de esta ventana.
-// La guardería admite varias mascotas a la vez y queda fuera de este control.
-const MINUTOS_VENTANA_RESERVA = 60;
-
-const horarioOcupado = async (providerId, fecha) => {
-  const margen = (MINUTOS_VENTANA_RESERVA - 1) * 60 * 1000;
-
-  const ocupado = await Servicio.count({
+// Paseos y traslados no pueden superponerse en el horario del prestador.
+// La duración contratada se utiliza para comparar los intervalos completos.
+const horarioOcupado = async (providerId, fecha, duracionHoras) => {
+  const serviciosActivos = await Servicio.findAll({
     where: {
       providerId,
       estado: { [Op.in]: ["programado", "aceptado", "en-curso"] },
       tipo: { [Op.notLike]: "Guarderia%" },
-      horaProgramada: {
-        [Op.between]: [new Date(fecha.getTime() - margen), new Date(fecha.getTime() + margen)],
-      },
     },
+    attributes: ["horaProgramada", "duracionHoras"],
   });
 
-  return ocupado > 0;
+  const inicioNuevo = fecha.getTime();
+  const finNuevo = inicioNuevo + duracionHoras * 60 * 60 * 1000;
+
+  return serviciosActivos.some((servicio) => {
+    const inicioExistente = new Date(servicio.horaProgramada).getTime();
+    const horasExistentes = Number(servicio.duracionHoras) || 1;
+    const finExistente = inicioExistente + horasExistentes * 60 * 60 * 1000;
+
+    return inicioNuevo < finExistente && finNuevo > inicioExistente;
+  });
 };
 
 export const crearServicio = async (req, res) => {
@@ -225,6 +229,7 @@ export const crearServicio = async (req, res) => {
       mascotaId,
       tipo,
       horaProgramada,
+      duracionHoras,
       origen,
       destino,
       motivoTraslado,
@@ -245,6 +250,11 @@ export const crearServicio = async (req, res) => {
     }
 
     const fecha = new Date(horaProgramada);
+    const horasContratadas = Number(duracionHoras);
+
+    if (!Number.isFinite(horasContratadas) || horasContratadas < 1 || horasContratadas > 24) {
+      return res.status(400).json({ mensaje: "La duración debe estar entre 1 y 24 horas" });
+    }
 
     if (Number.isNaN(fecha.getTime()) || fecha <= new Date()) {
       return res
@@ -299,11 +309,7 @@ export const crearServicio = async (req, res) => {
       });
     }
 
-    const presupuesto = calcularPresupuesto(
-      configPrecio.precioBase,
-      mascotas.length,
-      configPrecio,
-    );
+    const presupuesto = calcularPresupuesto(configPrecio.precioBase, horasContratadas);
     const monto = presupuesto.total;
 
     const disponibilidad = validarDisponibilidad(prestador, fecha);
@@ -312,7 +318,7 @@ export const crearServicio = async (req, res) => {
       return res.status(409).json({ mensaje: disponibilidad.mensaje });
     }
 
-    if (tipo !== "Guarderia" && (await horarioOcupado(prestador.id, fecha))) {
+    if (tipo !== "Guarderia" && (await horarioOcupado(prestador.id, fecha, horasContratadas))) {
       return res.status(409).json({
         mensaje: "El prestador ya tiene una reserva en ese horario. Elegí otro.",
       });
@@ -353,7 +359,7 @@ export const crearServicio = async (req, res) => {
         });
       }
 
-      if (await horarioOcupado(prestador.id, regreso)) {
+      if (await horarioOcupado(prestador.id, regreso, horasContratadas)) {
         return res.status(409).json({
           mensaje: "La vuelta no se puede programar: el prestador ya tiene una reserva en ese horario",
         });
@@ -369,6 +375,7 @@ export const crearServicio = async (req, res) => {
       mascotaNombre: mascotaNombreCompleto,
       monto,
       horaProgramada: fecha,
+      duracionHoras: horasContratadas,
       origen: tipo === "Traslado" ? String(origen).trim() : null,
       destino: tipo === "Traslado" ? String(destino).trim() : null,
       motivoTraslado:
@@ -389,6 +396,7 @@ export const crearServicio = async (req, res) => {
         mascotaNombre: mascota.nombre,
         monto,
         horaProgramada: regreso,
+        duracionHoras: horasContratadas,
         origen: String(destino).trim(),
         destino: String(origen).trim(),
         motivoTraslado: "vuelta",

@@ -46,6 +46,11 @@ const Servicio = sequelize.define("Servicio", {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  duracionHoras: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 1,
+  },
   iniciadoEn: {
     type: DataTypes.DATE,
     allowNull: true,
